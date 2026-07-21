@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
+/*
+  Evera Developments — public properties site.
+  Same two master brand variables as Evera One (the internal platform);
+  every token derives from them. Public site is light-only.
+*/
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand-bronze: #987f6a;
+  --brand-evergreen: #2c3732;
+
+  --background: #fdfcfb;
+  --foreground: var(--brand-evergreen);
+  --card: #ffffff;
+  --muted: color-mix(in oklab, var(--brand-bronze) 8%, white);
+  --muted-foreground: color-mix(in oklab, var(--brand-evergreen) 62%, white);
+  --border: color-mix(in oklab, var(--brand-bronze) 24%, white);
+  --brand: var(--brand-bronze);
+  --brand-foreground: #ffffff;
+  --radius: 0.625rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-evergreen: var(--brand-evergreen);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-newsreader), ui-serif, Georgia, serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--brand) 25%, transparent);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .bg-grain {
+    background-image: radial-gradient(
+      color-mix(in oklab, var(--foreground) 4%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 24px 24px;
+  }
+}
+
+/* MapLibre chrome, toned to the brand */
+.maplibregl-ctrl-attrib {
+  font-size: 10px !important;
+  background: color-mix(in oklab, white 72%, transparent) !important;
+}
+.maplibregl-ctrl-group {
+  border-radius: 10px !important;
+  box-shadow: 0 1px 3px rgba(44, 55, 50, 0.12) !important;
 }
