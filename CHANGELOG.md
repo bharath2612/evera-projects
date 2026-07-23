@@ -34,6 +34,7 @@ Entry before every push: what was added, what is left. Newest first.
   that auto-opens the dialog), Save (localStorage heart). Reserved/sold
   units show a status note instead of CTAs and never show price. Esc /
   backdrop close, scroll lock, mobile bottom-sheet entrance. 20 E2E checks.
+  CTAs carry icons (lucide + custom WhatsApp glyph; heart fills when saved).
 
 **Left**
 - Media in the unit dialog (floor plan/gallery) — needs the media proxy.
