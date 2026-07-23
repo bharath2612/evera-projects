@@ -50,7 +50,15 @@ export interface PublicUnit {
   price_per_sqft: number | null;
   status: PublicUnitStatus;
   building: string | null;
+  finish: string | null;
 }
+
+/** Sales desk contacts shown on public CTAs (update in one place). */
+export const SALES = {
+  phoneDisplay: "+971 54 211 1143",
+  phoneE164: "+971542111143",
+  email: "info@everadevelopment.ae",
+} as const;
 
 export interface ProjectStats {
   total: number;

@@ -179,6 +179,8 @@ export default async function ProjectPage({
               <InventoryExplorer
                 units={units}
                 facade={project.facade_config}
+                projectName={project.name}
+                location={project.location}
               />
             </>
           )}

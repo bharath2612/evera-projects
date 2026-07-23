@@ -5,6 +5,7 @@ import type { FacadeConfig, PublicUnit, PublicUnitStatus } from "@/lib/data";
 import { formatAed } from "@/lib/data";
 import { summarizeFloors } from "@/lib/facade";
 import { FacadePicker } from "./facade-picker";
+import { UnitDialog } from "./unit-dialog";
 
 const STATUS_META: Record<
   PublicUnitStatus,
@@ -29,11 +30,13 @@ const STATUS_META: Record<
 
 const AREA = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
-function UnitCard({ unit }: { unit: PublicUnit }) {
+function UnitCard({ unit, onOpen }: { unit: PublicUnit; onOpen: () => void }) {
   const meta = STATUS_META[unit.status];
   return (
-    <div
-      className={`w-37 shrink-0 rounded-lg border p-2.5 transition-colors ${meta.card}`}
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`w-37 shrink-0 cursor-pointer rounded-lg border p-2.5 text-left transition-colors ${meta.card}`}
     >
       <div className="flex items-baseline justify-between gap-2">
         <p className="text-[12px] text-muted-foreground">
@@ -64,7 +67,7 @@ function UnitCard({ unit }: { unit: PublicUnit }) {
           </p>
         </>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -76,19 +79,36 @@ function UnitCard({ unit }: { unit: PublicUnit }) {
 export function InventoryExplorer({
   units,
   facade,
+  projectName,
+  location,
 }: {
   units: PublicUnit[];
   facade: FacadeConfig | null;
+  projectName: string;
+  location: string | null;
 }) {
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+  const [openUnit, setOpenUnit] = useState<PublicUnit | null>(null);
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const rowRefs = useRef(new Map<number, HTMLDivElement>());
 
   useEffect(() => {
-    const raw = new URLSearchParams(window.location.search).get("floor");
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get("floor");
     const parsed = raw ? Number(raw) : NaN;
     if (Number.isInteger(parsed)) setSelectedFloor(parsed);
+    const unitNumber = params.get("unit");
+    if (unitNumber) {
+      const match = units.find((u) => u.unit_number === unitNumber);
+      if (match) setOpenUnit(match);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const floorMax = useMemo(
+    () => units.reduce((max, unit) => Math.max(max, unit.floor), 0),
+    [units],
+  );
 
   const selectFloor = (floor: number) => {
     const next = floor === selectedFloor ? null : floor;
@@ -234,6 +254,7 @@ export function InventoryExplorer({
                     <UnitCard
                       key={`${unit.building ?? ""}-${unit.unit_number}`}
                       unit={unit}
+                      onOpen={() => setOpenUnit(unit)}
                     />
                   ))}
                 </div>
@@ -247,6 +268,16 @@ export function InventoryExplorer({
           )}
         </div>
       </div>
+
+      {openUnit && (
+        <UnitDialog
+          unit={openUnit}
+          projectName={projectName}
+          location={location}
+          floorMax={floorMax}
+          onClose={() => setOpenUnit(null)}
+        />
+      )}
     </div>
   );
 }

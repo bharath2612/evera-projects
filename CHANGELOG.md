@@ -26,8 +26,17 @@ Entry before every push: what was added, what is left. Newest first.
   render now reads at ~670px wide (1.7fr split) with the unit grid in a
   tighter two-up column.
 
+- **Unit detail dialog** (user request): clicking any unit card opens a
+  polished modal — status chip, serif title, project/location, price +
+  AED/ft² / area / floor-of-max stat band, entrance + finishing + type
+  facts, and CTAs: **Make a request** (prefilled mailto), Call, WhatsApp
+  (prefilled), Share (native sheet or copies a `?floor=&unit=` deep link
+  that auto-opens the dialog), Save (localStorage heart). Reserved/sold
+  units show a status note instead of CTAs and never show price. Esc /
+  backdrop close, scroll lock, mobile bottom-sheet entrance. 20 E2E checks.
+
 **Left**
-- Unit detail sheet (floor plan/gallery) — needs the media proxy.
+- Media in the unit dialog (floor plan/gallery) — needs the media proxy.
 - Enquiry → CRM lead (phase 2), real content/galleries, facade renders for
   Olivo + Galleria, exact plot pins, deployment.
 
