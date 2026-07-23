@@ -8,6 +8,7 @@ import {
   fetchUnits,
   formatHandover,
 } from "@/lib/data";
+import { InventoryExplorer } from "@/components/inventory-explorer";
 
 export const revalidate = 60;
 
@@ -175,10 +176,10 @@ export default async function ProjectPage({
                   </div>
                 ))}
               </div>
-              <div className="mt-3 flex min-h-32 items-center justify-center rounded-xl border border-dashed bg-card/60 px-6 text-center text-[13px] text-muted-foreground">
-                Interactive floor-by-floor availability — with the building
-                facade — is arriving here soon.
-              </div>
+              <InventoryExplorer
+                units={units}
+                facade={project.facade_config}
+              />
             </>
           )}
         </section>

@@ -12,6 +12,19 @@ const supabase = createClient(
   { auth: { persistSession: false } },
 );
 
+/** Two guide lines in normalized 0–1 image coords; N floor bands are
+ *  interpolated between them (see lib/facade.ts). */
+export interface FacadeConfig {
+  image: string;
+  width: number;
+  height: number;
+  floors: { min: number; max: number };
+  guides: {
+    bottom: [[number, number], [number, number]];
+    top: [[number, number], [number, number]];
+  };
+}
+
 export interface PublicProject {
   id: string;
   slug: string;
@@ -20,6 +33,7 @@ export interface PublicProject {
   handover_date: string | null;
   latitude: number | null;
   longitude: number | null;
+  facade_config: FacadeConfig | null;
 }
 
 export type PublicUnitStatus = "available" | "reserved" | "sold";
@@ -35,6 +49,7 @@ export interface PublicUnit {
   price_aed: number | null;
   price_per_sqft: number | null;
   status: PublicUnitStatus;
+  building: string | null;
 }
 
 export interface ProjectStats {

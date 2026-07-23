@@ -2,6 +2,31 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-07-23 — Facade floor-picker + public unit grid (Merdan live)
+
+**Added**
+- `FacadePicker`: the Merdan render (downscaled to 1700px, ~700 KB) with
+  one interactive SVG band per floor, interpolated from two guide lines in
+  `facade_config` (fitted in evera-one via slab-edge detection). Hover =
+  brand-tinted band + tooltip with live availability and per-type counts
+  ("Floor 12 · Available: 4 · 2BR ×4"); sold-out floors tint dark and say
+  so; click selects; keyboard accessible (listbox/option, Enter/Space).
+- `InventoryExplorer`: floor-by-floor unit grid — available cards in green
+  with price, area, AED/ft²; Reserved (amber) and Sold (gray) cards
+  price-free; type filter chips; status legend; floor rail buttons.
+  Facade and grid stay in sync: selecting a floor from either highlights
+  the row, scrolls to it, and writes a shareable `?floor=N` deep link.
+- Wired into `/projects/[slug]#inventory` — projects without a facade
+  config (Olivo, Galleria) get the grid alone; "Launching soon" empty
+  state unchanged. `building` (entrance) now flows through the data layer.
+- E2E: 14 checks (18 bands render, tooltips, selection + deep links, type
+  filter, price hidden on non-available, no console errors).
+
+**Left**
+- Unit detail sheet (floor plan/gallery) — needs the media proxy.
+- Enquiry → CRM lead (phase 2), real content/galleries, facade renders for
+  Olivo + Galleria, exact plot pins, deployment.
+
 ## 2026-07-21 — Foundation: Dubai map + project page skeletons
 
 **Added**
