@@ -23,7 +23,8 @@ Entry before every push: what was added, what is left. Newest first.
   filter, price hidden on non-available, no console errors).
 - Layout polish (user feedback): facade enlarged to ~58% of the split
   (1.35fr vs 1fr grid) and the page container widened to max-w-6xl — the
-  render now reads at ~610px wide with the unit grid in a tighter column.
+  render now reads at ~670px wide (1.7fr split) with the unit grid in a
+  tighter two-up column.
 
 **Left**
 - Unit detail sheet (floor plan/gallery) — needs the media proxy.

@@ -33,7 +33,7 @@ function UnitCard({ unit }: { unit: PublicUnit }) {
   const meta = STATUS_META[unit.status];
   return (
     <div
-      className={`w-40 shrink-0 rounded-lg border p-2.5 transition-colors ${meta.card}`}
+      className={`w-37 shrink-0 rounded-lg border p-2.5 transition-colors ${meta.card}`}
     >
       <div className="flex items-baseline justify-between gap-2">
         <p className="text-[12px] text-muted-foreground">
@@ -182,7 +182,7 @@ export function InventoryExplorer({
       <div
         className={
           facade
-            ? "mt-4 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_1fr]"
+            ? "mt-4 grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_1fr]"
             : "mt-4"
         }
       >
