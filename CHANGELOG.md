@@ -21,6 +21,9 @@ Entry before every push: what was added, what is left. Newest first.
   state unchanged. `building` (entrance) now flows through the data layer.
 - E2E: 14 checks (18 bands render, tooltips, selection + deep links, type
   filter, price hidden on non-available, no console errors).
+- Layout polish (user feedback): facade enlarged to ~58% of the split
+  (1.35fr vs 1fr grid) and the page container widened to max-w-6xl — the
+  render now reads at ~610px wide with the unit grid in a tighter column.
 
 **Left**
 - Unit detail sheet (floor plan/gallery) — needs the media proxy.

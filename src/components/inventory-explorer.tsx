@@ -182,7 +182,7 @@ export function InventoryExplorer({
       <div
         className={
           facade
-            ? "mt-4 grid gap-5 lg:grid-cols-[minmax(0,380px)_1fr]"
+            ? "mt-4 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_1fr]"
             : "mt-4"
         }
       >

@@ -69,7 +69,7 @@ export default async function ProjectPage({
 
   return (
     <main className="bg-grain min-h-dvh">
-      <div className="mx-auto w-full max-w-5xl px-6 py-8 lg:px-8 lg:py-10">
+      <div className="mx-auto w-full max-w-6xl px-6 py-8 lg:px-8 lg:py-10">
         <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
