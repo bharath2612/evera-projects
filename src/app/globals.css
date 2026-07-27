@@ -62,12 +62,32 @@
   .font-display {
     font-family: var(--font-display);
   }
+  /* Floor card content entrance when stepping between floors. */
+  .floor-swap {
+    animation: floor-swap 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .floor-swap {
+      animation: none;
+    }
+  }
   .bg-grain {
     background-image: radial-gradient(
       color-mix(in oklab, var(--foreground) 4%, transparent) 1px,
       transparent 1px
     );
     background-size: 24px 24px;
+  }
+}
+
+@keyframes floor-swap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

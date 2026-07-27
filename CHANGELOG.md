@@ -2,6 +2,111 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-07-27 — Dedicated unit pages, public media bucket, sales-offer PDF
+
+**Added**
+- **Dedicated unit page** `/projects/[slug]/units/[unit]` — every unit
+  click now navigates here (floor-explorer rows + key plan, classic grid
+  cards; legacy `?unit=` deep links redirect). Gallery from the new
+  public bucket (main frame + thumbnails, arrows, count badge, branded
+  placeholder when no media), status chip + serif headline, price/area/
+  ft²/floor band, facts (type, entrance, finishing, handover), sticky
+  sales aside (request/call/WhatsApp/share/save) and **similar residences
+  on other floors** (same type, available first, cross-linked). Reserved/
+  sold pages show a status note, never a price. The unit dialog is gone.
+- **Public media storage** (schema in evera-one, migration
+  `0012_public_unit_media.sql`): public `public-media` bucket organised
+  as `projects/<slug>/units/<unit>/gallery-NN.jpg`, `unit_public_media`
+  table (service-role writes) + `public_unit_media` whitelisted view.
+  Upload via `evera-one/scripts/upload-unit-media.mjs <slug> <unit>
+  <folder>` — Merdan **No.501** published with 11 interior renders.
+- **Sales offer PDF** — "Download sales offer" on available units hits
+  `/units/[unit]/offer` (pdf-lib): page one is the offer sheet — identity
+  + completion, unit details, price banner, the project's standard payment
+  plan (10/10/5/7.5/7.5/60, per-project config in `src/lib/offer.ts`
+  until Books lands), DLD 4% + Oqood AED 5,000 fees and the initial
+  payment on reservation; then **gallery pages with every published
+  render** (two per page, full width, branded header + page numbers,
+  pulled live from the public bucket — the offer still ships without
+  them). Attachment headers; 404 for reserved/sold.
+- E2E grown to 35 checks: page navigation from key plan/rows/grid, legacy
+  deep-link redirect, gallery (11 thumbs, switching), offer PDF headers +
+  magic bytes, sold-unit 404 + note, similar list, leak guards.
+
+**Left**
+- Real payment plans + completion dates from the Books module (replace
+  `src/lib/offer.ts` config); floor-plan images (`kind='floor_plan'`) in
+  the gallery; enquiry → CRM lead; deployment.
+
+
+
+## 2026-07-27 — Immersive 30/70 floor explorer (brochure-style, Merdan)
+
+**Added**
+- `FloorExplorer` replaces the inventory layout on projects with a facade
+  render: the building takes ~70% of the split (height-capped to the
+  viewport), and a brochure-style **floor card** fills the left ~30% —
+  project wordmark (new asset `public/projects/merdan-residences/logo.png`)
+  → serif "4th Floor" headline with ▲▼ stepper → key plan → that floor's
+  residences → type filter + status legend. Card and render sit equal
+  height; the residence list scrolls inside the card.
+- **Floor stepping**: arrow buttons, ↑/↓ keys, clicking a facade band, or
+  the mouse wheel over the render (throttled; releases to normal page
+  scroll at the top/bottom floor so it never traps). Selected band stays
+  bronze-lit; a floating "Floor N / 18" badge sits on the render. Card
+  content swaps with a soft `floor-swap` entrance (reduced-motion aware).
+- **Key plan traced as live SVG** (`src/lib/keyplan.ts` +
+  `KeyPlan` component): the Merdan podium plate (floors 2–6, residences
+  01–08 around the hatched corridor) — hovering a residence row or the
+  plan itself fills that unit bronze with a white label (brochure
+  treatment), sold units read muted, clicking opens the unit dialog.
+  Floors without traced artwork (1, 7–18) get a coming-soon placeholder;
+  plates are drop-in when artwork arrives.
+- **Plate retraced pixel-exact** (user feedback — "details matter"): wall
+  segments measured programmatically from the brochure artwork (1264×778
+  master) instead of eyeballed. Every printed detail is preserved: the
+  slanted west plot edge, 08's shaft cut-out and its narrow leg down the
+  slant, 01's L-shaped entry foot, 02's staircase steps, 05's T-shape
+  with the door notch in its top bar, 06/04 wrapping under the bar's
+  corners, 03's edge notch, the corridor wedge between 08's leg and 07.
+  Hatch matches the print (steep ~23° lines, measured spacing); walls,
+  label weight/tracking and colors matched to the artwork via brand
+  tokens.
+- **Subtle status on the plan** (user feedback, two rounds): full
+  green/orange status fills were tried and rejected as too loud —
+  reverted to the brochure treatment (white residences, bronze fill +
+  white numeral on hover). Status now shows as a small legend-colored dot
+  under each unit number (green available / orange reserved / grey sold)
+  with sold shapes lightly greyed.
+- **Tracing playbook**: `docs/keyplan-tracing.md` — the full
+  measure-don't-eyeball method (wall-mask segment extraction, slant/hatch
+  measurement, ASCII junction probes, transcript image recovery,
+  verification loop) so future plates (Merdan 1/7/tower, Olivo, Galleria)
+  are built the same way.
+- Type filter now dims non-matching residences (list + plan) and the
+  facade tooltips/tints follow it. `?floor=N` / `?unit=NNN` deep links
+  kept. Olivo/Galleria (no facade) keep the classic grid untouched.
+- **Full-bleed + glide** (user feedback): the explorer now breaks out of
+  the page column to ~24px viewport margins; the facade column hugs the
+  render exactly (auto grid track) and the card absorbs all remaining
+  width — container queries flow the residences into two columns when the
+  card is wide, and the key plan scales with viewport height (grows on
+  tall monitors, compact on laptops so the list stays visible). Hovering
+  a floor band now **previews that floor live in the card** (no click
+  needed; hover swaps skip the entrance animation so gliding never
+  strobes) — click/step/wheel still commit the `?floor=` deep link.
+- E2E: 24 checks (stepper/keyboard/wheel + boundary release, band click +
+  hover glide, plan hover/click sync, placeholder floors, deep links,
+  filter dimming, status-leak guard, mobile stacking, zero console
+  errors). tsc + eslint clean.
+
+**Left**
+- Key plan artwork for floor 1, 7 and the tower plates (8–14, 15–18) —
+  slot into `src/lib/keyplan.ts` when Evera supplies them.
+- Media in the unit dialog (floor plan/gallery) — needs the media proxy.
+- Enquiry → CRM lead (phase 2), real content/galleries, facade renders for
+  Olivo + Galleria, exact plot pins, deployment.
+
 ## 2026-07-23 — Facade floor-picker + public unit grid (Merdan live)
 
 **Added**

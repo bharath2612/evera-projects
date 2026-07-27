@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { FacadeConfig, PublicUnit, PublicUnitStatus } from "@/lib/data";
-import { formatAed } from "@/lib/data";
+import { formatAed, unitHref } from "@/lib/data";
 import { summarizeFloors } from "@/lib/facade";
 import { FacadePicker } from "./facade-picker";
-import { UnitDialog } from "./unit-dialog";
 
 const STATUS_META: Record<
   PublicUnitStatus,
@@ -30,13 +31,12 @@ const STATUS_META: Record<
 
 const AREA = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
-function UnitCard({ unit, onOpen }: { unit: PublicUnit; onOpen: () => void }) {
+function UnitCard({ unit, href }: { unit: PublicUnit; href: string }) {
   const meta = STATUS_META[unit.status];
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className={`w-37 shrink-0 cursor-pointer rounded-lg border p-2.5 text-left transition-colors ${meta.card}`}
+    <Link
+      href={href}
+      className={`block w-37 shrink-0 cursor-pointer rounded-lg border p-2.5 text-left transition-colors ${meta.card}`}
     >
       <div className="flex items-baseline justify-between gap-2">
         <p className="text-[12px] text-muted-foreground">
@@ -67,7 +67,7 @@ function UnitCard({ unit, onOpen }: { unit: PublicUnit; onOpen: () => void }) {
           </p>
         </>
       )}
-    </button>
+    </Link>
   );
 }
 
@@ -79,36 +79,32 @@ function UnitCard({ unit, onOpen }: { unit: PublicUnit; onOpen: () => void }) {
 export function InventoryExplorer({
   units,
   facade,
-  projectName,
-  location,
+  slug,
 }: {
   units: PublicUnit[];
   facade: FacadeConfig | null;
-  projectName: string;
-  location: string | null;
+  slug: string;
 }) {
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
-  const [openUnit, setOpenUnit] = useState<PublicUnit | null>(null);
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const router = useRouter();
   const rowRefs = useRef(new Map<number, HTMLDivElement>());
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const raw = params.get("floor");
     const parsed = raw ? Number(raw) : NaN;
+    // Mount-only URL → state sync; can't be an initializer without a
+    // hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (Number.isInteger(parsed)) setSelectedFloor(parsed);
+    // Legacy ?unit= deep links now land on the dedicated unit page.
     const unitNumber = params.get("unit");
-    if (unitNumber) {
-      const match = units.find((u) => u.unit_number === unitNumber);
-      if (match) setOpenUnit(match);
+    if (unitNumber && units.some((u) => u.unit_number === unitNumber)) {
+      router.replace(unitHref(slug, unitNumber));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const floorMax = useMemo(
-    () => units.reduce((max, unit) => Math.max(max, unit.floor), 0),
-    [units],
-  );
 
   const selectFloor = (floor: number) => {
     const next = floor === selectedFloor ? null : floor;
@@ -254,7 +250,7 @@ export function InventoryExplorer({
                     <UnitCard
                       key={`${unit.building ?? ""}-${unit.unit_number}`}
                       unit={unit}
-                      onOpen={() => setOpenUnit(unit)}
+                      href={unitHref(slug, unit.unit_number)}
                     />
                   ))}
                 </div>
@@ -269,15 +265,6 @@ export function InventoryExplorer({
         </div>
       </div>
 
-      {openUnit && (
-        <UnitDialog
-          unit={openUnit}
-          projectName={projectName}
-          location={location}
-          floorMax={floorMax}
-          onClose={() => setOpenUnit(null)}
-        />
-      )}
     </div>
   );
 }

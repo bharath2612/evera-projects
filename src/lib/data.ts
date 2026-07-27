@@ -53,6 +53,38 @@ export interface PublicUnit {
   finish: string | null;
 }
 
+export interface PublicUnitMedia {
+  project_id: string;
+  unit_number: string;
+  kind: "gallery" | "floor_plan";
+  path: string;
+  sort_order: number;
+}
+
+/** Ordered public marketing media for one unit (empty when none uploaded). */
+export async function fetchUnitMedia(
+  projectId: string,
+  unitNumber: string,
+): Promise<PublicUnitMedia[]> {
+  const { data } = await supabase
+    .from("public_unit_media")
+    .select("*")
+    .eq("project_id", projectId)
+    .eq("unit_number", unitNumber)
+    .order("sort_order");
+  return (data as PublicUnitMedia[]) ?? [];
+}
+
+/** Public URL for a path in the public-media storage bucket. */
+export function publicMediaUrl(path: string): string {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${path}`;
+}
+
+/** Canonical route of a unit's detail page. */
+export function unitHref(slug: string, unitNumber: string): string {
+  return `/projects/${slug}/units/${encodeURIComponent(unitNumber)}`;
+}
+
 /** Sales desk contacts shown on public CTAs (update in one place). */
 export const SALES = {
   phoneDisplay: "+971 54 211 1143",

@@ -13,27 +13,42 @@ export function FacadePicker({
   summaries,
   selectedFloor,
   onSelect,
+  onHoverFloor,
+  className = "",
+  imgClassName = "h-auto w-full",
 }: {
   config: FacadeConfig;
   summaries: Map<number, FloorSummary>;
   selectedFloor: number | null;
   onSelect: (floor: number) => void;
+  /** Live floor preview while the pointer travels over the bands. */
+  onHoverFloor?: (floor: number | null) => void;
+  /** Extra classes on the wrapper (e.g. `w-fit mx-auto` to shrink-wrap). */
+  className?: string;
+  /** Sizing classes on the render itself (default fills the column). */
+  imgClassName?: string;
 }) {
   const bands = useMemo(() => floorBands(config), [config]);
   const [hoverFloor, setHoverFloor] = useState<number | null>(null);
+  const emitHover = (floor: number | null) => {
+    setHoverFloor(floor);
+    onHoverFloor?.(floor);
+  };
 
   const hovered = hoverFloor !== null ? bands.find((b) => b.floor === hoverFloor) : null;
   const hoveredSummary = hoverFloor !== null ? summaries.get(hoverFloor) : null;
 
   return (
-    <div className="relative overflow-hidden rounded-xl border bg-card shadow-[0_2px_14px_rgba(44,55,50,0.07)]">
+    <div
+      className={`relative overflow-hidden rounded-xl border bg-card shadow-[0_2px_14px_rgba(44,55,50,0.07)] ${className}`}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={config.image}
         alt="Building facade"
         width={config.width}
         height={config.height}
-        className="block h-auto w-full select-none"
+        className={`block select-none ${imgClassName}`}
         draggable={false}
       />
       <svg
@@ -55,10 +70,10 @@ export function FacadePicker({
               aria-selected={active}
               aria-label={`Floor ${band.floor}`}
               tabIndex={0}
-              onMouseEnter={() => setHoverFloor(band.floor)}
-              onMouseLeave={() => setHoverFloor(null)}
-              onFocus={() => setHoverFloor(band.floor)}
-              onBlur={() => setHoverFloor(null)}
+              onMouseEnter={() => emitHover(band.floor)}
+              onMouseLeave={() => emitHover(null)}
+              onFocus={() => emitHover(band.floor)}
+              onBlur={() => emitHover(null)}
               onClick={() => onSelect(band.floor)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
@@ -121,7 +136,9 @@ export function FacadePicker({
       )}
 
       <p className="absolute right-3 bottom-2 rounded bg-white/70 px-1.5 py-0.5 text-[10px] text-evergreen/70 backdrop-blur-sm">
-        Tap a floor to see its residences
+        {onHoverFloor
+          ? "Glide over the floors to explore"
+          : "Tap a floor to see its residences"}
       </p>
     </div>
   );

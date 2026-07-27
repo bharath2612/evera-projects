@@ -8,6 +8,7 @@ import {
   fetchUnits,
   formatHandover,
 } from "@/lib/data";
+import { FloorExplorer } from "@/components/floor-explorer";
 import { InventoryExplorer } from "@/components/inventory-explorer";
 
 export const revalidate = 60;
@@ -176,12 +177,16 @@ export default async function ProjectPage({
                   </div>
                 ))}
               </div>
-              <InventoryExplorer
-                units={units}
-                facade={project.facade_config}
-                projectName={project.name}
-                location={project.location}
-              />
+              {project.facade_config ? (
+                <FloorExplorer
+                  units={units}
+                  facade={project.facade_config}
+                  slug={project.slug}
+                  projectName={project.name}
+                />
+              ) : (
+                <InventoryExplorer units={units} facade={null} slug={project.slug} />
+              )}
             </>
           )}
         </section>
