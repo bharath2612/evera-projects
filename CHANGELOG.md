@@ -2,6 +2,37 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-07-30 — Floor-plan page in the sales offer
+
+**Added**
+- **Page 3 of the offer** for units with floor-plan artwork: the plan
+  card full-width, a Sellable Area table (sq.m computed from stored
+  sq.ft), Purchaser's/Seller's initials lines and the standard drawings
+  disclaimer — mirroring the team's signed offer sheets. Skipped
+  gracefully for units without a plan (offer stays cover + sheet).
+- Four Merdan floor-plan cards mapped and published as
+  `unit_public_media kind='floor_plan'` for 15 units: 3BHK 01
+  (1501/1601/1701/1801), 1BHK 05 (205–605), Studio 03 (203–603) and
+  Studio 703. Same page added to lead offers in evera-one.
+- E2E: 51 checks (plan-page presence + content).
+
+**Left**
+- Floor-plan cards for the remaining positions (01/02 podium, 02/04
+  tower floors, floor 1, etc.) — drop-in via the same unit-media path.
+
+## 2026-07-29 — Offer sheet layout polish
+
+**Added**
+- Offer sheet reworked (user feedback, applied to both the public route
+  and evera-one's lead-offer builder): unit details in two columns —
+  areas + auto-calculated price/ft² left, bathrooms/bedrooms/floor
+  (+ entrance/finishing) right; the unit number reads large with its
+  type inline ("501 — 1 Bedroom"); the payment-plan TOTAL is now the
+  prominent figure while the fee-inclusive initial-payment line is
+  deliberately quiet; and the Project field renders the **project
+  wordmark** (new 'logo' media kind, evera-one migration 0016 — Merdan's
+  logo uploaded; text fallback for projects without one).
+
 ## 2026-07-29 — Offer PDFs go config-driven
 
 **Added**

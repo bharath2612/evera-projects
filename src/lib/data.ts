@@ -80,7 +80,7 @@ export async function fetchPaymentPlan(
 
 export interface PublicProjectMedia {
   project_id: string;
-  kind: "gallery" | "hero" | "offer_cover";
+  kind: "gallery" | "hero" | "offer_cover" | "logo";
   path: string;
   sort_order: number;
 }
