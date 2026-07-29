@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
 import {
   SALES,
+  fetchPaymentPlan,
+  fetchProjectMedia,
   fetchProjects,
   fetchUnits,
-  fetchUnitMedia,
   formatHandover,
   publicMediaUrl,
 } from "@/lib/data";
@@ -24,10 +25,11 @@ const AREA = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 const PAGE = { width: 595.28, height: 841.89, margin: 56 } as const; // A4
 
 /**
- * Generated sales offer, one page: unit identity, price, the project's
- * standard payment plan (amounts computed from the live price), DLD +
- * Oqood fees and the initial payment due on reservation. Available units
- * only — the offer disappears the moment a unit is reserved or sold.
+ * Public sales offer: the project's cover artwork as page one (when
+ * configured in Offer Settings), then the offer sheet titled with the
+ * project name — unit details (suite/balcony/total areas, bedrooms,
+ * bathrooms), price, the unit type's configured payment plan, fees and
+ * the initial payment. Available units only.
  */
 export async function GET(
   _request: Request,
@@ -46,14 +48,45 @@ export async function GET(
   }
 
   const price = unit.price_aed;
+  const plan =
+    (await fetchPaymentPlan(project.id, unit.type_code)) ?? planFor(project.slug);
+
   const doc = await PDFDocument.create();
   doc.setTitle(`Sales Offer — ${project.name} No.${unit.unit_number}`);
   doc.setAuthor("Evera Developments");
-  const page = doc.addPage([PAGE.width, PAGE.height]);
   const serif = await doc.embedFont(StandardFonts.TimesRoman);
   const sans = await doc.embedFont(StandardFonts.Helvetica);
   const sansBold = await doc.embedFont(StandardFonts.HelveticaBold);
 
+  // ——— Cover page: the project's offer artwork, contain-fit ———
+  const media = await fetchProjectMedia(project.id);
+  const coverPath = media.find((m) => m.kind === "offer_cover")?.path;
+  if (coverPath) {
+    try {
+      const res = await fetch(publicMediaUrl(coverPath));
+      if (res.ok) {
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        const image = coverPath.toLowerCase().endsWith(".png")
+          ? await doc.embedPng(bytes)
+          : await doc.embedJpg(bytes);
+        const cover = doc.addPage([PAGE.width, PAGE.height]);
+        const scale = Math.min(
+          PAGE.width / image.width,
+          PAGE.height / image.height,
+        );
+        cover.drawImage(image, {
+          x: (PAGE.width - image.width * scale) / 2,
+          y: (PAGE.height - image.height * scale) / 2,
+          width: image.width * scale,
+          height: image.height * scale,
+        });
+      }
+    } catch {
+      /* the offer still ships without a cover */
+    }
+  }
+
+  const page = doc.addPage([PAGE.width, PAGE.height]);
   let y = PAGE.height - PAGE.margin;
   const left = PAGE.margin;
   const right = PAGE.width - PAGE.margin;
@@ -83,8 +116,8 @@ export async function GET(
       color,
     });
 
-  // ——— Header ———
-  text("EVERA DEVELOPMENTS", left, 9, sansBold, BRONZE);
+  // ——— Header: the project speaks, Evera signs the footer ———
+  text(project.name.toUpperCase(), left, 10, sansBold, BRONZE);
   text(new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date()), right, 9, sans, MUTED, "right");
   y -= 26;
   text("Sales Offer", left, 30, serif);
@@ -114,7 +147,19 @@ export async function GET(
   rule();
   const details: Array<[string, string]> = [
     ["Type", unit.type_label],
+    ...(unit.suite_area_sqft !== null
+      ? ([["Suite area", `${AREA.format(unit.suite_area_sqft)} sq.ft`]] as Array<[string, string]>)
+      : []),
+    ...(unit.balcony_area_sqft !== null
+      ? ([["Balcony area", `${AREA.format(unit.balcony_area_sqft)} sq.ft`]] as Array<[string, string]>)
+      : []),
     ["Total area", `${AREA.format(unit.area_sqft)} sq.ft`],
+    ...(unit.bedrooms !== null
+      ? ([["Bedrooms", AREA.format(unit.bedrooms)]] as Array<[string, string]>)
+      : []),
+    ...(unit.bathrooms !== null
+      ? ([["Bathrooms", AREA.format(unit.bathrooms)]] as Array<[string, string]>)
+      : []),
     ["Price per sq.ft", `AED ${AREA.format(unit.price_per_sqft ?? price / unit.area_sqft)}`],
     ["Floor", String(unit.floor)],
     ...(unit.building
@@ -123,13 +168,13 @@ export async function GET(
     ...(unit.finish ? ([["Finishing", unit.finish]] as Array<[string, string]>) : []),
   ];
   for (const [label, value] of details) {
-    y -= 19;
+    y -= 17;
     text(label, left, 10, sans, MUTED);
     text(value, left + 200, 10, sans);
   }
 
   // Price banner
-  y -= 34;
+  y -= 30;
   page.drawRectangle({
     x: left,
     y: y - 12,
@@ -145,8 +190,8 @@ export async function GET(
   text(`AED ${AED.format(price)}`, right - 14, 15, sansBold, EVERGREEN, "right");
   y = bannerBaseline;
 
-  // ——— Payment plan ———
-  y -= 46;
+  // ——— Payment plan (configured per unit type in Offer Settings) ———
+  y -= 40;
   text("PAYMENT PLAN", left, 8, sansBold, BRONZE);
   y -= 8;
   rule();
@@ -155,11 +200,11 @@ export async function GET(
   text("Milestone", left + 150, 8, sansBold, MUTED);
   text("%", left + 340, 8, sansBold, MUTED);
   text("Amount (AED)", right, 8, sansBold, MUTED, "right");
-  for (const instalment of planFor(project.slug)) {
-    y -= 18;
+  for (const instalment of plan) {
+    y -= 17;
     text(instalment.label, left, 10, sans);
     text(instalment.milestone, left + 150, 10, sans, MUTED);
-    text(`${instalment.pct}%`, left + 340, 10, sans);
+    text(`${AREA.format(instalment.pct)}%`, left + 340, 10, sans);
     text(AED.format((price * instalment.pct) / 100), right, 10, sans, EVERGREEN, "right");
   }
   y -= 10;
@@ -169,27 +214,27 @@ export async function GET(
   text(AED.format(price), right, 10, sansBold, EVERGREEN, "right");
 
   // ——— Fees ———
-  y -= 34;
+  y -= 30;
   text("GOVERNMENT FEES", left, 8, sansBold, BRONZE);
   y -= 8;
   rule();
-  y -= 18;
+  y -= 16;
   text(`DLD fee (${DLD_FEE_PCT}%)`, left, 10, sans);
   text("Immediate", left + 150, 10, sans, MUTED);
   text(AED.format((price * DLD_FEE_PCT) / 100), right, 10, sans, EVERGREEN, "right");
-  y -= 18;
+  y -= 17;
   text("Oqood fee", left, 10, sans);
   text("Immediate", left + 150, 10, sans, MUTED);
   text(AED.format(OQOOD_FEE_AED), right, 10, sans, EVERGREEN, "right");
   const totalFees = (price * DLD_FEE_PCT) / 100 + OQOOD_FEE_AED;
-  y -= 18;
+  y -= 17;
   text("Total fees", left, 10, sansBold);
   text(AED.format(totalFees), right, 10, sansBold, EVERGREEN, "right");
 
   // ——— Initial payment on reservation ———
-  const booking = planFor(project.slug)[0];
+  const booking = plan[0];
   const initial = (price * booking.pct) / 100 + totalFees;
-  y -= 34;
+  y -= 30;
   page.drawRectangle({
     x: left,
     y: y - 30,
@@ -200,7 +245,7 @@ export async function GET(
   y -= 4;
   text("INITIAL PAYMENT UPON UNIT RESERVATION", left + 14, 8, sansBold, BRONZE);
   y -= 17;
-  text(`${booking.pct}% downpayment + DLD & Oqood fees`, left + 14, 9.5, sans, MUTED);
+  text(`${AREA.format(booking.pct)}% downpayment + DLD & Oqood fees`, left + 14, 9.5, sans, MUTED);
   text(`AED ${AED.format(initial)}`, right - 14, 13, sansBold, EVERGREEN, "right");
 
   // ——— Footer ———
@@ -222,65 +267,6 @@ export async function GET(
     sans,
     MUTED,
   );
-
-  // ——— Gallery pages: every published render, two per page, full width ———
-  const media = (await fetchUnitMedia(project.id, unit.unit_number)).filter(
-    (m) => m.kind === "gallery",
-  );
-  const renders = [];
-  for (const item of media) {
-    try {
-      const res = await fetch(publicMediaUrl(item.path));
-      if (!res.ok) continue;
-      const data = new Uint8Array(await res.arrayBuffer());
-      renders.push(
-        item.path.toLowerCase().endsWith(".png")
-          ? await doc.embedPng(data)
-          : await doc.embedJpg(data),
-      );
-    } catch {
-      /* the offer still ships without images */
-    }
-  }
-  const imageWidth = right - left;
-  const imageHeight = (imageWidth * 9) / 16;
-  const galleryPages = Math.ceil(renders.length / 2);
-  for (let i = 0; i < renders.length; i += 2) {
-    const sheet = doc.addPage([PAGE.width, PAGE.height]);
-    let top = PAGE.height - PAGE.margin;
-    sheet.drawText("INTERIOR RENDERS", {
-      x: left, y: top - 8, size: 8, font: sansBold, color: BRONZE,
-    });
-    const corner = `${project.name} — No.${unit.unit_number}`;
-    sheet.drawText(corner, {
-      x: right - sans.widthOfTextAtSize(corner, 9),
-      y: top - 8, size: 9, font: sans, color: MUTED,
-    });
-    top -= 18;
-    sheet.drawLine({
-      start: { x: left, y: top }, end: { x: right, y: top },
-      thickness: 0.75, color: HAIRLINE,
-    });
-    top -= 22;
-    for (const render of renders.slice(i, i + 2)) {
-      sheet.drawImage(render, {
-        x: left, y: top - imageHeight, width: imageWidth, height: imageHeight,
-      });
-      sheet.drawRectangle({
-        x: left, y: top - imageHeight, width: imageWidth, height: imageHeight,
-        borderColor: HAIRLINE, borderWidth: 0.75,
-      });
-      top -= imageHeight + 20;
-    }
-    const pageNote = `${i / 2 + 2} / ${galleryPages + 1}`;
-    sheet.drawText(pageNote, {
-      x: right - sans.widthOfTextAtSize(pageNote, 8),
-      y: PAGE.margin - 14, size: 8, font: sans, color: MUTED,
-    });
-    sheet.drawText("Evera Developments · Sales Offer", {
-      x: left, y: PAGE.margin - 14, size: 8, font: sans, color: MUTED,
-    });
-  }
 
   const bytes = await doc.save();
   const filename = `${project.name.replace(/\s+/g, "-")}-No${unit.unit_number}-Sales-Offer.pdf`;

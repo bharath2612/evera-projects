@@ -34,6 +34,7 @@ export interface PublicProject {
   latitude: number | null;
   longitude: number | null;
   facade_config: FacadeConfig | null;
+  description: string | null;
 }
 
 export type PublicUnitStatus = "available" | "reserved" | "sold";
@@ -46,6 +47,9 @@ export interface PublicUnit {
   type_label: string;
   bedrooms: number | null;
   area_sqft: number;
+  suite_area_sqft: number | null;
+  balcony_area_sqft: number | null;
+  bathrooms: number | null;
   price_aed: number | null;
   price_per_sqft: number | null;
   status: PublicUnitStatus;
@@ -53,9 +57,30 @@ export interface PublicUnit {
   finish: string | null;
 }
 
+export interface PaymentPlanRow {
+  label: string;
+  milestone: string;
+  pct: number;
+}
+
+/** The configured instalment plan for a project × unit type, or null. */
+export async function fetchPaymentPlan(
+  projectId: string,
+  typeCode: string,
+): Promise<PaymentPlanRow[] | null> {
+  const { data } = await supabase
+    .from("public_payment_plans")
+    .select("instalments")
+    .eq("project_id", projectId)
+    .eq("type_code", typeCode)
+    .maybeSingle();
+  const rows = data?.instalments as PaymentPlanRow[] | undefined;
+  return rows && rows.length > 0 ? rows : null;
+}
+
 export interface PublicProjectMedia {
   project_id: string;
-  kind: "gallery" | "hero";
+  kind: "gallery" | "hero" | "offer_cover";
   path: string;
   sort_order: number;
 }

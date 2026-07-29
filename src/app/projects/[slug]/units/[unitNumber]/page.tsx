@@ -95,6 +95,22 @@ export default async function UnitPage({
 
   const facts: Array<[string, string]> = [
     ["Type", unit.type_label],
+    ...(unit.bedrooms !== null
+      ? ([["Bedrooms", AREA.format(unit.bedrooms)]] as Array<[string, string]>)
+      : []),
+    ...(unit.bathrooms !== null
+      ? ([["Bathrooms", AREA.format(unit.bathrooms)]] as Array<[string, string]>)
+      : []),
+    ...(unit.suite_area_sqft !== null
+      ? ([["Suite", `${AREA.format(unit.suite_area_sqft)} ft²`]] as Array<
+          [string, string]
+        >)
+      : []),
+    ...(unit.balcony_area_sqft !== null
+      ? ([["Balcony", `${AREA.format(unit.balcony_area_sqft)} ft²`]] as Array<
+          [string, string]
+        >)
+      : []),
     ...(unit.building
       ? ([["Entrance", unit.building.replace(/entrance\s*/i, "")]] as Array<
           [string, string]

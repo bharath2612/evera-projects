@@ -2,6 +2,26 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-07-29 — Offer PDFs go config-driven
+
+**Added**
+- The public sales offer is now fully configuration-driven (schema in
+  evera-one, migration 0015): **page 1 is the project's offer cover**
+  (Merdan's marketing one-pager, configurable per project in Evera One's
+  Offer Settings), the sheet is titled with the **project name**
+  ("MERDAN RESIDENCES — Sales Offer") instead of Evera Developments, the
+  **payment plan comes from the DB per unit type** (Studio 50/50, 1BHK
+  40/60, 2/3BHK 30/70 — `public_payment_plans` view, code fallback kept),
+  and gallery pages are gone: every offer is exactly cover + sheet.
+- Unit data enriched: suite/balcony areas, bedrooms, bathrooms flow from
+  the DB into the offer sheet and the unit page facts; the project
+  page's About section renders the configured description.
+- E2E grown to 49 checks incl. PDF content (page count, project-name
+  header, per-type plan amounts).
+
+**Left**
+- (unchanged from previous entry)
+
 ## 2026-07-29 — Enquire Now: website enquiries become CRM leads
 
 **Added**

@@ -157,8 +157,8 @@ export default async function ProjectPage({
             About {project.name}
           </h2>
           <p className="mt-3 text-[14px] leading-relaxed text-muted-foreground">
-            Project story, amenities and finishes will appear here — content
-            is being prepared by the Evera team.
+            {project.description ??
+              "Project story, amenities and finishes will appear here — content is being prepared by the Evera team."}
           </p>
         </section>
 

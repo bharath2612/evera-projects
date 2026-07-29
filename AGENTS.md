@@ -19,7 +19,8 @@ Shared rituals and hard constraints live in the parent folder's
 
 - Dev server runs on **port 3002** (`PORT=3002 npm run dev`).
 - Data access is anon-key + whitelisted views ONLY (`public_projects`,
-  `public_units`, `public_unit_media`, `public_project_media`) + the
+  `public_units`, `public_unit_media`, `public_project_media`,
+  `public_payment_plans`) + the
   `submit_public_enquiry` RPC (the one write path — enquiries → CRM
   leads) + the public `public-media` bucket. Never add service-role
   keys here; never query base tables.
