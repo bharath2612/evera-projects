@@ -15,9 +15,11 @@ const MAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
 export function MapExplorer({
   projects,
   stats,
+  covers = {},
 }: {
   projects: PublicProject[];
   stats: Record<string, ProjectStats>;
+  covers?: Record<string, string>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -119,6 +121,7 @@ export function MapExplorer({
       <ProjectSidebar
         project={active}
         stats={active ? stats[active.id] : undefined}
+        cover={active ? (covers[active.id] ?? null) : null}
         onClose={() => setActiveId(null)}
       />
     </div>

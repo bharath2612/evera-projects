@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LayoutGrid } from "lucide-react";
 import {
   availabilityLine,
   deriveStats,
+  fetchProjectMedia,
   fetchProjects,
   fetchUnits,
   formatHandover,
+  publicMediaUrl,
 } from "@/lib/data";
 import { FloorExplorer } from "@/components/floor-explorer";
+import { ProjectGallery } from "@/components/project-gallery";
 import { InventoryExplorer } from "@/components/inventory-explorer";
 
 export const revalidate = 60;
@@ -48,7 +52,11 @@ export default async function ProjectPage({
   const project = await getProject(slug);
   if (!project) notFound();
 
-  const units = await fetchUnits(project.id);
+  const [units, media] = await Promise.all([
+    fetchUnits(project.id),
+    fetchProjectMedia(project.id),
+  ]);
+  const gallery = media.filter((m) => m.kind === "gallery");
   const stats = deriveStats(units);
   const availability = availabilityLine(stats);
   const handover = formatHandover(project.handover_date);
@@ -113,25 +121,34 @@ export default async function ProjectPage({
           </dl>
         )}
 
-        {/* Gallery placeholder */}
+        {/* Gallery — real renders from the public bucket, placeholder until then */}
         <section className="mt-10">
           <h2 className="font-display text-2xl font-medium tracking-tight">
             Gallery
           </h2>
-          <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="bg-grain flex aspect-[4/3] items-center justify-center rounded-xl border text-[12px] text-evergreen/50 first:col-span-2 first:row-span-2 first:aspect-auto"
-                style={{
-                  background:
-                    "linear-gradient(135deg, color-mix(in oklab, var(--brand) 32%, white), color-mix(in oklab, var(--brand-evergreen) 18%, white))",
-                }}
-              >
-                Renders coming soon
-              </div>
-            ))}
-          </div>
+          {gallery.length > 0 ? (
+            <ProjectGallery
+              images={gallery.map((item, i) => ({
+                url: publicMediaUrl(item.path),
+                alt: `${project.name} — exterior render ${i + 1}`,
+              }))}
+            />
+          ) : (
+            <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="bg-grain flex aspect-[4/3] items-center justify-center rounded-xl border text-[12px] text-evergreen/50 first:col-span-2 first:row-span-2 first:aspect-auto"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, color-mix(in oklab, var(--brand) 32%, white), color-mix(in oklab, var(--brand-evergreen) 18%, white))",
+                  }}
+                >
+                  Renders coming soon
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* About placeholder */}
@@ -147,9 +164,21 @@ export default async function ProjectPage({
 
         {/* Inventory section — the interactive facade/floor widget lands here */}
         <section id="inventory" className="mt-12 scroll-mt-8">
-          <h2 className="font-display text-2xl font-medium tracking-tight">
-            Inventory
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-2xl font-medium tracking-tight">
+              Inventory
+            </h2>
+            {stats.total > 0 && (
+              <Link
+                href={`/projects/${project.slug}/inventory`}
+                data-full-inventory
+                className="inline-flex h-9 items-center gap-2 rounded-lg border px-3.5 text-[13px] font-medium transition-colors hover:border-brand/50 hover:bg-brand/5"
+              >
+                <LayoutGrid className="size-3.5" strokeWidth={1.75} />
+                View full inventory
+              </Link>
+            )}
+          </div>
           {stats.total === 0 ? (
             <div className="mt-4 flex min-h-40 items-center justify-center rounded-xl border border-dashed bg-card/60 px-6 text-center text-[14px] text-muted-foreground">
               Launching soon — residences for {project.name} haven&rsquo;t been

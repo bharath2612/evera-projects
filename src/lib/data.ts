@@ -53,6 +53,23 @@ export interface PublicUnit {
   finish: string | null;
 }
 
+export interface PublicProjectMedia {
+  project_id: string;
+  kind: "gallery" | "hero";
+  path: string;
+  sort_order: number;
+}
+
+/** Ordered project gallery media — all projects, or one when id given. */
+export async function fetchProjectMedia(
+  projectId?: string,
+): Promise<PublicProjectMedia[]> {
+  let query = supabase.from("public_project_media").select("*");
+  if (projectId) query = query.eq("project_id", projectId);
+  const { data } = await query.order("sort_order");
+  return (data as PublicProjectMedia[]) ?? [];
+}
+
 export interface PublicUnitMedia {
   project_id: string;
   unit_number: string;

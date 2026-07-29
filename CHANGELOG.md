@@ -2,6 +2,35 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-07-28 — Public stacking plan + sidebar CTA rename
+
+**Added**
+- **Project gallery live for Merdan** — four exterior renders (front,
+  perspective, back, bird view; 8000px TIFFs converted to 2400px JPEGs)
+  published to the public bucket under
+  `projects/<slug>/gallery/gallery-NN.jpg` via the new
+  `evera-one/scripts/upload-project-media.mjs` (backed by migration
+  `0013_public_project_media.sql`: `project_public_media` table +
+  `public_project_media` view). The project page's Gallery section now
+  renders a fixed three-tile collage (big lead + two stacked tiles, the
+  last carrying a +N veil when more renders exist) that opens a
+  full-screen slideshow — arrows, arrow keys, Esc, counter. Placeholder
+  kept for projects without renders; the map sidebar header shows the
+  first render as its cover instead of the gradient.
+- **Full inventory sheet** `/projects/[slug]/inventory` — the public
+  version of the dashboard's chess view: floors as rows (top first), one
+  cell per residence tinted by status (green/amber/grey), type code in
+  the cell, tooltip with type/area/price, every cell linking to its unit
+  page. Type chips dim non-matching cells; legend + live availability
+  count. Reached via a **"View full inventory"** button beside the
+  Inventory heading on the project page (all projects with stock).
+- Map sidebar CTA renamed **"Check inventory" → "View project details"**.
+- E2E grown to 41 checks (button navigation, 95 cells, cell links,
+  filter dimming, leak guard).
+
+**Left**
+- (unchanged from previous entry)
+
 ## 2026-07-27 — Dedicated unit pages, public media bucket, sales-offer PDF
 
 **Added**

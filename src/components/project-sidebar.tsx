@@ -10,16 +10,19 @@ import {
 
 /**
  * Slide-in panel opened from a map marker: project snapshot + gallery
- * placeholder + "Check inventory" CTA. Right panel on desktop, bottom
+ * placeholder + "View project details" CTA. Right panel on desktop, bottom
  * sheet on mobile.
  */
 export function ProjectSidebar({
   project,
   stats,
+  cover = null,
   onClose,
 }: {
   project: PublicProject | null;
   stats: ProjectStats | undefined;
+  /** First gallery render — replaces the gradient placeholder. */
+  cover?: string | null;
   onClose: () => void;
 }) {
   if (!project) return null;
@@ -32,7 +35,7 @@ export function ProjectSidebar({
       className="absolute z-20 flex flex-col overflow-hidden border bg-card shadow-[0_8px_40px_rgba(44,55,50,0.18)] max-md:inset-x-3 max-md:bottom-3 max-md:max-h-[62dvh] max-md:rounded-2xl md:top-5 md:right-5 md:bottom-5 md:w-[360px] md:rounded-2xl"
       aria-label={`${project.name} details`}
     >
-      {/* Gallery placeholder — replaced with real renders when supplied. */}
+      {/* Cover render (first gallery image); gradient until one is published. */}
       <div
         className="bg-grain relative h-36 shrink-0 md:h-44"
         style={{
@@ -40,9 +43,18 @@ export function ProjectSidebar({
             "linear-gradient(135deg, color-mix(in oklab, var(--brand) 55%, white), color-mix(in oklab, var(--brand) 30%, white) 55%, color-mix(in oklab, var(--brand-evergreen) 35%, white))",
         }}
       >
-        <span className="font-display absolute bottom-3 left-4 text-5xl font-medium text-white/70 select-none md:text-6xl">
-          {project.name.charAt(0)}
-        </span>
+        {cover ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={cover}
+            alt={`${project.name} — exterior render`}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <span className="font-display absolute bottom-3 left-4 text-5xl font-medium text-white/70 select-none md:text-6xl">
+            {project.name.charAt(0)}
+          </span>
+        )}
         <button
           type="button"
           onClick={onClose}
@@ -130,7 +142,7 @@ export function ProjectSidebar({
           href={`/projects/${project.slug}`}
           className="flex h-11 w-full items-center justify-center rounded-lg bg-brand text-[14px] font-medium text-brand-foreground transition-opacity hover:opacity-90"
         >
-          Check inventory
+          View project details
         </Link>
       </div>
     </aside>
