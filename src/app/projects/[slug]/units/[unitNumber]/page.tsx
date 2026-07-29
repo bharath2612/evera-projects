@@ -208,14 +208,18 @@ export default async function UnitPage({
               <div className="mt-4">
                 {available ? (
                   <>
-                    <UnitActions unit={unit} projectName={project.name} />
+                    <UnitActions
+                      unit={unit}
+                      projectName={project.name}
+                      projectSlug={project.slug}
+                    />
                     <a
                       href={`${unitHref(project.slug, unit.unit_number)}/offer`}
                       data-offer-cta
                       className="mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-brand/50 text-[14px] font-medium text-brand transition-colors hover:bg-brand/10"
                     >
                       <FileDown className="size-4" strokeWidth={1.75} />
-                      Download sales offer
+                      Download Sales Offer
                     </a>
                   </>
                 ) : (

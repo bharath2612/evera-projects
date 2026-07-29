@@ -175,7 +175,7 @@ export default async function ProjectPage({
                 className="inline-flex h-9 items-center gap-2 rounded-lg border px-3.5 text-[13px] font-medium transition-colors hover:border-brand/50 hover:bg-brand/5"
               >
                 <LayoutGrid className="size-3.5" strokeWidth={1.75} />
-                View full inventory
+                View Full Inventory
               </Link>
             )}
           </div>

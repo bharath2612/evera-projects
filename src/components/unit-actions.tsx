@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Check, Heart, Mail, Phone, Share2 } from "lucide-react";
 import type { PublicUnit } from "@/lib/data";
-import { SALES, formatAed } from "@/lib/data";
+import { SALES } from "@/lib/data";
+import { EnquireDialog } from "./enquire-dialog";
 
 /** WhatsApp glyph — lucide carries no brand icons. */
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -33,13 +34,16 @@ function readSaved(): Set<string> {
 export function UnitActions({
   unit,
   projectName,
+  projectSlug,
 }: {
   unit: PublicUnit;
   projectName: string;
+  projectSlug: string;
 }) {
   const unitKey = `${projectName}-${unit.building ?? ""}-${unit.unit_number}`;
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [enquiring, setEnquiring] = useState(false);
 
   useEffect(() => {
     // localStorage → state sync on mount/unit change (external system read).
@@ -71,27 +75,21 @@ export function UnitActions({
     setTimeout(() => setCopied(false), 1600);
   };
 
-  const subject = encodeURIComponent(
-    `Enquiry — ${unit.type_label} No.${unit.unit_number}, ${projectName}`,
-  );
-  const body = encodeURIComponent(
-    `Hello Evera team,\n\nI'm interested in ${unit.type_label} No.${unit.unit_number} (floor ${unit.floor}) at ${projectName}${
-      unit.price_aed ? `, listed at ${formatAed(unit.price_aed)}` : ""
-    }.\n\nPlease get in touch.`,
-  );
   const waText = encodeURIComponent(
     `Hello, I'm interested in ${unit.type_label} No.${unit.unit_number} (floor ${unit.floor}) at ${projectName}.`,
   );
 
   return (
     <div>
-      <a
-        href={`mailto:${SALES.email}?subject=${subject}&body=${body}`}
+      <button
+        type="button"
+        onClick={() => setEnquiring(true)}
+        data-enquire-cta
         className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand text-[14px] font-medium text-brand-foreground transition-opacity hover:opacity-90"
       >
         <Mail className="size-4" strokeWidth={1.75} />
-        Make a request
-      </a>
+        Enquire Now
+      </button>
       <div className="mt-2.5 grid grid-cols-2 gap-2">
         <a
           href={`tel:${SALES.phoneE164}`}
@@ -136,6 +134,15 @@ export function UnitActions({
           {saved ? "Saved" : "Save"}
         </button>
       </div>
+
+      {enquiring && (
+        <EnquireDialog
+          unit={unit}
+          projectName={projectName}
+          projectSlug={projectSlug}
+          onClose={() => setEnquiring(false)}
+        />
+      )}
     </div>
   );
 }

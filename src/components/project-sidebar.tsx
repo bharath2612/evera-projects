@@ -10,7 +10,7 @@ import {
 
 /**
  * Slide-in panel opened from a map marker: project snapshot + gallery
- * placeholder + "View project details" CTA. Right panel on desktop, bottom
+ * placeholder + "View Project Details" CTA. Right panel on desktop, bottom
  * sheet on mobile.
  */
 export function ProjectSidebar({
@@ -142,7 +142,7 @@ export function ProjectSidebar({
           href={`/projects/${project.slug}`}
           className="flex h-11 w-full items-center justify-center rounded-lg bg-brand text-[14px] font-medium text-brand-foreground transition-opacity hover:opacity-90"
         >
-          View project details
+          View Project Details
         </Link>
       </div>
     </aside>

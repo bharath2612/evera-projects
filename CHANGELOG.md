@@ -2,6 +2,61 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-07-29 — Enquire Now: website enquiries become CRM leads
+
+**Added**
+- **Enquire Now** replaces the mailto "Make a Request" on unit pages: a
+  branded dialog (full name, dialling code + phone, optional email) that
+  carries the project + unit automatically and submits straight into the
+  CRM through the new whitelisted `submit_public_enquiry` RPC (evera-one
+  migration 0014). The lead lands `source='website'` with project +
+  unit-type preferences; **assignment follows the rotation master
+  switch** — round-robin picks a salesperson while on, otherwise the
+  lead waits in the unassigned pool. Repeat enquiries append a note to
+  the existing lead instead of duplicating it (15-minute dedupe);
+  inline validation, success state, Esc/backdrop close.
+- Anon surface grows by exactly one RPC — validation, contact dedupe
+  (by phone, then email), assignment and a flood guard all run inside
+  the SECURITY DEFINER function; still zero service keys in this repo.
+- New enquiry E2E suite (8 checks): CTA, inline validation, Esc,
+  lead created + auto-assigned (2 feed events), duplicate suppressed,
+  rotation-off → unassigned, cleanup + rotation restored. Main suite
+  still 45/45.
+
+**Left**
+- Enquiry notifications to the assignee (email/WhatsApp); reCAPTCHA if
+  spam ever appears; the rest unchanged.
+
+## 2026-07-29 — Facade-first explorer: floor card becomes a dialog
+
+**Added**
+- Reworked the project-page inventory interaction (user request): the
+  facade render now stands alone as the hero (height-capped, centered),
+  and **clicking a floor band opens that floor's brochure card as a
+  dialog over the render** — wordmark header, floor headline +
+  availability, interactive key plan, residence rows, type filter +
+  legend. ▲▼ buttons and ↑/↓ keys step floors inside the dialog; Esc or
+  the backdrop closes it; body scroll locks while open.
+- `?floor=N` deep links now open the dialog directly (closing clears the
+  param); legacy `?unit=` redirects unchanged. Retired with the side
+  card: hover-glide previews, wheel stepping and the floating floor
+  badge — the facade hint reads "Tap a floor to see its residences".
+- E2E suite rewritten for the dialog model (45 checks, all green).
+- CTA labels title-cased everywhere (user feedback): View Project
+  Details, Download Sales Offer, Make a Request, View Full Inventory.
+- **New full-width facade render** (user-supplied 1920×1080 front view,
+  `public/facades/merdan-residences-front.jpg`, replacing the square
+  crop): the explorer now goes full-bleed (~24px viewport margins) and
+  the render is width-driven. Floor-band guides re-fitted by measuring
+  the slab lines programmatically — 18 equal bands land on the actual
+  slabs, floor 18 directly under the crown rail and floor 1 at the
+  amenity-deck row (first fit was off by one row — user caught it;
+  corrected and re-verified with zoomed hover screenshots of floors 18
+  and 1 before updating `facade_config` in the DB).
+
+**Left**
+- (unchanged from previous entry)
+
 ## 2026-07-28 — Public stacking plan + sidebar CTA rename
 
 **Added**

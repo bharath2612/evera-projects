@@ -102,6 +102,40 @@ export function unitHref(slug: string, unitNumber: string): string {
   return `/projects/${slug}/units/${encodeURIComponent(unitNumber)}`;
 }
 
+/**
+ * Submit a website enquiry — the one anon-key write path, backed by the
+ * whitelisted `submit_public_enquiry` RPC (validation, contact dedupe,
+ * rotation-aware assignment all happen inside the database).
+ */
+export async function submitEnquiry(input: {
+  firstName: string;
+  lastName: string;
+  phoneCountryCode: string;
+  phoneNumber: string;
+  email: string;
+  projectSlug: string;
+  unitNumber: string;
+}): Promise<{ error: string | null }> {
+  const { error } = await supabase.rpc("submit_public_enquiry", {
+    p_first_name: input.firstName,
+    p_last_name: input.lastName || null,
+    p_phone_country_code: input.phoneCountryCode,
+    p_phone_number: input.phoneNumber,
+    p_email: input.email || null,
+    p_project_slug: input.projectSlug,
+    p_unit_number: input.unitNumber,
+  });
+  if (!error) return { error: null };
+  const friendly: Record<string, string> = {
+    invalid_name: "Please enter your name.",
+    invalid_phone: "That phone number doesn't look right.",
+    invalid_email: "That email address doesn't look right.",
+    unknown_project: "Something went wrong — please try again.",
+    too_many_requests: "We're receiving a lot of enquiries — please try again in a minute.",
+  };
+  return { error: friendly[error.message] ?? "Something went wrong — please try again." };
+}
+
 /** Sales desk contacts shown on public CTAs (update in one place). */
 export const SALES = {
   phoneDisplay: "+971 54 211 1143",
