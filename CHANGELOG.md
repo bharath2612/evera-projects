@@ -2,6 +2,33 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-07-30 — Podium amenities explorer
+
+**Added**
+- A pulsing **"Podium amenities"** trigger sits on the podium block of
+  the Merdan facade; clicking it opens a full-screen explorer over the
+  top-down podium layout with six labeled hotspots — Swimming Pool,
+  Kids Play Area, Basketball Court, Podium Seating, Green Oasis and the
+  Barbecue Gazebo (balconies deliberately excluded). Hover/tap a marker
+  for its name + one-line description on a translucent card (flips
+  above the marker near the image edge); Esc/backdrop closes.
+- Config-driven per project (`src/lib/amenities.ts` — artwork + marker
+  positions in %, verified against the layout with a drawn overlay
+  before committing); other projects get the trigger the moment their
+  config lands. E2E: 54 checks.
+
+## 2026-07-30 — Photo map markers + corrected pins
+
+**Added**
+- Map markers now show the project's first render as a photo card
+  (96×64, white border, hover lift) above the name pill — so the
+  building shape reads at a glance. Exterior renders published for
+  Galleria and Olivo Park too, so all three markers carry photos (and
+  their project pages/sidebars gained the render as gallery + cover).
+- All three pins moved to their exact Google Maps place coordinates
+  (user-supplied links): Merdan 25.0392,55.2043 · Olivo Park
+  25.0682,55.2091 · Galleria 24.9455,55.2254 (DB update, no code).
+
 ## 2026-07-30 — Floor-plan page in the sales offer
 
 **Added**

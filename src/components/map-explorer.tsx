@@ -57,8 +57,17 @@ export function MapExplorer({
       el.type = "button";
       el.setAttribute("aria-label", `Open ${project.name}`);
       el.className = "group flex flex-col items-center cursor-pointer";
+      // Photo marker when the project has a published render; label-only
+      // pill otherwise.
+      const cover = covers[project.id];
+      const photo = cover
+        ? `<span class="block overflow-hidden rounded-xl border-2 border-white shadow-[0_4px_16px_rgba(44,55,50,0.3)] transition-transform group-hover:-translate-y-1 group-hover:scale-[1.04]">
+             <img src="${cover}" alt="" class="block h-16 w-24 object-cover" draggable="false" />
+           </span>`
+        : "";
       el.innerHTML = `
-        <span class="rounded-full border border-brand/40 bg-card px-3 py-1 font-display text-[13px] font-medium tracking-tight text-foreground shadow-[0_2px_10px_rgba(44,55,50,0.14)] transition-transform group-hover:-translate-y-0.5">
+        ${photo}
+        <span class="${cover ? "-mt-2.5 relative" : ""} rounded-full border border-brand/40 bg-card px-3 py-1 font-display text-[13px] font-medium tracking-tight text-foreground shadow-[0_2px_10px_rgba(44,55,50,0.14)] transition-transform group-hover:-translate-y-0.5">
           ${project.name}
         </span>
         <span class="mt-1 block size-3 rounded-full border-2 border-white bg-brand shadow-[0_1px_4px_rgba(44,55,50,0.35)]"></span>

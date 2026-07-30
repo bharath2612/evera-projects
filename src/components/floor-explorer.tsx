@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Sparkles, X } from "lucide-react";
 import type { FacadeConfig, PublicUnit, PublicUnitStatus } from "@/lib/data";
 import { formatAed, unitHref } from "@/lib/data";
 import { summarizeFloors } from "@/lib/facade";
 import { brandFor, keyPlanFor, ordinal } from "@/lib/keyplan";
+import { amenitiesFor } from "@/lib/amenities";
+import { AmenitiesDialog } from "./amenities-dialog";
 import { FacadePicker } from "./facade-picker";
 import { KeyPlan } from "./key-plan";
 
@@ -126,6 +128,8 @@ export function FloorExplorer({
   const [floor, setFloor] = useState<number | null>(null);
   const [hoverPos, setHoverPos] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [amenitiesOpen, setAmenitiesOpen] = useState(false);
+  const amenities = amenitiesFor(slug);
 
   const writeFloorParam = (value: number | null) => {
     const params = new URLSearchParams(window.location.search);
@@ -249,7 +253,52 @@ export function FloorExplorer({
           onSelect={openFloor}
           imgClassName="h-auto w-full"
         />
+        {amenities && (
+          <button
+            type="button"
+            data-amenities-button
+            onClick={() => setAmenitiesOpen(true)}
+            className="group absolute hidden -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center sm:flex"
+            style={{
+              left: `${amenities.facadeAnchor.x * 100}%`,
+              top: `${amenities.facadeAnchor.y * 100}%`,
+            }}
+            aria-label={`Explore ${amenities.title.toLowerCase()}`}
+          >
+            <span className="relative flex size-10 items-center justify-center">
+              <span className="absolute inset-0 animate-ping rounded-full bg-white/40 [animation-duration:2.4s]" />
+              <span className="relative flex size-8 items-center justify-center rounded-full border border-white/80 bg-white/40 text-evergreen shadow-[0_2px_10px_rgba(44,55,50,0.3)] backdrop-blur-sm transition-transform group-hover:scale-110">
+                <Sparkles className="size-4" strokeWidth={1.75} />
+              </span>
+            </span>
+            <span className="mt-1 rounded-full border bg-white/85 px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap backdrop-blur-sm transition-transform group-hover:-translate-y-0.5">
+              Podium amenities
+            </span>
+          </button>
+        )}
       </div>
+
+      {/* Small screens: the trigger sits below the render so it never
+          covers the floor bands. */}
+      {amenities && (
+        <button
+          type="button"
+          data-amenities-chip
+          onClick={() => setAmenitiesOpen(true)}
+          className="mx-auto mt-3 flex cursor-pointer items-center gap-2 rounded-full border bg-card px-4 py-2 text-[13px] font-medium shadow-[0_2px_10px_rgba(44,55,50,0.1)] transition-colors hover:border-brand/50 hover:bg-brand/5 sm:hidden"
+        >
+          <Sparkles className="size-4 text-brand" strokeWidth={1.75} />
+          Explore podium amenities
+        </button>
+      )}
+
+      {amenities && amenitiesOpen && (
+        <AmenitiesDialog
+          map={amenities}
+          projectName={projectName}
+          onClose={() => setAmenitiesOpen(false)}
+        />
+      )}
 
       {/* ——— Floor dialog: the brochure card over the render ——— */}
       {floor !== null && (
