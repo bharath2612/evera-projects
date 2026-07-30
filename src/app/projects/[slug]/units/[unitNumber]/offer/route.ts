@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
+import { LineCapStyle, PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
+import { DETAIL_ICONS } from "@/lib/offer-icons";
 import {
   SALES,
   fetchPaymentPlan,
@@ -195,18 +196,32 @@ export async function GET(
       : []),
     ...(unit.finish ? ([["Finishing", unit.finish]] as Array<[string, string]>) : []),
   ];
+  const detailIcon = (label: string, x: number) => {
+    for (const d of DETAIL_ICONS[label] ?? []) {
+      page.drawSvgPath(d, {
+        x,
+        y: y + 8.5,
+        scale: 10 / 24,
+        borderColor: MUTED,
+        borderWidth: 0.85,
+        borderLineCap: LineCapStyle.Round,
+      });
+    }
+  };
   const detailRows = Math.max(leftDetails.length, rightDetails.length);
   const detailTop = y;
   for (let i = 0; i < detailRows; i++) {
     y = detailTop - 17 * (i + 1);
     const l = leftDetails[i];
     if (l) {
-      text(l[0], left, 10, sans, MUTED);
+      detailIcon(l[0], left);
+      text(l[0], left + 16, 10, sans, MUTED);
       text(l[1], left + 110, 10, sans);
     }
     const r = rightDetails[i];
     if (r) {
-      text(r[0], left + 260, 10, sans, MUTED);
+      detailIcon(r[0], left + 260);
+      text(r[0], left + 276, 10, sans, MUTED);
       text(r[1], left + 360, 10, sans);
     }
   }

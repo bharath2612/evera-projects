@@ -2,6 +2,16 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-07-30 — Detail icons on the offer sheet
+
+**Added**
+- Every unit-details label on the offer PDF now carries a small line
+  icon (suite → square, balcony → sun, total → ruler, price/ft² → tag,
+  bath, bed, floor → layers, entrance → door, finishing → roller) —
+  lucide path data extracted into `src/lib/offer-icons.ts` and drawn
+  with pdf-lib's SVG paths, so the PDFs share the site's icon language.
+  Applied to both the public offer and evera-one's lead offers.
+
 ## 2026-07-30 — Podium amenities explorer
 
 **Added**
