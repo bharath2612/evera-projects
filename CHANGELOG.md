@@ -5,6 +5,11 @@ Entry before every push: what was added, what is left. Newest first.
 ## 2026-07-30 — Detail icons on the offer sheet
 
 **Added**
+- The signatures page (page 3) now renders for **every** unit — when a
+  unit has no floor-plan artwork yet, the plan slot stays blank (layout
+  positions unchanged) while the sellable-area table, initials lines
+  and drawings disclaimer are always present. Applied to lead offers in
+  evera-one too. Every offer is now uniformly 3 pages.
 - Every unit-details label on the offer PDF now carries a small line
   icon (suite → square, balcony → sun, total → ruler, price/ft² → tag,
   bath, bed, floor → layers, entrance → door, finishing → roller) —

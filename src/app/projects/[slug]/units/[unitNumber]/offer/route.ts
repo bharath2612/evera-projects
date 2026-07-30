@@ -318,17 +318,26 @@ export async function GET(
     MUTED,
   );
 
-  // ——— Page 3: floor plan + sellable area + signatures ———
+  // ——— Page 3: floor plan (blank until artwork lands) + signatures ———
   const unitMedia = await fetchUnitMedia(project.id, unit.unit_number);
   const planPath = unitMedia.find((m) => m.kind === "floor_plan")?.path;
+  let planImage: Awaited<ReturnType<typeof doc.embedJpg>> | null = null;
   if (planPath) {
     try {
       const res = await fetch(publicMediaUrl(planPath));
       if (res.ok) {
         const planBytes = new Uint8Array(await res.arrayBuffer());
-        const plan = planPath.toLowerCase().endsWith(".png")
+        planImage = planPath.toLowerCase().endsWith(".png")
           ? await doc.embedPng(planBytes)
           : await doc.embedJpg(planBytes);
+      }
+    } catch {
+      /* page still renders, plan area stays blank */
+    }
+  }
+  {
+    {
+      {
         const p3 = doc.addPage([PAGE.width, PAGE.height]);
         let y3 = PAGE.height - PAGE.margin;
         const t3 = (
@@ -360,16 +369,20 @@ export async function GET(
           color: BRONZE,
         });
 
-        // the plan card, full content width
+        // the plan card, full content width — blank slot when no artwork
         y3 -= 16;
         const planWidth = right - left;
-        const planHeight = (plan.height / plan.width) * planWidth;
-        p3.drawImage(plan, {
-          x: left,
-          y: y3 - planHeight,
-          width: planWidth,
-          height: planHeight,
-        });
+        const planHeight = planImage
+          ? (planImage.height / planImage.width) * planWidth
+          : planWidth * 0.637; // standard card ratio, keeps the layout steady
+        if (planImage) {
+          p3.drawImage(planImage, {
+            x: left,
+            y: y3 - planHeight,
+            width: planWidth,
+            height: planHeight,
+          });
+        }
         y3 -= planHeight + 36;
 
         // sellable-area table (sq.m computed from stored sq.ft)
@@ -470,8 +483,6 @@ export async function GET(
           y3 -= 13;
         }
       }
-    } catch {
-      /* the offer still ships without the plan page */
     }
   }
 
