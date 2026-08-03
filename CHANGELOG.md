@@ -2,6 +2,30 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-03 — Header logo on the title row
+
+**Added**
+- The header logo now shares the "Sales Offer" title row (bottom on the
+  title baseline) instead of floating above it; `offer-icons.ts` synced
+  with evera-one (gains the extra-field icon set used by lead offers).
+
+## 2026-08-02 — Offer sheet: header logo, Date field, fine-print disclaimer
+
+**Added**
+- Public offer sheet (page 2): the project logo moved into the header
+  (top-right, replacing the date) and a **Date** field took the old
+  Project slot in the identity row; the location now rides next to the
+  header project name. The unit type is unbolded and bracketed at 9.5pt
+  muted beside the large unit number ("501 (1 Bedroom)").
+- Page 3 disclaimer under the signature lines is legal fine print now
+  (7pt, tight leading) — intentional small type.
+- Mirrors the same changes in evera-one's lead-offer generator so both
+  surfaces stay pixel-consistent.
+
+**Left**
+- Floor-plan cards for the remaining unit positions; logos and offer
+  covers for Olivo Park + Galleria.
+
 ## 2026-07-30 — Detail icons on the offer sheet
 
 **Added**

@@ -133,11 +133,25 @@ export async function GET(
       color,
     });
 
-  // ——— Header: the project speaks, Evera signs the footer ———
+  // ——— Header: the project speaks (name left, wordmark right) ———
   text(project.name.toUpperCase(), left, 10, sansBold, BRONZE);
-  text(new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date()), right, 9, sans, MUTED, "right");
+  if (project.location) {
+    const nameWidth = sansBold.widthOfTextAtSize(project.name.toUpperCase(), 10);
+    text(`— ${project.location}`, left + nameWidth + 8, 9, sans, MUTED);
+  }
   y -= 26;
   text("Sales Offer", left, 30, serif);
+  if (logo) {
+    // shares the title's row: bottom sits on the "Sales Offer" baseline
+    const logoHeight = 26;
+    const logoWidth = (logo.width / logo.height) * logoHeight;
+    page.drawImage(logo, {
+      x: right - logoWidth,
+      y: y - 3,
+      width: logoWidth,
+      height: logoHeight,
+    });
+  }
   y -= 12;
   rule(BRONZE, 1.2);
 
@@ -145,8 +159,8 @@ export async function GET(
   y -= 24;
   const cols = [left, left + 200, left + 360];
   const identity: Array<[string, string]> = [
-    ["Project", `${project.name}${project.location ? ` — ${project.location}` : ""}`],
-    ["Unit number", `${unit.unit_number} — ${unit.type_label}`],
+    ["Date", new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date())],
+    ["Unit number", unit.unit_number],
     ["Est. completion", formatHandover(project.handover_date) ?? "TBA"],
   ];
   for (const [i, [label]] of identity.entries()) {
@@ -154,18 +168,20 @@ export async function GET(
   }
   y -= 16;
   for (const [i, [, value]] of identity.entries()) {
-    if (i === 0 && logo) {
-      const logoHeight = 28;
-      const logoWidth = (logo.width / logo.height) * logoHeight;
-      page.drawImage(logo, {
-        x: cols[0],
-        y: y - 17,
-        width: logoWidth,
-        height: logoHeight,
+    if (i === 1) {
+      // the number carries the size; the type sits quiet in brackets
+      text(value, cols[1], 15, sansBold);
+      const numberWidth = sansBold.widthOfTextAtSize(value, 15);
+      page.drawText(`(${unit.type_label})`, {
+        x: cols[1] + numberWidth + 6,
+        y: y + 1,
+        size: 9.5,
+        font: sans,
+        color: MUTED,
       });
       continue;
     }
-    text(value, cols[i], i === 0 ? 10.5 : i === 1 ? 15 : 11, i === 0 ? sans : sansBold);
+    text(value, cols[i], i === 0 ? 10.5 : 11, i === 0 ? sans : sansBold);
   }
 
   // ——— Unit details ———
@@ -457,12 +473,13 @@ export async function GET(
           "and columns may vary in size depending on the floor level. The furnishings and accessories shown are " +
           "representation only. The length and width of the unit and balcony varies depending on which floor and which " +
           "orientation the unit is located within the building to comply with the building authority regulations.";
+        // fine print by intent — it should read as legal small type
         const words = paragraph.split(" ");
         const lines: string[] = [];
         let line = "";
         for (const word of words) {
           const candidate = line ? `${line} ${word}` : word;
-          if (sans.widthOfTextAtSize(candidate, 9) > planWidth - 40 && line) {
+          if (sans.widthOfTextAtSize(candidate, 7) > planWidth - 40 && line) {
             lines.push(line);
             line = word;
           } else {
@@ -472,15 +489,15 @@ export async function GET(
         if (line) lines.push(line);
         y3 -= 60;
         for (const entry of lines) {
-          const width = sans.widthOfTextAtSize(entry, 9);
+          const width = sans.widthOfTextAtSize(entry, 7);
           p3.drawText(entry, {
             x: left + (planWidth - width) / 2,
             y: y3,
-            size: 9,
+            size: 7,
             font: sans,
             color: MUTED,
           });
-          y3 -= 13;
+          y3 -= 10;
         }
       }
     }
