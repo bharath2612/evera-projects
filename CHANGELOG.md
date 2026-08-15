@@ -2,6 +2,17 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-15 — Map declutter: neighbouring markers no longer stack
+
+**Fixed**
+- Arché sits ~230 m from Galleria in Dubai South, so their photo-card
+  markers stacked at any usable zoom — one project was invisible. The
+  map now slides colliding card bodies apart horizontally in screen
+  space (recomputed on zoom, animated): every location dot stays on its
+  true coordinate, and the shift eases back to zero once zoom actually
+  separates the pair. Hovered markers also rise above their neighbour's
+  card. Verified headless at overview and max zoom.
+
 ## 2026-08-15 — Arché Residence: key plan + facade assets
 
 **Added**

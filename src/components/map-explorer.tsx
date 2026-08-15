@@ -52,6 +52,7 @@ export function MapExplorer({
       map.fitBounds(bounds, { padding: 110, maxZoom: 11.5, duration: 0 });
     }
 
+    const markers: Array<{ marker: maplibregl.Marker; body: HTMLElement }> = [];
     for (const project of located) {
       const el = document.createElement("button");
       el.type = "button";
@@ -66,9 +67,11 @@ export function MapExplorer({
            </span>`
         : "";
       el.innerHTML = `
-        ${photo}
-        <span class="${cover ? "-mt-2.5 relative" : ""} rounded-full border border-brand/40 bg-card px-3 py-1 font-display text-[13px] font-medium tracking-tight text-foreground shadow-[0_2px_10px_rgba(44,55,50,0.14)] transition-transform group-hover:-translate-y-0.5">
-          ${project.name}
+        <span class="mk-body flex flex-col items-center transition-transform duration-300">
+          ${photo}
+          <span class="${cover ? "-mt-2.5 relative" : ""} rounded-full border border-brand/40 bg-card px-3 py-1 font-display text-[13px] font-medium tracking-tight text-foreground shadow-[0_2px_10px_rgba(44,55,50,0.14)] transition-transform group-hover:-translate-y-0.5">
+            ${project.name}
+          </span>
         </span>
         <span class="mt-1 block size-3 rounded-full border-2 border-white bg-brand shadow-[0_1px_4px_rgba(44,55,50,0.35)]"></span>
       `;
@@ -83,10 +86,40 @@ export function MapExplorer({
           padding: { right: window.innerWidth >= 768 ? 380 : 0 },
         });
       });
-      new maplibregl.Marker({ element: el, anchor: "bottom" })
+      const marker = new maplibregl.Marker({ element: el, anchor: "bottom" })
         .setLngLat([project.longitude, project.latitude])
         .addTo(map);
+      markers.push({ marker, body: el.querySelector(".mk-body") as HTMLElement });
     }
+
+    // Neighbouring projects (Arché sits ~230 m from Galleria) stack their
+    // photo cards at any sane zoom. Keep every dot on its true coordinate
+    // but slide colliding card bodies apart horizontally in screen space;
+    // the shift shrinks to zero once zoom separates them for real.
+    const CARD_W = 150;
+    const CARD_H = 115;
+    const declutter = () => {
+      const pts = markers.map(({ marker }) => map.project(marker.getLngLat()));
+      const shift = markers.map(() => 0);
+      for (let i = 0; i < markers.length; i++) {
+        for (let j = i + 1; j < markers.length; j++) {
+          const dx = pts[j].x - pts[i].x;
+          const dy = pts[j].y - pts[i].y;
+          if (Math.abs(dx) >= CARD_W || Math.abs(dy) >= CARD_H) continue;
+          const need = (CARD_W - Math.abs(dx)) / 2 + 8;
+          const dir = dx >= 0 ? 1 : -1;
+          shift[i] -= dir * need;
+          shift[j] += dir * need;
+        }
+      }
+      markers.forEach(({ body }, index) => {
+        body.style.transform = shift[index]
+          ? `translateX(${Math.round(shift[index])}px)`
+          : "";
+      });
+    };
+    declutter();
+    map.on("zoom", declutter);
 
     map.on("click", () => {
       if (activeIdRef.current) setActiveId(null);
