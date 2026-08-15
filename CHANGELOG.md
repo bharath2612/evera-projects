@@ -2,6 +2,24 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-15 — Arché Residence: key plan + facade assets
+
+**Added**
+- **Arché Residence** joins the floor explorer: brand entry (transparent
+  logo, `public/projects/arche-residence/logo.png`), facade render
+  (`public/facades/arche-residence-front.jpg`; guides live in the
+  project's `facade_config`, fitted by slab-edge detection), and the
+  typical-floor key plan for floors 1–6.
+- `ARCHE_TYPICAL` plate (1192×1061): ten residences in a U around the
+  open courtyard, traced programmatically from the brochure unit map
+  (red-block connected components → simplified contours) — 07's curved
+  street corner and every notch are measured, not eyeballed. The
+  artwork's duplicate "105" label is corrected to position 06.
+
+**Left**
+- Arché stays hidden until `is_published` flips in evera-one.
+- Real per-floor plates if the client ships floor-specific artwork.
+
 ## 2026-08-03 — Header logo on the title row
 
 **Added**
