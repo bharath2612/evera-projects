@@ -173,9 +173,6 @@ export async function GET(
   for (const [i, [label]] of identity.entries()) {
     text(label.toUpperCase(), cols[i], 7.5, sansBold, MUTED);
   }
-  if (offerNo) {
-    text("OFFER NO", right, 7.5, sansBold, MUTED, "right");
-  }
   y -= 16;
   for (const [i, [, value]] of identity.entries()) {
     if (i === 1) {
@@ -193,7 +190,12 @@ export async function GET(
     }
     text(value, cols[i], i === 0 ? 10.5 : 11, i === 0 ? sans : sansBold);
   }
+  // Offer number gets its own row — sharing the identity row overlapped
+  // long completion dates.
   if (offerNo) {
+    y -= 20;
+    text("OFFER NO", right, 7.5, sansBold, MUTED, "right");
+    y -= 13;
     text(offerNo, right, 9.5, sansBold, EVERGREEN, "right");
   }
 
