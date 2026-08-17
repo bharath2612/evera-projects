@@ -266,3 +266,30 @@ export function availabilityLine(stats: ProjectStats | undefined): {
   }
   return { text: `From ${formatAed(stats.fromPrice)}`, tone: "price" };
 }
+
+/**
+ * Mint + record a numbered presentation offer (evera-one migration
+ * 0038). Security-definer RPC, anon-callable: fresh EVR-…-OFR number
+ * per download, sales_offers row (origin 'presentation') and unit-trail
+ * events land in the CRM. Never throws — a marketing download must not
+ * fail on a logging hiccup; null just means "unnumbered".
+ */
+export async function issuePresentationOffer(
+  projectSlug: string,
+  unitNumber: string,
+): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.rpc("issue_presentation_offer", {
+      p_project_slug: projectSlug,
+      p_unit_number: unitNumber,
+    });
+    if (error || !data) {
+      if (error) console.warn("[offer] numbering failed:", error.message);
+      return null;
+    }
+    return (data as { offer_no?: string }).offer_no ?? null;
+  } catch (cause) {
+    console.warn("[offer] numbering failed:", cause);
+    return null;
+  }
+}

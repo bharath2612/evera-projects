@@ -9,6 +9,7 @@ import {
   fetchUnits,
   fetchUnitMedia,
   formatHandover,
+  issuePresentationOffer,
   publicMediaUrl,
 } from "@/lib/data";
 import { DLD_FEE_PCT, OQOOD_FEE_AED, planFor } from "@/lib/offer";
@@ -49,12 +50,18 @@ export async function GET(
     return new NextResponse("No active offer for this residence", { status: 404 });
   }
 
+  // Numbered like every CRM offer (same yearly sequence) and recorded on
+  // the unit's audit trail; null = numbering hiccup, still serve the PDF.
+  const offerNo = await issuePresentationOffer(slug, unit.unit_number);
+
   const price = unit.price_aed;
   const plan =
     (await fetchPaymentPlan(project.id, unit.type_code)) ?? planFor(project.slug);
 
   const doc = await PDFDocument.create();
-  doc.setTitle(`Sales Offer — ${project.name} No.${unit.unit_number}`);
+  doc.setTitle(
+    `Sales Offer — ${project.name} No.${unit.unit_number}${offerNo ? ` (${offerNo})` : ""}`,
+  );
   doc.setAuthor("Evera Developments");
   const serif = await doc.embedFont(StandardFonts.TimesRoman);
   const sans = await doc.embedFont(StandardFonts.Helvetica);
@@ -166,6 +173,9 @@ export async function GET(
   for (const [i, [label]] of identity.entries()) {
     text(label.toUpperCase(), cols[i], 7.5, sansBold, MUTED);
   }
+  if (offerNo) {
+    text("OFFER NO", right, 7.5, sansBold, MUTED, "right");
+  }
   y -= 16;
   for (const [i, [, value]] of identity.entries()) {
     if (i === 1) {
@@ -182,6 +192,9 @@ export async function GET(
       continue;
     }
     text(value, cols[i], i === 0 ? 10.5 : 11, i === 0 ? sans : sansBold);
+  }
+  if (offerNo) {
+    text(offerNo, right, 9.5, sansBold, EVERGREEN, "right");
   }
 
   // ——— Unit details ———
@@ -504,7 +517,9 @@ export async function GET(
   }
 
   const bytes = await doc.save();
-  const filename = `${project.name.replace(/\s+/g, "-")}-No${unit.unit_number}-Sales-Offer.pdf`;
+  const filename = offerNo
+    ? `${offerNo}-No${unit.unit_number}-Sales-Offer.pdf`
+    : `${project.name.replace(/\s+/g, "-")}-No${unit.unit_number}-Sales-Offer.pdf`;
   return new NextResponse(Buffer.from(bytes), {
     headers: {
       "Content-Type": "application/pdf",

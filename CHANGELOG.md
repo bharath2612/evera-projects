@@ -2,6 +2,22 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-17 — Offer PDFs carry real offer numbers
+
+**Added**
+- Every offer download now mints a proper CRM offer number
+  (`EVR-<project>-OFR-<year>-<serial>`, same yearly sequence as the
+  sales team's offers) via the anon-safe `issue_presentation_offer`
+  RPC (evera-one migration 0038). The number prints on the offer
+  sheet's identity row and names the file
+  (`<offerNo>-No<unit>-Sales-Offer.pdf`); the CRM records the
+  `sales_offers` row and logs generated + downloaded on the unit's
+  audit trail. Numbering failure never blocks the download — the PDF
+  just goes out unnumbered with a console warning.
+
+**Left**
+- Nothing — server-side only, no UI change.
+
 ## 2026-08-15 — Map declutter: neighbouring markers no longer stack
 
 **Fixed**
