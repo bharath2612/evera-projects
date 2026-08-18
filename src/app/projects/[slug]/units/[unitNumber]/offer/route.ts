@@ -67,33 +67,36 @@ export async function GET(
   const sans = await doc.embedFont(StandardFonts.Helvetica);
   const sansBold = await doc.embedFont(StandardFonts.HelveticaBold);
 
-  // ——— Cover page: the project's offer artwork, contain-fit ———
+  // ——— Cover pages: the project's offer artwork (up to 5, admin-ordered,
+  // one full page each), contain-fit ———
   const media = await fetchProjectMedia(project.id);
-  const coverPath = media.find((m) => m.kind === "offer_cover")?.path;
+  const coverPaths = media
+    .filter((m) => m.kind === "offer_cover")
+    .map((m) => m.path)
+    .slice(0, 5);
   const logoPath = media.find((m) => m.kind === "logo")?.path;
   let logo: Awaited<ReturnType<typeof doc.embedPng>> | null = null;
-  if (coverPath) {
+  for (const coverPath of coverPaths) {
     try {
       const res = await fetch(publicMediaUrl(coverPath));
-      if (res.ok) {
-        const bytes = new Uint8Array(await res.arrayBuffer());
-        const image = coverPath.toLowerCase().endsWith(".png")
-          ? await doc.embedPng(bytes)
-          : await doc.embedJpg(bytes);
-        const cover = doc.addPage([PAGE.width, PAGE.height]);
-        const scale = Math.min(
-          PAGE.width / image.width,
-          PAGE.height / image.height,
-        );
-        cover.drawImage(image, {
-          x: (PAGE.width - image.width * scale) / 2,
-          y: (PAGE.height - image.height * scale) / 2,
-          width: image.width * scale,
-          height: image.height * scale,
-        });
-      }
+      if (!res.ok) continue;
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      const image = coverPath.toLowerCase().endsWith(".png")
+        ? await doc.embedPng(bytes)
+        : await doc.embedJpg(bytes);
+      const cover = doc.addPage([PAGE.width, PAGE.height]);
+      const scale = Math.min(
+        PAGE.width / image.width,
+        PAGE.height / image.height,
+      );
+      cover.drawImage(image, {
+        x: (PAGE.width - image.width * scale) / 2,
+        y: (PAGE.height - image.height * scale) / 2,
+        width: image.width * scale,
+        height: image.height * scale,
+      });
     } catch {
-      /* the offer still ships without a cover */
+      /* the offer still ships without this cover */
     }
   }
   if (logoPath) {
