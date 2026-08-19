@@ -420,22 +420,33 @@ export async function GET(
         y3 -= planHeight + 36;
 
         // sellable-area table (sq.m computed from stored sq.ft)
-        const toSqm = (sqft: number) => AREA.format(sqft / 10.7639);
+        // 10.764 matches the pricing sheet's basis; the balcony row
+        // absorbs the rounding remainder so displayed sq.m rows always
+        // sum to the displayed total (69.15 + 26.14 = 95.29).
+        const round2 = (v: number) => Math.round((v / 10.764) * 100) / 100;
         const suite = unit.suite_area_sqft;
         const balcony = unit.balcony_area_sqft;
+        const suiteSqm = suite !== null ? round2(suite) : null;
+        const totalSqm = round2(unit.area_sqft);
+        const balconySqm =
+          balcony !== null
+            ? suiteSqm !== null
+              ? Math.round((totalSqm - suiteSqm) * 100) / 100
+              : round2(balcony)
+            : null;
         const tableRows: Array<[string, string, string, boolean]> = [
           ["Sellable area", "sq.m", "sq.ft", true],
           ...(suite !== null
-            ? ([["Suite area", toSqm(suite), AREA.format(suite), false]] as Array<
+            ? ([["Suite area", AREA.format(suiteSqm!), AREA.format(suite), false]] as Array<
                 [string, string, string, boolean]
               >)
             : []),
           ...(balcony !== null
-            ? ([["Balcony", toSqm(balcony), AREA.format(balcony), false]] as Array<
+            ? ([["Balcony", AREA.format(balconySqm!), AREA.format(balcony), false]] as Array<
                 [string, string, string, boolean]
               >)
             : []),
-          ["Total area", toSqm(unit.area_sqft), AREA.format(unit.area_sqft), true],
+          ["Total area", AREA.format(totalSqm), AREA.format(unit.area_sqft), true],
         ];
         const tableWidth = 330;
         const colWidths = [150, 90, 90];
