@@ -17,6 +17,11 @@ const STATUS_META: Record<
   PublicUnitStatus,
   { label: string; chip: string; dot: string }
 > = {
+  unreleased: {
+    label: "Coming soon",
+    chip: "bg-slate-500/12 text-slate-600",
+    dot: "bg-slate-400/70",
+  },
   available: {
     label: "Available",
     chip: "bg-brand text-brand-foreground",

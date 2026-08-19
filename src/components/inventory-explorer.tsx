@@ -12,6 +12,11 @@ const STATUS_META: Record<
   PublicUnitStatus,
   { label: string; card: string; dot: string }
 > = {
+  unreleased: {
+    label: "Coming soon",
+    card: "border-dashed border-slate-400/40 bg-slate-500/8 opacity-80",
+    dot: "bg-slate-400/70",
+  },
   available: {
     label: "Available",
     card: "border-emerald-600/35 bg-emerald-500/12 hover:bg-emerald-500/20",

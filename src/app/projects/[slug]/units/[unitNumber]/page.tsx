@@ -23,6 +23,7 @@ export const revalidate = 60;
 const AREA = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
 const STATUS_CHIP: Record<PublicUnitStatus, { label: string; chip: string }> = {
+  unreleased: { label: "Coming soon", chip: "bg-slate-500/12 text-slate-600" },
   available: { label: "Available", chip: "bg-emerald-500/12 text-emerald-700" },
   reserved: { label: "Reserved", chip: "bg-orange-500/12 text-orange-700" },
   sold: { label: "Sold", chip: "bg-muted text-muted-foreground" },

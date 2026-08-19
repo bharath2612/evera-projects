@@ -5,6 +5,7 @@ import type { PublicUnit, PublicUnitStatus } from "@/lib/data";
 
 /** Subtle status dots under each numeral — mirrors the card legend. */
 const DOT: Record<PublicUnitStatus, string> = {
+  unreleased: "color-mix(in oklab, var(--color-slate-400) 70%, white)",
   available: "var(--color-emerald-500)",
   reserved: "var(--color-orange-500)",
   sold: "color-mix(in oklab, var(--brand-evergreen) 30%, white)",

@@ -37,7 +37,7 @@ export interface PublicProject {
   description: string | null;
 }
 
-export type PublicUnitStatus = "available" | "reserved" | "sold";
+export type PublicUnitStatus = "unreleased" | "available" | "reserved" | "sold";
 
 export interface PublicUnit {
   project_id: string;
@@ -192,6 +192,7 @@ export const SALES = {
 
 export interface ProjectStats {
   total: number;
+  unreleased: number;
   available: number;
   reserved: number;
   sold: number;
@@ -220,6 +221,7 @@ export async function fetchUnits(projectId?: string): Promise<PublicUnit[]> {
 export function deriveStats(units: PublicUnit[]): ProjectStats {
   const stats: ProjectStats = {
     total: units.length,
+    unreleased: 0,
     available: 0,
     reserved: 0,
     sold: 0,

@@ -9,6 +9,11 @@ const STATUS_META: Record<
   PublicUnitStatus,
   { label: string; cell: string; dot: string }
 > = {
+  unreleased: {
+    label: "Coming soon",
+    cell: "border-dashed border-slate-400/40 bg-slate-500/8 opacity-80 hover:opacity-100",
+    dot: "bg-slate-400/70",
+  },
   available: {
     label: "Available",
     cell: "border-emerald-600/35 bg-emerald-500/12 hover:bg-emerald-500/25",
