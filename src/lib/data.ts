@@ -103,7 +103,29 @@ export interface PublicUnitMedia {
   sort_order: number;
 }
 
-/** Ordered public marketing media for one unit (empty when none uploaded). */
+export interface PublicUnitImage {
+  project_id: string;
+  unit_number: string;
+  path: string;
+  sort_order: number;
+}
+
+/** The unit's gallery — every image uploaded on the unit in Evera One
+ * (single source since 0043; published projects only). */
+export async function fetchUnitImages(
+  projectId: string,
+  unitNumber: string,
+): Promise<PublicUnitImage[]> {
+  const { data } = await supabase
+    .from("public_unit_images")
+    .select("*")
+    .eq("project_id", projectId)
+    .eq("unit_number", unitNumber)
+    .order("sort_order");
+  return (data as PublicUnitImage[]) ?? [];
+}
+
+/** Ordered public marketing media for one unit (floor plans since 0043). */
 export async function fetchUnitMedia(
   projectId: string,
   unitNumber: string,

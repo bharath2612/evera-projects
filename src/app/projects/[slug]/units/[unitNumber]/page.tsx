@@ -6,7 +6,7 @@ import {
   SALES,
   fetchProjects,
   fetchUnits,
-  fetchUnitMedia,
+  fetchUnitImages,
   formatAed,
   formatHandover,
   publicMediaUrl,
@@ -69,13 +69,11 @@ export default async function UnitPage({
   if (!data) notFound();
   const { project, units, unit } = data;
 
-  const media = await fetchUnitMedia(project.id, unit.unit_number);
-  const images = media
-    .filter((m) => m.kind === "gallery")
-    .map((m, i) => ({
-      url: publicMediaUrl(m.path),
-      alt: `${unit.type_label} No.${unit.unit_number} — interior ${i + 1}`,
-    }));
+  const gallery = await fetchUnitImages(project.id, unit.unit_number);
+  const images = gallery.map((m, i) => ({
+    url: publicMediaUrl(m.path),
+    alt: `${unit.type_label} No.${unit.unit_number} — interior ${i + 1}`,
+  }));
 
   const available = unit.status === "available";
   const status = STATUS_CHIP[unit.status];
