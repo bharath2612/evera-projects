@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { FileDown } from "lucide-react";
 import {
   SALES,
+  fetchProjectMedia,
   fetchProjects,
   fetchUnits,
   fetchUnitImages,
@@ -69,11 +70,24 @@ export default async function UnitPage({
   if (!data) notFound();
   const { project, units, unit } = data;
 
-  const gallery = await fetchUnitImages(project.id, unit.unit_number);
-  const images = gallery.map((m, i) => ({
-    url: publicMediaUrl(m.path),
-    alt: `${unit.type_label} No.${unit.unit_number} — interior ${i + 1}`,
-  }));
+  // Unit-specific shots first, then the project gallery — every unit
+  // page carries the project's imagery even before its own renders land.
+  const [unitGallery, projectMedia] = await Promise.all([
+    fetchUnitImages(project.id, unit.unit_number),
+    fetchProjectMedia(project.id),
+  ]);
+  const images = [
+    ...unitGallery.map((m, i) => ({
+      url: publicMediaUrl(m.path),
+      alt: `${unit.type_label} No.${unit.unit_number} — interior ${i + 1}`,
+    })),
+    ...projectMedia
+      .filter((m) => m.kind === "gallery")
+      .map((m, i) => ({
+        url: publicMediaUrl(m.path),
+        alt: `${project.name} — gallery ${i + 1}`,
+      })),
+  ];
 
   const available = unit.status === "available";
   const status = STATUS_CHIP[unit.status];
