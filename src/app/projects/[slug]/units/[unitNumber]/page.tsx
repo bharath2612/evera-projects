@@ -253,9 +253,9 @@ export default async function UnitPage({
                   </>
                 ) : (
                   <div className="rounded-lg border border-dashed bg-background px-4 py-3 text-[13px] text-muted-foreground">
-                    This residence is{" "}
-                    {unit.status === "sold" ? "sold" : "reserved"}. Ask the sales
-                    team about similar availability.
+                    {unit.status === "unreleased"
+                      ? "This residence isn’t released yet. Register your interest with the sales team."
+                      : `This residence is ${unit.status === "sold" ? "sold" : "reserved"}. Ask the sales team about similar availability.`}
                   </div>
                 )}
               </div>
