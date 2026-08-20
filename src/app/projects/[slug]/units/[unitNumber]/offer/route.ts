@@ -196,11 +196,11 @@ export async function GET(
   text("UNIT NUMBER", cols[0], 7.5, sansBold, MUTED);
   text("DATE", cols[1], 7.5, sansBold, MUTED);
   text("EST. COMPLETION", cols[2], 7.5, sansBold, MUTED);
-  // Decoupled baselines: date/completion keep the normal row rhythm; the
-  // 34pt number hangs from its own line so its cap sits tight under the
-  // label instead of floating on the small values' baseline.
+  // Column 1 sets the block height (34pt number + type line); the small
+  // date/completion values sit vertically CENTRED against it so no
+  // column carries a void, and row 2 tucks in right after the type.
   const identityLabelsY = y;
-  y = identityLabelsY - 16;
+  y = identityLabelsY - 21;
   text(
     new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date()),
     cols[1],
@@ -208,12 +208,12 @@ export async function GET(
     sans,
   );
   text(formatHandover(project.handover_date) ?? "TBA", cols[2], 11, sansBold);
-  y = identityLabelsY - 33;
+  y = identityLabelsY - 30;
   text(unit.unit_number, cols[0], 34, sansBold);
-  y -= 16;
+  y -= 13;
   text(`(${unit.type_label})`, cols[0], 9.5, sans, MUTED);
 
-  y -= 18;
+  y -= 14;
   if (offerNo) text("OFFER NO", cols[1], 7.5, sansBold, MUTED);
   if (project.location) text("PROJECT LOCATION", cols[2], 7.5, sansBold, MUTED);
   y -= 13;
