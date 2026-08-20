@@ -172,12 +172,8 @@ export async function GET(
       color,
     });
 
-  // ——— Header: the project speaks (name left, wordmark right) ———
-  text(project.name.toUpperCase(), left, 10, sansBold, BRONZE);
-  if (project.location) {
-    const nameWidth = sansBold.widthOfTextAtSize(project.name.toUpperCase(), 10);
-    text(`— ${project.location}`, left + nameWidth + 8, 9, sans, MUTED);
-  }
+  // ——— Header: just the title and the wordmark; the project identifies
+  // itself via the logo and the PROJECT LOCATION line below ———
   y -= 26;
   text("Sales Offer", left, 30, serif);
   if (logo) {
@@ -226,23 +222,34 @@ export async function GET(
   y -= 13;
   if (offerNo) text(offerNo, cols[1], 9.5, sansBold, EVERGREEN);
   if (project.location) {
-    // Bronze + underline reads as a link; the annotation opens Google
-    // Maps at the project pin (name search when no coordinates).
-    text(project.location, cols[2], 9.5, sansBold, BRONZE);
-    const locationWidth = sansBold.widthOfTextAtSize(project.location, 9.5);
-    page.drawLine({
-      start: { x: cols[2], y: y - 2 },
-      end: { x: cols[2] + locationWidth, y: y - 2 },
-      thickness: 0.6,
-      color: BRONZE,
-    });
+    // "Name, Location" in bronze with a hairline underline — wrapped
+    // onto two lines when the column can't fit it; the annotation opens
+    // Google Maps at the project pin (name search when no coordinates).
+    const full = `${project.name}, ${project.location}`;
+    const maxWidth = right - cols[2];
+    const lines =
+      sansBold.widthOfTextAtSize(full, 9.5) <= maxWidth
+        ? [full]
+        : [`${project.name},`, project.location];
+    const topY = y;
+    for (const line of lines) {
+      text(line, cols[2], 9.5, sansBold, BRONZE);
+      const width = sansBold.widthOfTextAtSize(line, 9.5);
+      page.drawLine({
+        start: { x: cols[2], y: y - 2 },
+        end: { x: cols[2] + width, y: y - 2 },
+        thickness: 0.6,
+        color: BRONZE,
+      });
+      if (line !== lines[lines.length - 1]) y -= 12;
+    }
     const mapsUrl =
       project.latitude !== null && project.longitude !== null
         ? `https://www.google.com/maps/search/?api=1&query=${project.latitude},${project.longitude}`
         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${project.name} ${project.location}`)}`;
     addLinkAnnotation(
       page,
-      { x: cols[2], y: y - 4, width: locationWidth, height: 14 },
+      { x: cols[2], y: y - 4, width: maxWidth, height: topY - y + 14 },
       mapsUrl,
     );
   }
