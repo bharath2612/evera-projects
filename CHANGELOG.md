@@ -2,6 +2,17 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-20 — Floor dialog fits short laptop screens
+
+**Fixed**
+- On 768px-tall / display-scaled laptops the floor dialog's fixed
+  chrome (square logo at fixed width + headline + legend) ate the
+  88dvh budget, leaving the key plan a clipped slice behind an inner
+  scrollbar. Logo is now height-capped (h-14 w-auto) and the key-plan
+  SVG's viewport-aware max-height applies at EVERY breakpoint (was
+  lg-only, so narrow windows fell through to natural height). Roomy
+  screens still bind on width — unchanged look there.
+
 ## 2026-08-20 — Honest availability labels: unreleased ≠ sold out
 
 **Fixed**

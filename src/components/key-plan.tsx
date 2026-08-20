@@ -39,12 +39,18 @@ export function KeyPlan({
   const wallStroke = plate.width * 0.0055;
   const fontSize = plate.width * 0.055;
 
+  // Height-capped at EVERY breakpoint (it used to be lg-only, so
+  // sub-1024px laptop windows got the full-height plan and the dialog
+  // scrolled it out of view). The formula gives the plan whatever the
+  // viewport can spare after the dialog chrome (~560px), never less
+  // than 180px; width follows the aspect ratio, capped by the dialog.
+  // Room to spare → it binds on width instead: the old full-width look.
   return (
     <svg
       viewBox={`0 0 ${plate.width} ${plate.height}`}
       width={plate.width}
       height={plate.height}
-      className="block h-auto w-full lg:mx-auto lg:h-auto lg:max-h-[max(180px,100dvh-620px)] lg:w-auto lg:max-w-full"
+      className="mx-auto block h-auto max-h-[max(180px,100dvh-560px)] w-auto max-w-full"
       role="group"
       aria-label="Floor key plan"
       data-keyplan

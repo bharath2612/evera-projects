@@ -321,8 +321,10 @@ export function FloorExplorer({
             className="absolute inset-0 cursor-default bg-evergreen/35 backdrop-blur-[3px]"
           />
           <div className="floor-swap relative flex max-h-[88dvh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border bg-card shadow-[0_24px_80px_rgba(44,55,50,0.35)]">
-            {/* Wordmark header */}
-            <div className="relative shrink-0 border-b px-6 pt-5 pb-4">
+            {/* Wordmark header. The logo is capped by HEIGHT, not width —
+                square logo assets at a fixed width ate ~180px of a short
+                laptop's viewport and squeezed the key plan out. */}
+            <div className="relative shrink-0 border-b px-6 pt-4 pb-3">
               {brand ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -330,7 +332,7 @@ export function FloorExplorer({
                   alt={brand.logoAlt}
                   width={brand.logoWidth}
                   height={brand.logoHeight}
-                  className="mx-auto h-auto w-36 select-none"
+                  className="mx-auto h-14 w-auto select-none"
                   draggable={false}
                 />
               ) : (
