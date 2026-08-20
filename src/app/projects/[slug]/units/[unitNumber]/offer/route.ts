@@ -196,11 +196,12 @@ export async function GET(
   text("UNIT NUMBER", cols[0], 7.5, sansBold, MUTED);
   text("DATE", cols[1], 7.5, sansBold, MUTED);
   text("EST. COMPLETION", cols[2], 7.5, sansBold, MUTED);
-  // Column 1 sets the block height (34pt number + type line); the small
-  // date/completion values sit vertically CENTRED against it so no
-  // column carries a void, and row 2 tucks in right after the type.
+  // Row 1 shares ONE baseline: the 34pt number and the small date /
+  // completion values all sit on it — a single alignment line across
+  // the page. Row 2 keeps a uniform 13pt label→value gap everywhere.
   const identityLabelsY = y;
-  y = identityLabelsY - 21;
+  y = identityLabelsY - 30;
+  text(unit.unit_number, cols[0], 34, sansBold);
   text(
     new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date()),
     cols[1],
@@ -208,12 +209,10 @@ export async function GET(
     sans,
   );
   text(formatHandover(project.handover_date) ?? "TBA", cols[2], 11, sansBold);
-  y = identityLabelsY - 30;
-  text(unit.unit_number, cols[0], 34, sansBold);
   y -= 13;
   text(`(${unit.type_label})`, cols[0], 9.5, sans, MUTED);
 
-  y -= 14;
+  y -= 15;
   if (offerNo) text("OFFER NO", cols[1], 7.5, sansBold, MUTED);
   if (project.location) text("PROJECT LOCATION", cols[2], 7.5, sansBold, MUTED);
   y -= 13;
