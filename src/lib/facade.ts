@@ -54,6 +54,9 @@ export function floorBands(config: FacadeConfig): FloorBand[] {
 export interface FloorSummary {
   total: number;
   available: number;
+  /** Not yet on the market — a floor of these is "Coming soon", NOT sold. */
+  unreleased: number;
+  reserved: number;
   /** Available count per type label, e.g. { "2 Bedroom": 3 }. */
   byType: Array<{ label: string; count: number }>;
 }
@@ -64,10 +67,18 @@ export function summarizeFloors(
   const map = new Map<number, FloorSummary>();
   for (const unit of units) {
     if (!map.has(unit.floor)) {
-      map.set(unit.floor, { total: 0, available: 0, byType: [] });
+      map.set(unit.floor, {
+        total: 0,
+        available: 0,
+        unreleased: 0,
+        reserved: 0,
+        byType: [],
+      });
     }
     const entry = map.get(unit.floor)!;
     entry.total += 1;
+    if (unit.status === "unreleased") entry.unreleased += 1;
+    if (unit.status === "reserved") entry.reserved += 1;
     if (unit.status === "available") {
       entry.available += 1;
       const bucket = entry.byType.find((b) => b.label === unit.type_label);
@@ -79,4 +90,14 @@ export function summarizeFloors(
     entry.byType.sort((a, b) => b.count - a.count);
   }
   return map;
+}
+
+/** The tooltip line when a floor has nothing available. A floor is only
+ *  "Sold out" when its stock is genuinely gone — unreleased stock reads
+ *  "Coming soon" and held stock "Fully reserved". */
+export function floorStatusLine(summary: FloorSummary | undefined): string {
+  if (!summary) return "Coming soon";
+  if (summary.unreleased > 0) return "Coming soon";
+  if (summary.reserved > 0) return "Fully reserved";
+  return "Sold out";
 }

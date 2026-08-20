@@ -2,6 +2,19 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-20 — Honest availability labels: unreleased ≠ sold out
+
+**Fixed**
+- Facade floor tooltip stamped "Sold out" on any floor with zero
+  *available* units — so fully **unreleased** floors (phased release,
+  evera-one 0044) read as sold. Floor summaries now count unreleased
+  and reserved separately; new `floorStatusLine`: unreleased stock →
+  "Coming soon", held stock → "Fully reserved", only genuinely gone
+  stock → "Sold out".
+- Same collapse on the project cards' `availabilityLine`: a tower of
+  unreleased units now reads "Launching soon", all-held "Fully
+  reserved", instead of "Sold out".
+
 ## 2026-08-17 — Offer PDFs carry real offer numbers
 
 **Added**

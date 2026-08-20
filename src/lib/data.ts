@@ -286,6 +286,10 @@ export function availabilityLine(stats: ProjectStats | undefined): {
     return { text: "Launching soon", tone: "soon" };
   }
   if (stats.available === 0 || stats.fromPrice === null) {
+    // Only genuinely gone stock is "Sold out" — a tower of unreleased
+    // units is still launching, and held stock may come back.
+    if (stats.unreleased > 0) return { text: "Launching soon", tone: "soon" };
+    if (stats.reserved > 0) return { text: "Fully reserved", tone: "soldout" };
     return { text: "Sold out", tone: "soldout" };
   }
   return { text: `From ${formatAed(stats.fromPrice)}`, tone: "price" };

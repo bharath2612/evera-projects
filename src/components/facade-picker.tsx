@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { FacadeConfig } from "@/lib/data";
-import { floorBands, type FloorSummary } from "@/lib/facade";
+import { floorBands, floorStatusLine, type FloorSummary } from "@/lib/facade";
 
 /**
  * The building render with one interactive SVG band per floor. Hover shows
@@ -130,7 +130,9 @@ export function FacadePicker({
               </p>
             </>
           ) : (
-            <p className="text-[12px] text-muted-foreground">Sold out</p>
+            <p className="text-[12px] text-muted-foreground">
+              {floorStatusLine(hoveredSummary ?? undefined)}
+            </p>
           )}
         </div>
       )}
