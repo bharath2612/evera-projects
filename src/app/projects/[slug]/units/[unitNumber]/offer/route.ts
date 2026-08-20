@@ -192,7 +192,10 @@ export async function GET(
 
   // ——— Identity block — three columns, two aligned label/value rows ———
   y -= 24;
-  const cols = [left, left + 200, left + 360];
+  // Equal thirds of the content width — the middle column sits in the
+  // middle, and every gutter is the same.
+  const colWidth = (right - left) / 3;
+  const cols = [left, left + colWidth, left + colWidth * 2];
   text("UNIT NUMBER", cols[0], 7.5, sansBold, MUTED);
   text("DATE", cols[1], 7.5, sansBold, MUTED);
   text("EST. COMPLETION", cols[2], 7.5, sansBold, MUTED);
