@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
-import { LineCapStyle, PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
+import {
+  LineCapStyle,
+  PDFDocument,
+  PDFName,
+  PDFString,
+  StandardFonts,
+  rgb,
+  type PDFFont,
+  type PDFPage,
+} from "pdf-lib";
 import { DETAIL_ICONS } from "@/lib/offer-icons";
 import {
   SALES,
@@ -26,6 +35,26 @@ const AED = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const AREA = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
 const PAGE = { width: 595.28, height: 841.89, margin: 56 } as const; // A4
+
+/** Clickable URI rectangle (pdf-lib has no helper). */
+function addLinkAnnotation(
+  page: PDFPage,
+  rect: { x: number; y: number; width: number; height: number },
+  url: string,
+): void {
+  const link = page.doc.context.register(
+    page.doc.context.obj({
+      Type: "Annot",
+      Subtype: "Link",
+      Rect: [rect.x, rect.y, rect.x + rect.width, rect.y + rect.height],
+      Border: [0, 0, 0],
+      A: { Type: "Action", S: "URI", URI: PDFString.of(url) },
+    }),
+  );
+  const annots = page.node.Annots();
+  if (annots) annots.push(link);
+  else page.node.set(PDFName.of("Annots"), page.doc.context.obj([link]));
+}
 
 /**
  * Public sales offer: the project's cover artwork as page one (when
@@ -165,41 +194,57 @@ export async function GET(
   y -= 12;
   rule(BRONZE, 1.2);
 
-  // ——— Identity row ———
+  // ——— Identity block — three columns, two aligned label/value rows ———
   y -= 24;
   const cols = [left, left + 200, left + 360];
-  const identity: Array<[string, string]> = [
-    ["Date", new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date())],
-    ["Unit number", unit.unit_number],
-    ["Est. completion", formatHandover(project.handover_date) ?? "TBA"],
-  ];
-  for (const [i, [label]] of identity.entries()) {
-    text(label.toUpperCase(), cols[i], 7.5, sansBold, MUTED);
-  }
+  text("UNIT NUMBER", cols[0], 7.5, sansBold, MUTED);
+  text("DATE", cols[1], 7.5, sansBold, MUTED);
+  text("EST. COMPLETION", cols[2], 7.5, sansBold, MUTED);
   y -= 16;
-  for (const [i, [, value]] of identity.entries()) {
-    if (i === 1) {
-      // the number carries the size; the type sits quiet in brackets
-      text(value, cols[1], 15, sansBold);
-      const numberWidth = sansBold.widthOfTextAtSize(value, 15);
-      page.drawText(`(${unit.type_label})`, {
-        x: cols[1] + numberWidth + 6,
-        y: y + 1,
-        size: 9.5,
-        font: sans,
-        color: MUTED,
-      });
-      continue;
-    }
-    text(value, cols[i], i === 0 ? 10.5 : 11, i === 0 ? sans : sansBold);
+  text(unit.unit_number, cols[0], 15, sansBold);
+  {
+    const numberWidth = sansBold.widthOfTextAtSize(unit.unit_number, 15);
+    page.drawText(`(${unit.type_label})`, {
+      x: cols[0] + numberWidth + 6,
+      y: y + 1,
+      size: 9.5,
+      font: sans,
+      color: MUTED,
+    });
   }
-  // Offer number gets its own row — sharing the identity row overlapped
-  // long completion dates.
-  if (offerNo) {
-    y -= 20;
-    text("OFFER NO", right, 7.5, sansBold, MUTED, "right");
-    y -= 13;
-    text(offerNo, right, 9.5, sansBold, EVERGREEN, "right");
+  text(
+    new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date()),
+    cols[1],
+    10.5,
+    sans,
+  );
+  text(formatHandover(project.handover_date) ?? "TBA", cols[2], 11, sansBold);
+
+  y -= 21;
+  if (offerNo) text("OFFER NO", cols[1], 7.5, sansBold, MUTED);
+  if (project.location) text("PROJECT LOCATION", cols[2], 7.5, sansBold, MUTED);
+  y -= 13;
+  if (offerNo) text(offerNo, cols[1], 9.5, sansBold, EVERGREEN);
+  if (project.location) {
+    // Bronze + underline reads as a link; the annotation opens Google
+    // Maps at the project pin (name search when no coordinates).
+    text(project.location, cols[2], 9.5, sansBold, BRONZE);
+    const locationWidth = sansBold.widthOfTextAtSize(project.location, 9.5);
+    page.drawLine({
+      start: { x: cols[2], y: y - 2 },
+      end: { x: cols[2] + locationWidth, y: y - 2 },
+      thickness: 0.6,
+      color: BRONZE,
+    });
+    const mapsUrl =
+      project.latitude !== null && project.longitude !== null
+        ? `https://www.google.com/maps/search/?api=1&query=${project.latitude},${project.longitude}`
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${project.name} ${project.location}`)}`;
+    addLinkAnnotation(
+      page,
+      { x: cols[2], y: y - 4, width: locationWidth, height: 14 },
+      mapsUrl,
+    );
   }
 
   // ——— Unit details ———
