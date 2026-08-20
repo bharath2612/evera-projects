@@ -199,12 +199,11 @@ export async function GET(
   text("UNIT NUMBER", cols[0], 7.5, sansBold, MUTED);
   text("DATE", cols[1], 7.5, sansBold, MUTED);
   text("EST. COMPLETION", cols[2], 7.5, sansBold, MUTED);
-  // Row 1 shares ONE baseline: the 34pt number and the small date /
-  // completion values all sit on it — a single alignment line across
-  // the page. Row 2 keeps a uniform 13pt label→value gap everywhere.
+  // Every value sits 13pt under its label — the SAME gap as row 2 — so
+  // all six pairs read identically; only the 34pt number digs deeper
+  // into its own column.
   const identityLabelsY = y;
-  y = identityLabelsY - 30;
-  text(unit.unit_number, cols[0], 34, sansBold);
+  y = identityLabelsY - 13;
   text(
     new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date()),
     cols[1],
@@ -212,6 +211,8 @@ export async function GET(
     sans,
   );
   text(formatHandover(project.handover_date) ?? "TBA", cols[2], 11, sansBold);
+  y = identityLabelsY - 30;
+  text(unit.unit_number, cols[0], 34, sansBold);
   y -= 13;
   text(`(${unit.type_label})`, cols[0], 9.5, sans, MUTED);
 
