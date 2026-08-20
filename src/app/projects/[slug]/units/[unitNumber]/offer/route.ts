@@ -196,18 +196,9 @@ export async function GET(
   text("UNIT NUMBER", cols[0], 7.5, sansBold, MUTED);
   text("DATE", cols[1], 7.5, sansBold, MUTED);
   text("EST. COMPLETION", cols[2], 7.5, sansBold, MUTED);
-  y -= 16;
-  text(unit.unit_number, cols[0], 15, sansBold);
-  {
-    const numberWidth = sansBold.widthOfTextAtSize(unit.unit_number, 15);
-    page.drawText(`(${unit.type_label})`, {
-      x: cols[0] + numberWidth + 6,
-      y: y + 1,
-      size: 9.5,
-      font: sans,
-      color: MUTED,
-    });
-  }
+  y -= 20;
+  // The number is the hero of the block; the type sits quiet below it.
+  text(unit.unit_number, cols[0], 24, sansBold);
   text(
     new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date()),
     cols[1],
@@ -215,8 +206,10 @@ export async function GET(
     sans,
   );
   text(formatHandover(project.handover_date) ?? "TBA", cols[2], 11, sansBold);
+  y -= 15;
+  text(`(${unit.type_label})`, cols[0], 9.5, sans, MUTED);
 
-  y -= 21;
+  y -= 18;
   if (offerNo) text("OFFER NO", cols[1], 7.5, sansBold, MUTED);
   if (project.location) text("PROJECT LOCATION", cols[2], 7.5, sansBold, MUTED);
   y -= 13;
