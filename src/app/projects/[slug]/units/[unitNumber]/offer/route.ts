@@ -310,8 +310,8 @@ export async function GET(
   }
   y = detailTop - 17 * detailRows;
 
-  // Price banner
-  y -= 30;
+  // Price banner — extra air so it doesn't crowd the last detail row
+  y -= 40;
   page.drawRectangle({
     x: left,
     y: y - 12,
