@@ -25,6 +25,18 @@ export interface FacadeConfig {
   };
 }
 
+/** Curated in the CRM project form; icon keys resolve via lib/place-icons. */
+export interface NearbyPlace {
+  label: string;
+  minutes: number;
+  icon: string;
+}
+
+export interface ProjectAmenity {
+  label: string;
+  icon: string;
+}
+
 export interface PublicProject {
   id: string;
   slug: string;
@@ -35,6 +47,20 @@ export interface PublicProject {
   longitude: number | null;
   facade_config: FacadeConfig | null;
   description: string | null;
+  /** YouTube URL, host-validated on save in evera-one. */
+  video_url: string | null;
+  /** Marketing floors phrasing ("2B+G+24") — overrides the derived range. */
+  floors_label: string | null;
+  /** Hero "Starting From:" figure; always wins over the derived price. */
+  launch_price: string | null;
+  /** Payment-plan phrasing ("60/40") — key-facts cell after Floors. */
+  payment_plan_label: string | null;
+  nearby_places: NearbyPlace[] | null;
+  amenities: ProjectAmenity[] | null;
+  brochure_path: string | null;
+  factsheet_path: string | null;
+  payment_plan_doc_path: string | null;
+  floor_plan_doc_path: string | null;
 }
 
 export type PublicUnitStatus = "unreleased" | "available" | "reserved" | "sold";
@@ -142,6 +168,34 @@ export async function fetchUnitMedia(
 /** Public URL for a path in the public-media storage bucket. */
 export function publicMediaUrl(path: string): string {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public-media/${path}`;
+}
+
+/** Same, but the browser saves the file instead of navigating to it. */
+export function publicMediaDownloadUrl(path: string): string {
+  return `${publicMediaUrl(path)}?download=`;
+}
+
+/** The 11-char YouTube id out of any usual URL shape, or null. */
+export function youTubeIdFrom(raw: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return null;
+  }
+  const host = url.hostname.replace(/^www\.|^m\./, "");
+  const ID = /^[A-Za-z0-9_-]{11}$/;
+  if (host === "youtu.be") {
+    const id = url.pathname.slice(1).split("/")[0];
+    return ID.test(id) ? id : null;
+  }
+  if (host === "youtube.com" || host === "youtube-nocookie.com") {
+    const v = url.searchParams.get("v");
+    if (v && ID.test(v)) return v;
+    const match = url.pathname.match(/^\/(?:shorts|embed|live)\/([^/?]+)/);
+    if (match && ID.test(match[1])) return match[1];
+  }
+  return null;
 }
 
 /** Canonical route of a unit's detail page. */

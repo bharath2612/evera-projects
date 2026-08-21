@@ -30,7 +30,8 @@ export function EnquireDialog({
   projectSlug,
   onClose,
 }: {
-  unit: PublicUnit;
+  /** Omit for a project-level enquiry (e.g. the sticky CTA bar). */
+  unit?: PublicUnit | null;
   projectName: string;
   projectSlug: string;
   onClose: () => void;
@@ -72,7 +73,7 @@ export function EnquireDialog({
       phoneNumber: digits,
       email: email.trim(),
       projectSlug,
-      unitNumber: unit.unit_number,
+      unitNumber: unit?.unit_number ?? "",
     });
     setSubmitting(false);
     if (submitError) setError(submitError);
@@ -87,7 +88,9 @@ export function EnquireDialog({
       className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label={`Enquire about No.${unit.unit_number}`}
+      aria-label={
+        unit ? `Enquire about No.${unit.unit_number}` : `Enquire about ${projectName}`
+      }
       data-enquire-dialog
     >
       <button
@@ -115,7 +118,8 @@ export function EnquireDialog({
               Thank you
             </h3>
             <p className="mx-auto mt-2 max-w-xs text-[13px] leading-relaxed text-muted-foreground">
-              Your enquiry about {unit.type_label} No.{unit.unit_number} at{" "}
+              Your enquiry about{" "}
+              {unit ? `${unit.type_label} No.${unit.unit_number} at ` : ""}
               {projectName} is with our sales team — they&rsquo;ll reach out
               shortly.
             </p>
@@ -133,9 +137,15 @@ export function EnquireDialog({
               Enquire Now
             </p>
             <h3 className="font-display mt-1.5 text-2xl font-medium tracking-tight">
-              {unit.type_label}{" "}
-              <span className="text-muted-foreground">·</span> No.
-              {unit.unit_number}
+              {unit ? (
+                <>
+                  {unit.type_label}{" "}
+                  <span className="text-muted-foreground">·</span> No.
+                  {unit.unit_number}
+                </>
+              ) : (
+                projectName
+              )}
             </h3>
             <p className="mt-1 text-[13px] text-muted-foreground">
               {projectName} — leave your details and the sales team will call

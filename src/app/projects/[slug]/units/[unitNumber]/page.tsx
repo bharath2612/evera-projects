@@ -8,14 +8,15 @@ import {
   fetchProjects,
   fetchUnits,
   fetchUnitImages,
+  fetchUnitMedia,
   formatAed,
   formatHandover,
   publicMediaUrl,
   unitHref,
-  type PublicUnit,
   type PublicUnitStatus,
 } from "@/lib/data";
-import { UnitGallery } from "@/components/unit-gallery";
+import { HeroSlideshow } from "@/components/hero-slideshow";
+import { Reveal } from "@/components/reveal";
 import { UnitActions } from "@/components/unit-actions";
 
 export const revalidate = 60;
@@ -57,9 +58,10 @@ export async function generateMetadata({
 }
 
 /**
- * Dedicated unit page: gallery from the public-media bucket, price/area
- * band, key facts, sales CTAs, downloadable sales offer (available units)
- * and similar residences on other floors.
+ * Dedicated unit page: the landing-page slideshow (floor plan first, then
+ * unit shots, then project artwork), a prominent price band, a residence-
+ * details grid in the same hairline idiom, and the sales CTA card with the
+ * offer viewable inline. Mirrors the project page's design language.
  */
 export default async function UnitPage({
   params,
@@ -71,13 +73,21 @@ export default async function UnitPage({
   if (!data) notFound();
   const { project, units, unit } = data;
 
-  // Unit-specific shots first, then the project gallery — every unit
-  // page carries the project's imagery even before its own renders land.
-  const [unitGallery, projectMedia] = await Promise.all([
+  // Slideshow order: floor plan (never cropped) → unit shots → project
+  // artwork — every unit page carries imagery even before its own lands.
+  const [unitGallery, unitMedia, projectMedia] = await Promise.all([
     fetchUnitImages(project.id, unit.unit_number),
+    fetchUnitMedia(project.id, unit.unit_number),
     fetchProjectMedia(project.id),
   ]);
   const images = [
+    ...unitMedia
+      .filter((m) => m.kind === "floor_plan")
+      .map((m) => ({
+        url: publicMediaUrl(m.path),
+        alt: `${unit.type_label} No.${unit.unit_number} — floor plan`,
+        fit: "contain" as const,
+      })),
     ...unitGallery.map((m, i) => ({
       url: publicMediaUrl(m.path),
       alt: `${unit.type_label} No.${unit.unit_number} — interior ${i + 1}`,
@@ -95,18 +105,7 @@ export default async function UnitPage({
   const floorMax = units.reduce((max, u) => Math.max(max, u.floor), 0);
   const handover = formatHandover(project.handover_date);
 
-  const similar = units
-    .filter(
-      (u) => u.type_code === unit.type_code && u.unit_number !== unit.unit_number,
-    )
-    .sort(
-      (a, b) =>
-        Number(b.status === "available") - Number(a.status === "available") ||
-        a.floor - b.floor,
-    )
-    .slice(0, 6);
-
-  const facts: Array<[string, string]> = [
+  const details: Array<[string, string]> = [
     ["Type", unit.type_label],
     ...(unit.bedrooms !== null
       ? ([["Bedrooms", AREA.format(unit.bedrooms)]] as Array<[string, string]>)
@@ -115,7 +114,7 @@ export default async function UnitPage({
       ? ([["Bathrooms", AREA.format(unit.bathrooms)]] as Array<[string, string]>)
       : []),
     ...(unit.suite_area_sqft !== null
-      ? ([["Suite", `${AREA.format(unit.suite_area_sqft)} ft²`]] as Array<
+      ? ([["Suite area", `${AREA.format(unit.suite_area_sqft)} ft²`]] as Array<
           [string, string]
         >)
       : []),
@@ -143,86 +142,107 @@ export default async function UnitPage({
           ← {project.name}
         </Link>
 
-        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-          {/* ——— Unit ——— */}
-          <div className="min-w-0">
-            <header>
-              <span
-                className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${status.chip}`}
-              >
-                {status.label}
-              </span>
-              <h1 className="font-display mt-3 text-3xl leading-tight font-medium tracking-tight lg:text-4xl">
-                {unit.type_label} <span className="text-muted-foreground">·</span>{" "}
-                No.{unit.unit_number}
-              </h1>
-              <p className="mt-2 text-[13px] text-muted-foreground">
+        {/* ——— Header + full-width slideshow ——— */}
+        <header className="mt-6">
+              <p className="text-[11px] font-medium tracking-[0.22em] text-brand uppercase">
                 {project.name}
-                {project.location ? ` — ${project.location}` : ""}
+                {project.location ? ` · ${project.location}` : ""}
               </p>
-            </header>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <h1 className="font-display text-3xl leading-tight font-medium tracking-tight lg:text-4xl">
+                  {unit.type_label}{" "}
+                  <span className="text-muted-foreground">·</span> No.
+                  {unit.unit_number}
+                </h1>
+                <span
+                  className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${status.chip}`}
+                >
+                  {status.label}
+                </span>
+              </div>
+              {available && unit.price_aed !== null && (
+                <p className="mt-2 text-lg font-medium">
+                  {formatAed(unit.price_aed)}
+                </p>
+              )}
+        </header>
 
-            <div className="mt-5">
-              <UnitGallery
-                images={images}
-                title={`No.${unit.unit_number}`}
-              />
-            </div>
+        {images.length > 0 && <HeroSlideshow images={images} />}
 
+        {/* ——— Details + sales card ——— */}
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-w-0">
             {/* Price / area / floor band */}
-            <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
-              <div className="bg-card px-5 py-4">
-                <p className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-                  Price
-                </p>
-                {available && unit.price_aed !== null ? (
-                  <p className="font-display mt-1 text-xl font-medium tabular-nums">
-                    {formatAed(unit.price_aed)}
-                  </p>
-                ) : (
-                  <p className="font-display mt-1 text-xl font-medium text-muted-foreground">
-                    —
-                  </p>
-                )}
-              </div>
-              <div className="bg-card px-5 py-4">
-                <p className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-                  Area
-                </p>
-                <p className="font-display mt-1 text-xl font-medium tabular-nums">
-                  {AREA.format(unit.area_sqft)} ft²
-                </p>
-              </div>
-              <div className="bg-card px-5 py-4">
-                <p className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-                  AED / ft²
-                </p>
-                <p className="font-display mt-1 text-xl font-medium tabular-nums">
-                  {available && unit.price_per_sqft !== null
-                    ? AREA.format(unit.price_per_sqft)
-                    : "—"}
-                </p>
-              </div>
-              <div className="bg-card px-5 py-4">
-                <p className="text-[10px] font-medium tracking-wider text-muted-foreground uppercase">
-                  Floor
-                </p>
-                <p className="font-display mt-1 text-xl font-medium tabular-nums">
-                  {unit.floor}
-                  <span className="text-sm text-muted-foreground"> / {floorMax}</span>
-                </p>
-              </div>
-            </div>
+            <Reveal>
+              <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
+                {(
+                  [
+                    [
+                      "Price",
+                      available && unit.price_aed !== null
+                        ? formatAed(unit.price_aed)
+                        : "—",
+                    ],
+                    ["Area", `${AREA.format(unit.area_sqft)} ft²`],
+                    [
+                      "AED / ft²",
+                      available && unit.price_per_sqft !== null
+                        ? AREA.format(unit.price_per_sqft)
+                        : "—",
+                    ],
+                    ["Floor", `${unit.floor} / ${floorMax}`],
+                  ] as const
+                ).map(([label, value]) => (
+                  <div key={label} className="bg-card px-5 py-4">
+                    <dt className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+                      {label}
+                    </dt>
+                    <dd className="font-display mt-1 text-xl font-medium tabular-nums">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Reveal>
 
-            {/* Facts */}
-            <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-[13px]">
-              {facts.map(([label, value]) => (
-                <div key={label} className="flex items-baseline gap-1.5">
-                  <dt className="text-muted-foreground">{label}</dt>
-                  <dd className="font-medium">{value}</dd>
-                </div>
-              ))}
-            </dl>
+            {/* Residence details — same hairline idiom, not a loose row */}
+            {details.length > 0 && (
+              <Reveal>
+                <section className="mt-10">
+                  <h2 className="font-display text-2xl font-medium tracking-tight">
+                    Residence details
+                  </h2>
+                  <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
+                    {details.map(([label, value]) => (
+                      <div key={label} className="bg-card px-5 py-4">
+                        <dt className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+                          {label}
+                        </dt>
+                        <dd className="font-display mt-1 text-lg font-medium">
+                          {value}
+                        </dd>
+                      </div>
+                    ))}
+                    {/* Card-colored fillers complete the last row per
+                        breakpoint — otherwise the grid's border ground
+                        shows through as a beige hole. */}
+                    {Array.from(
+                      { length: (4 - (details.length % 4)) % 4 },
+                      (_, i) => (
+                        <div
+                          key={`fill-4-${i}`}
+                          aria-hidden
+                          className="hidden bg-card sm:block"
+                        />
+                      ),
+                    )}
+                    {details.length % 2 === 1 && (
+                      <div aria-hidden className="bg-card sm:hidden" />
+                    )}
+                  </dl>
+                </section>
+              </Reveal>
+            )}
           </div>
 
           {/* ——— Sales aside ——— */}
@@ -260,36 +280,6 @@ export default async function UnitPage({
                 )}
               </div>
             </div>
-
-            {similar.length > 0 && (
-              <div className="mt-4 rounded-2xl border bg-card p-5 shadow-[0_2px_14px_rgba(44,55,50,0.07)]">
-                <p className="text-[10px] font-medium tracking-[0.22em] text-muted-foreground uppercase">
-                  Similar on other floors
-                </p>
-                <ul className="mt-2 divide-y" data-similar-units>
-                  {similar.map((u: PublicUnit) => (
-                    <li key={u.unit_number}>
-                      <Link
-                        href={unitHref(project.slug, u.unit_number)}
-                        className="flex items-baseline justify-between gap-3 py-2.5 transition-colors hover:text-brand"
-                      >
-                        <span className="text-[13px]">
-                          Floor {u.floor}{" "}
-                          <span className="text-muted-foreground">
-                            · No.{u.unit_number}
-                          </span>
-                        </span>
-                        <span className="text-[13px] font-medium whitespace-nowrap tabular-nums">
-                          {u.status === "available" && u.price_aed !== null
-                            ? formatAed(u.price_aed)
-                            : STATUS_CHIP[u.status].label}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </aside>
         </div>
 

@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Newsreader } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// One typeface everywhere — Plus Jakarta drives both the body and the
+// `font-display` headline slot (weight does the hierarchy work now).
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
-});
-
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -26,10 +22,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${newsreader.variable} h-full`}
-    >
+    <html lang="en" className={`${plusJakarta.variable} h-full`}>
       <body className="min-h-full font-sans">{children}</body>
     </html>
   );

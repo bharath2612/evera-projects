@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, Heart, Mail, Phone, Share2 } from "lucide-react";
+import { useState } from "react";
+import { Check, FileText, Mail, Phone, Share2 } from "lucide-react";
 import type { PublicUnit } from "@/lib/data";
-import { SALES } from "@/lib/data";
+import { SALES, unitHref } from "@/lib/data";
 import { EnquireDialog } from "./enquire-dialog";
 
 /** WhatsApp glyph — lucide carries no brand icons. */
@@ -15,21 +15,11 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-const SAVED_KEY = "evera.saved-units";
-
-function readSaved(): Set<string> {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(SAVED_KEY) ?? "[]"));
-  } catch {
-    return new Set();
-  }
-}
-
 /**
- * Sales CTAs on the unit page: prefilled request email, call, WhatsApp,
- * share (native sheet or copy the page URL) and a localStorage heart.
- * Available units only — reserved/sold render a status note instead
- * (handled by the page).
+ * Sales CTAs on the unit page: enquiry dialog, call, WhatsApp, share
+ * (native sheet or copy the page URL) and the sales offer opened inline
+ * in the browser's PDF viewer. Available units only — reserved/sold
+ * render a status note instead (handled by the page).
  */
 export function UnitActions({
   unit,
@@ -40,24 +30,8 @@ export function UnitActions({
   projectName: string;
   projectSlug: string;
 }) {
-  const unitKey = `${projectName}-${unit.building ?? ""}-${unit.unit_number}`;
-  const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [enquiring, setEnquiring] = useState(false);
-
-  useEffect(() => {
-    // localStorage → state sync on mount/unit change (external system read).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSaved(readSaved().has(unitKey));
-  }, [unitKey]);
-
-  const toggleSave = () => {
-    const set = readSaved();
-    if (set.has(unitKey)) set.delete(unitKey);
-    else set.add(unitKey);
-    localStorage.setItem(SAVED_KEY, JSON.stringify([...set]));
-    setSaved(set.has(unitKey));
-  };
 
   const share = async () => {
     const link = window.location.href;
@@ -119,20 +93,16 @@ export function UnitActions({
           )}
           {copied ? "Copied" : "Share"}
         </button>
-        <button
-          type="button"
-          onClick={toggleSave}
-          aria-pressed={saved}
-          className={`flex h-10 items-center justify-center gap-1.5 rounded-lg border text-[13px] transition-colors ${
-            saved ? "border-brand/50 bg-brand/10 text-brand" : "hover:bg-muted"
-          }`}
+        <a
+          href={`${unitHref(projectSlug, unit.unit_number)}/offer?view=1`}
+          target="_blank"
+          rel="noreferrer"
+          data-view-offer
+          className="flex h-10 items-center justify-center gap-1.5 rounded-lg border text-[13px] transition-colors hover:bg-muted"
         >
-          <Heart
-            className={`size-3.5 ${saved ? "fill-current" : ""}`}
-            strokeWidth={1.75}
-          />
-          {saved ? "Saved" : "Save"}
-        </button>
+          <FileText className="size-3.5" strokeWidth={1.75} />
+          View Offer
+        </a>
       </div>
 
       {enquiring && (

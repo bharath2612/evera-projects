@@ -64,10 +64,12 @@ function addLinkAnnotation(
  * the initial payment. Available units only.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string; unitNumber: string }> },
 ) {
   const { slug, unitNumber } = await params;
+  // ?view=1 → render in the browser's PDF viewer instead of downloading.
+  const inlineView = new URL(request.url).searchParams.get("view") === "1";
   const projects = await fetchProjects();
   const project = projects.find((p) => p.slug === slug);
   if (!project) return new NextResponse("Not found", { status: 404 });
@@ -591,7 +593,7 @@ export async function GET(
   return new NextResponse(Buffer.from(bytes), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": `${inlineView ? "inline" : "attachment"}; filename="${filename}"`,
       "Cache-Control": "no-store",
     },
   });

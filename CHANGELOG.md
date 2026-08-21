@@ -2,6 +2,71 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-21 — Unit page joins the landing-page language
+
+**Changed**
+- Unit page media is the same **HeroSlideshow** as the project page,
+  ordered floor plan → unit shots → project artwork. Slides gained a
+  per-image `fit: "contain"` mode (white ground, padded, no gradient)
+  so plans never crop; the dot indicators sit in an evergreen pill so
+  they stay legible on white plan slides. `unit-gallery.tsx` retired.
+- Header re-set: project eyebrow on top, title + status chip on one
+  line, price directly under — and the loose facts row replaced by a
+  **Residence details** hairline grid (same idiom as the key-facts
+  strips): Type / Bedrooms / Bathrooms / Suite area / Balcony /
+  Entrance / Finishing / Handover.
+- CTA card: **Save (localStorage heart) removed**; in its place
+  **View Offer** opens the sales offer inline in the same tab — the
+  offer route now honors `?view=1` (Content-Disposition inline).
+  Download Sales Offer unchanged.
+- **"Similar on other floors" card removed** entirely.
+
+## 2026-08-21 — Project page becomes a landing page
+
+Spec: evera-one `docs/specs/project-presentation-revamp.md`. Data comes
+from evera-one migration 0046 (already live) — every new section hides
+when its field is empty, so existing projects render unchanged until
+marketing fills them in.
+
+**Added**
+- **Hero slideshow** replaces the "Gallery" collage: cover image first
+  then gallery in order, full content width, rounded, ~5s crossfade
+  autoplay (pauses on hover/touch and in background tabs; off under
+  reduced motion), arrows on fine pointers, dot indicators, swipe on
+  mobile, evergreen bottom gradient per slide. One image → static
+  frame; zero → section absent. Lightbox retired
+  (`project-gallery.tsx` deleted).
+- **About** re-set as a centered editorial column (max-w-3xl, eyebrow +
+  serif heading), description split into paragraphs on blank lines.
+- **Film**: poster + click-to-play YouTube embed (youtube-nocookie
+  injected only on click; maxres poster detects the grey 120px
+  "not found" thumb and drops to hqdefault).
+- **Location / Nearby / Amenities** card per the approved reference:
+  hairline-divided columns (each hides independently), MapLibre map
+  (bronze dot, +/− controls, scroll-zoom off, initialises only when
+  scrolled near) and icon rows from the shared vocabulary
+  (`lib/place-icons.tsx`, unknown keys → MapPin).
+- **Documents** row: Brochure / Factsheet / Payment Plan / Floor Plans
+  download cards (`?download=` URLs), only when files exist.
+- **Sticky CTA bar** after the hero (IntersectionObserver sentinels,
+  safe-area padded, retires at the footer): project name + Inventory
+  anchor + **Enquire** — `EnquireDialog` generalised to project-level
+  enquiries (the RPC already tolerated a null unit).
+- **Scroll reveals**: dependency-free `Reveal` (IntersectionObserver,
+  one-shot fade/rise, honors reduced motion) wraps each section.
+- Hero price line: manual `launch_price` always wins, rendered as
+  "Starting From: {value}" (no double prefix when the text already says
+  "from"); otherwise the live `availabilityLine`. Key-facts Floors
+  prefers the manual `floors_label`; a **Payment Plan** cell follows it
+  when `payment_plan_label` (0047) is set — the strip grows to five
+  columns cleanly. Slideshow autoplay tightened to 3s.
+
+**Left**
+- OG/share imagery, doc-download analytics (both deliberately out of
+  scope per spec). Playwright hooks are in place
+  (`data-hero-slideshow`, `data-slide-dot`, `data-doc-card`,
+  `data-sticky-cta`, `data-video-embed`, `data-location-card`).
+
 ## 2026-08-20 — Floor dialog fits short laptop screens
 
 **Fixed**
