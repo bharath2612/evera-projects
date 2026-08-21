@@ -66,8 +66,25 @@
   .floor-swap {
     animation: floor-swap 260ms cubic-bezier(0.22, 1, 0.36, 1);
   }
+  /* Side sheet — matches the CRM unit peek: full off-canvas slide-in
+     over a quick-fading light scrim. */
+  .sheet-in {
+    animation: sheet-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .backdrop-fade {
+    animation: backdrop-fade 200ms ease-out;
+  }
+  /* Scroll-reveal entrance. An ANIMATION, not a persistent transform —
+     a lasting transform on a section turns descendants' position:fixed
+     into "fixed relative to me" and breaks every overlay inside. */
+  .reveal-in {
+    animation: reveal-rise 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
   @media (prefers-reduced-motion: reduce) {
-    .floor-swap {
+    .floor-swap,
+    .sheet-in,
+    .backdrop-fade,
+    .reveal-in {
       animation: none;
     }
   }
@@ -77,6 +94,35 @@
       transparent 1px
     );
     background-size: 24px 24px;
+  }
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

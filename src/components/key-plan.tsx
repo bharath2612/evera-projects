@@ -3,12 +3,51 @@
 import type { KeyPlanPlate } from "@/lib/keyplan";
 import type { PublicUnit, PublicUnitStatus } from "@/lib/data";
 
-/** Subtle status dots under each numeral — mirrors the card legend. */
-const DOT: Record<PublicUnitStatus, string> = {
-  unreleased: "color-mix(in oklab, var(--color-slate-400) 70%, white)",
-  available: "var(--color-emerald-500)",
-  reserved: "var(--color-orange-500)",
-  sold: "color-mix(in oklab, var(--brand-evergreen) 30%, white)",
+/**
+ * Per-status plate treatment. Only `available` renders as an open white
+ * shape (interactive, bronze on hover); everything else is a solid status
+ * swatch: unreleased fully greyed out, reserved solid orange, sold solid
+ * muted evergreen. Dots mirror the card legend, flipped light on solids.
+ */
+const STATUS_LOOK: Record<
+  PublicUnitStatus,
+  { fill: string; stroke: string; text: string; dot: string; weight: number }
+> = {
+  available: {
+    fill: "var(--card)",
+    stroke: "color-mix(in oklab, var(--brand) 90%, white)",
+    text: "color-mix(in oklab, var(--brand) 62%, white)",
+    dot: "var(--color-emerald-500)",
+    weight: 300,
+  },
+  unreleased: {
+    fill: "color-mix(in oklab, var(--color-slate-400) 14%, white)",
+    stroke: "color-mix(in oklab, var(--color-slate-400) 40%, white)",
+    text: "color-mix(in oklab, var(--color-slate-400) 55%, white)",
+    dot: "color-mix(in oklab, var(--color-slate-400) 45%, white)",
+    weight: 300,
+  },
+  reserved: {
+    fill: "var(--color-orange-500)",
+    stroke: "color-mix(in oklab, var(--color-orange-500) 85%, black)",
+    text: "rgba(255,255,255,0.95)",
+    dot: "rgba(255,255,255,0.85)",
+    weight: 500,
+  },
+  sold: {
+    fill: "color-mix(in oklab, var(--brand-evergreen) 38%, white)",
+    stroke: "color-mix(in oklab, var(--brand-evergreen) 50%, white)",
+    text: "rgba(255,255,255,0.95)",
+    dot: "rgba(255,255,255,0.85)",
+    weight: 500,
+  },
+};
+
+const STATUS_WORD: Record<PublicUnitStatus, string> = {
+  available: "available",
+  unreleased: "coming soon",
+  reserved: "reserved",
+  sold: "sold",
 };
 
 /**
@@ -85,43 +124,49 @@ export function KeyPlan({
       {plate.units.map((shape) => {
         const unit = units.get(shape.pos);
         if (!unit) return null; // plate slot with no released residence
-        const active = shape.pos === activePos;
+        // Only for-sale residences are interactive; everything else reads
+        // as a solid status swatch (unreleased greyed out entirely).
+        const interactive = unit.status === "available";
+        const active = interactive && shape.pos === activePos;
         const dimmed = dimmedPos.has(shape.pos);
-        const sold = unit.status === "sold";
+        const look = STATUS_LOOK[unit.status];
         return (
           <g
             key={shape.pos}
-            role="button"
-            tabIndex={0}
-            aria-label={`Residence ${unit.unit_number}${sold ? " — sold" : ""}`}
+            role={interactive ? "button" : "img"}
+            tabIndex={interactive ? 0 : -1}
+            aria-label={`Residence ${unit.unit_number}${
+              interactive ? "" : ` — ${STATUS_WORD[unit.status]}`
+            }`}
+            aria-disabled={interactive ? undefined : true}
             data-keyplan-unit={shape.pos}
             data-active={active || undefined}
-            onMouseEnter={() => onHover(shape.pos)}
-            onMouseLeave={() => onHover(null)}
-            onFocus={() => onHover(shape.pos)}
-            onBlur={() => onHover(null)}
-            onClick={() => onSelect(shape.pos)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onSelect(shape.pos);
-              }
-            }}
-            className="cursor-pointer outline-none"
+            {...(interactive
+              ? {
+                  onMouseEnter: () => onHover(shape.pos),
+                  onMouseLeave: () => onHover(null),
+                  onFocus: () => onHover(shape.pos),
+                  onBlur: () => onHover(null),
+                  onClick: () => onSelect(shape.pos),
+                  onKeyDown: (event: React.KeyboardEvent) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelect(shape.pos);
+                    }
+                  },
+                }
+              : {})}
+            className={
+              interactive ? "cursor-pointer outline-none" : "cursor-default"
+            }
             style={{ opacity: dimmed && !active ? 0.35 : 1 }}
           >
             <polygon
               points={shape.points}
               className="transition-[fill] duration-150"
               style={{
-                fill: active
-                  ? "var(--brand)"
-                  : sold
-                    ? "color-mix(in oklab, var(--brand-evergreen) 6%, white)"
-                    : "var(--card)",
-                stroke: active
-                  ? "var(--brand)"
-                  : "color-mix(in oklab, var(--brand) 90%, white)",
+                fill: active ? "var(--brand)" : look.fill,
+                stroke: active ? "var(--brand)" : look.stroke,
                 strokeWidth: wallStroke,
                 strokeLinejoin: "miter",
               }}
@@ -133,13 +178,9 @@ export function KeyPlan({
               dominantBaseline="central"
               className="select-none transition-[fill] duration-150"
               style={{
-                fill: active
-                  ? "var(--brand-foreground)"
-                  : sold
-                    ? "color-mix(in oklab, var(--brand-evergreen) 30%, white)"
-                    : "color-mix(in oklab, var(--brand) 62%, white)",
+                fill: active ? "var(--brand-foreground)" : look.text,
                 fontSize,
-                fontWeight: active ? 600 : 300,
+                fontWeight: active ? 600 : look.weight,
                 letterSpacing: plate.width * 0.004,
               }}
             >
@@ -153,7 +194,7 @@ export function KeyPlan({
               style={{
                 fill: active
                   ? "color-mix(in oklab, var(--brand-foreground) 85%, transparent)"
-                  : DOT[unit.status],
+                  : look.dot,
               }}
             />
           </g>

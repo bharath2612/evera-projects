@@ -41,13 +41,19 @@ export function Reveal({
     return () => observer.disconnect();
   }, []);
 
+  // One-shot ANIMATION rather than a transition on `transform`: a
+  // persistent transform (even translate-y-0) makes this wrapper the
+  // containing block for position:fixed descendants — overlays inside
+  // (the floor sheet) would anchor to the section, not the viewport.
   return (
     <div
       ref={ref}
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
-      className={`transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none ${
-        shown ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
-      } ${className}`}
+      style={
+        delay
+          ? { animationDelay: `${delay}ms`, animationFillMode: "backwards" }
+          : undefined
+      }
+      className={`${shown ? "reveal-in" : "opacity-0"} ${className}`}
     >
       {children}
     </div>

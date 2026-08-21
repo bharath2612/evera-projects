@@ -15,9 +15,9 @@ import {
   unitHref,
   type PublicUnitStatus,
 } from "@/lib/data";
-import { HeroSlideshow } from "@/components/hero-slideshow";
 import { Reveal } from "@/components/reveal";
 import { UnitActions } from "@/components/unit-actions";
+import { ExpandableImage, MediaGrid } from "@/components/unit-media";
 
 export const revalidate = 60;
 
@@ -73,21 +73,22 @@ export default async function UnitPage({
   if (!data) notFound();
   const { project, units, unit } = data;
 
-  // Slideshow order: floor plan (never cropped) → unit shots → project
-  // artwork — every unit page carries imagery even before its own lands.
+  // The floor plan is the hero (single expandable image); everything
+  // else — unit shots then project artwork — feeds the Media grid, so
+  // every unit page carries imagery even before its own renders land.
   const [unitGallery, unitMedia, projectMedia] = await Promise.all([
     fetchUnitImages(project.id, unit.unit_number),
     fetchUnitMedia(project.id, unit.unit_number),
     fetchProjectMedia(project.id),
   ]);
-  const images = [
-    ...unitMedia
-      .filter((m) => m.kind === "floor_plan")
-      .map((m) => ({
-        url: publicMediaUrl(m.path),
+  const floorPlanPath = unitMedia.find((m) => m.kind === "floor_plan")?.path;
+  const floorPlan = floorPlanPath
+    ? {
+        url: publicMediaUrl(floorPlanPath),
         alt: `${unit.type_label} No.${unit.unit_number} — floor plan`,
-        fit: "contain" as const,
-      })),
+      }
+    : null;
+  const mediaImages = [
     ...unitGallery.map((m, i) => ({
       url: publicMediaUrl(m.path),
       alt: `${unit.type_label} No.${unit.unit_number} — interior ${i + 1}`,
@@ -99,6 +100,8 @@ export default async function UnitPage({
         alt: `${project.name} — gallery ${i + 1}`,
       })),
   ];
+  // No plan yet → the first render stands in as the hero (cover fit).
+  const hero = floorPlan ?? mediaImages[0] ?? null;
 
   const available = unit.status === "available";
   const status = STATUS_CHIP[unit.status];
@@ -167,14 +170,56 @@ export default async function UnitPage({
               )}
         </header>
 
-        {images.length > 0 && <HeroSlideshow images={images} />}
-
-        {/* ——— Details + sales card ——— */}
+        {/* ——— Floor plan + sales card, one row ——— */}
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0">
-            {/* Price / area / floor band */}
-            <Reveal>
-              <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
+            {hero && (
+              <ExpandableImage
+                image={hero}
+                fit={floorPlan ? "contain" : "cover"}
+              />
+            )}
+          </div>
+          <aside className="lg:sticky lg:top-6 lg:self-start">
+            <div className="rounded-2xl border bg-card p-5 shadow-[0_2px_14px_rgba(44,55,50,0.07)]">
+              <p className="text-[10px] font-medium tracking-[0.22em] text-brand uppercase">
+                Sales department
+              </p>
+              <p className="mt-2 text-[14px] font-medium">{SALES.phoneDisplay}</p>
+              <p className="text-[13px] text-muted-foreground">{SALES.email}</p>
+
+              <div className="mt-4">
+                {available ? (
+                  <>
+                    <UnitActions
+                      unit={unit}
+                      projectName={project.name}
+                      projectSlug={project.slug}
+                    />
+                    <a
+                      href={`${unitHref(project.slug, unit.unit_number)}/offer`}
+                      data-offer-cta
+                      className="mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-brand/50 text-[14px] font-medium text-brand transition-colors hover:bg-brand/10"
+                    >
+                      <FileDown className="size-4" strokeWidth={1.75} />
+                      Download Sales Offer
+                    </a>
+                  </>
+                ) : (
+                  <div className="rounded-lg border border-dashed bg-background px-4 py-3 text-[13px] text-muted-foreground">
+                    {unit.status === "unreleased"
+                      ? "This residence isn’t released yet. Register your interest with the sales team."
+                      : `This residence is ${unit.status === "sold" ? "sold" : "reserved"}. Ask the sales team about similar availability.`}
+                  </div>
+                )}
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {/* Price / area / floor band */}
+        <Reveal>
+          <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
                 {(
                   [
                     [
@@ -212,7 +257,7 @@ export default async function UnitPage({
                   <h2 className="font-display text-2xl font-medium tracking-tight">
                     Residence details
                   </h2>
-                  <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
+                  <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-3">
                     {details.map(([label, value]) => (
                       <div key={label} className="bg-card px-5 py-4">
                         <dt className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
@@ -227,10 +272,10 @@ export default async function UnitPage({
                         breakpoint — otherwise the grid's border ground
                         shows through as a beige hole. */}
                     {Array.from(
-                      { length: (4 - (details.length % 4)) % 4 },
+                      { length: (3 - (details.length % 3)) % 3 },
                       (_, i) => (
                         <div
-                          key={`fill-4-${i}`}
+                          key={`fill-3-${i}`}
                           aria-hidden
                           className="hidden bg-card sm:block"
                         />
@@ -243,45 +288,20 @@ export default async function UnitPage({
                 </section>
               </Reveal>
             )}
-          </div>
 
-          {/* ——— Sales aside ——— */}
-          <aside className="lg:sticky lg:top-6 lg:self-start">
-            <div className="rounded-2xl border bg-card p-5 shadow-[0_2px_14px_rgba(44,55,50,0.07)]">
-              <p className="text-[10px] font-medium tracking-[0.22em] text-brand uppercase">
-                Sales department
-              </p>
-              <p className="mt-2 text-[14px] font-medium">{SALES.phoneDisplay}</p>
-              <p className="text-[13px] text-muted-foreground">{SALES.email}</p>
-
+        {/* Media — unit shots + project artwork, click to expand */}
+        {mediaImages.length > 0 && (
+          <Reveal>
+            <section className="mt-10">
+              <h2 className="font-display text-2xl font-medium tracking-tight">
+                Media
+              </h2>
               <div className="mt-4">
-                {available ? (
-                  <>
-                    <UnitActions
-                      unit={unit}
-                      projectName={project.name}
-                      projectSlug={project.slug}
-                    />
-                    <a
-                      href={`${unitHref(project.slug, unit.unit_number)}/offer`}
-                      data-offer-cta
-                      className="mt-2.5 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-brand/50 text-[14px] font-medium text-brand transition-colors hover:bg-brand/10"
-                    >
-                      <FileDown className="size-4" strokeWidth={1.75} />
-                      Download Sales Offer
-                    </a>
-                  </>
-                ) : (
-                  <div className="rounded-lg border border-dashed bg-background px-4 py-3 text-[13px] text-muted-foreground">
-                    {unit.status === "unreleased"
-                      ? "This residence isn’t released yet. Register your interest with the sales team."
-                      : `This residence is ${unit.status === "sold" ? "sold" : "reserved"}. Ask the sales team about similar availability.`}
-                  </div>
-                )}
+                <MediaGrid images={mediaImages} />
               </div>
-            </div>
-          </aside>
-        </div>
+            </section>
+          </Reveal>
+        )}
 
         <footer className="mt-14 border-t pt-6 pb-2 text-[12px] text-muted-foreground">
           © {new Date().getFullYear()} Evera Developments · availability updates

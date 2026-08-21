@@ -18,7 +18,7 @@ import { HeroSlideshow } from "@/components/hero-slideshow";
 import { InventoryExplorer } from "@/components/inventory-explorer";
 import { LocationMap } from "@/components/location-map";
 import { Reveal } from "@/components/reveal";
-import { StickyCta } from "@/components/sticky-cta";
+import { ProjectTopBar } from "@/components/sticky-cta";
 import { VideoEmbed } from "@/components/video-embed";
 
 export const revalidate = 60;
@@ -84,25 +84,15 @@ export default async function ProjectPage({
     alt: `${project.name} — render ${i + 1}`,
   }));
 
-  // Manual launch price always wins over the derived line (marketing
-  // clears it at sell-out — CRM field says so). Prefixed unless the
-  // typed text already carries its own "from" phrasing.
-  const priceLine = project.launch_price
-    ? /from/i.test(project.launch_price)
-      ? project.launch_price
-      : `Starting From: ${project.launch_price}`
-    : availability.text;
-  const priceTone =
-    project.launch_price !== null || availability.tone === "price";
+  // "Starting From" fact: manual launch price always wins over the
+  // derived line (marketing clears it at sell-out — CRM field says so).
+  // The label carries the "From", so derived text drops its own prefix.
+  const startingFrom =
+    project.launch_price ?? availability.text.replace(/^From /, "");
 
+  // Order per Bharath (2026-08-21): floors → residences → available →
+  // starting from → payment plan → handover, one row on desktop.
   const facts: Array<[string, string]> = [
-    ...(handover ? ([["Handover", handover]] as Array<[string, string]>) : []),
-    ...(stats.total > 0
-      ? ([
-          ["Residences", String(stats.total)],
-          ["Available", String(stats.available)],
-        ] as Array<[string, string]>)
-      : []),
     ...(project.floors_label
       ? ([["Floors", project.floors_label]] as Array<[string, string]>)
       : stats.floors
@@ -110,12 +100,35 @@ export default async function ProjectPage({
             [string, string]
           >)
         : []),
+    ...(stats.total > 0
+      ? ([
+          ["Residences", String(stats.total)],
+          ["Available", String(stats.available)],
+        ] as Array<[string, string]>)
+      : []),
+    ["Starting From", startingFrom],
     ...(project.payment_plan_label
       ? ([["Payment Plan", project.payment_plan_label]] as Array<
           [string, string]
         >)
       : []),
+    ...(handover ? ([["Handover", handover]] as Array<[string, string]>) : []),
   ];
+  const FACT_COLS: Record<number, string> = {
+    1: "sm:grid-cols-1",
+    2: "sm:grid-cols-2",
+    3: "sm:grid-cols-3",
+    4: "sm:grid-cols-2 lg:grid-cols-4",
+    5: "sm:grid-cols-3 lg:grid-cols-5",
+    6: "sm:grid-cols-3 lg:grid-cols-6",
+  };
+  // Card-colored fillers complete the last row at each breakpoint —
+  // otherwise the strip's border ground shows through as a beige hole.
+  const FACT_FILLERS: Record<number, string[]> = {
+    3: ["block sm:hidden"],
+    4: ["hidden sm:block lg:hidden", "hidden sm:block lg:hidden"],
+    5: ["block lg:hidden"],
+  };
 
   const paragraphs = (project.description ?? "")
     .split(/\n\s*\n/)
@@ -139,43 +152,30 @@ export default async function ProjectPage({
 
   return (
     <main className="bg-grain min-h-dvh">
+      <ProjectTopBar
+        projectName={project.name}
+        projectSlug={project.slug}
+        hasInventory={stats.total > 0}
+      />
       <div className="mx-auto w-full max-w-6xl px-6 py-8 lg:px-8 lg:py-10">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          ← Back to map
-        </Link>
-
         {/* Hero — text above, imagery below */}
-        <header className="mt-6">
+        <header>
           <p className="text-[11px] font-medium tracking-[0.22em] text-brand uppercase">
             {project.location ?? "Dubai"} · Evera Developments
           </p>
           <h1 className="font-display mt-2 text-4xl leading-tight font-medium tracking-tight lg:text-5xl">
             {project.name}
           </h1>
-          <p
-            className={
-              priceTone
-                ? "mt-3 text-lg font-medium"
-                : "mt-3 text-lg font-medium text-muted-foreground"
-            }
-          >
-            {priceLine}
-          </p>
         </header>
 
         <HeroSlideshow images={slides} />
-        {/* Sticky-bar sentinel: the bar appears once this scrolls away. */}
-        <div id="hero-end" aria-hidden />
 
         {/* Key facts strip */}
         {facts.length > 0 && (
           <Reveal>
             <dl
               className={`mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border ${
-                facts.length >= 5 ? "sm:grid-cols-3 lg:grid-cols-5" : "sm:grid-cols-4"
+                FACT_COLS[facts.length] ?? "sm:grid-cols-3 lg:grid-cols-6"
               }`}
             >
               {facts.map(([label, value]) => (
@@ -188,20 +188,23 @@ export default async function ProjectPage({
                   </dd>
                 </div>
               ))}
+              {(FACT_FILLERS[facts.length] ?? []).map((cls, i) => (
+                <div key={`fill-${i}`} aria-hidden className={`bg-card ${cls}`} />
+              ))}
             </dl>
           </Reveal>
         )}
 
-        {/* About — centered editorial column */}
+        {/* About — full-width editorial block, justified */}
         <Reveal>
-          <section className="mx-auto mt-14 max-w-3xl text-center">
+          <section className="mt-14">
             <p className="text-[11px] font-medium tracking-[0.22em] text-brand uppercase">
               The Project
             </p>
             <h2 className="font-display mt-2 text-3xl font-medium tracking-tight">
               About {project.name}
             </h2>
-            <div className="mt-5 space-y-4 text-[15px] leading-[1.85] text-muted-foreground">
+            <div className="mt-5 space-y-4 text-justify text-[15px] leading-[1.85] text-muted-foreground">
               {paragraphs.length > 0 ? (
                 paragraphs.map((paragraph, i) => <p key={i}>{paragraph}</p>)
               ) : (
@@ -223,92 +226,9 @@ export default async function ProjectPage({
           </Reveal>
         )}
 
-        {/* Location / Nearby / Amenities */}
-        {locationColumns > 0 && (
-          <Reveal>
-            <section
-              data-location-card
-              className="mt-14 overflow-hidden rounded-xl border bg-card"
-            >
-              <div
-                className={`grid divide-y divide-border md:divide-x md:divide-y-0 ${
-                  locationColumns === 3
-                    ? "md:grid-cols-3"
-                    : locationColumns === 2
-                      ? "md:grid-cols-2"
-                      : ""
-                }`}
-              >
-                {hasCoords && (
-                  <div className="p-6 sm:p-7">
-                    <ColumnHeading>Location</ColumnHeading>
-                    <div className="mt-4">
-                      <LocationMap
-                        latitude={project.latitude!}
-                        longitude={project.longitude!}
-                      />
-                    </div>
-                  </div>
-                )}
-                {nearby.length > 0 && (
-                  <div className="p-6 sm:p-7">
-                    <ColumnHeading>Nearby</ColumnHeading>
-                    <ul className="mt-4 space-y-3.5">
-                      {nearby.map((place) => {
-                        const Icon = placeIcon(place.icon);
-                        return (
-                          <li
-                            key={`${place.icon}-${place.label}`}
-                            className="flex items-center gap-3 text-[14px]"
-                          >
-                            <Icon
-                              className="size-4 shrink-0 text-evergreen/70"
-                              strokeWidth={1.5}
-                            />
-                            <span className="min-w-0 flex-1 truncate">
-                              {place.label}
-                            </span>
-                            <span className="shrink-0 text-muted-foreground tabular-nums">
-                              {place.minutes} min
-                            </span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                )}
-                {amenities.length > 0 && (
-                  <div className="p-6 sm:p-7">
-                    <ColumnHeading>Amenities</ColumnHeading>
-                    <ul className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
-                      {amenities.map((amenity) => {
-                        const Icon = placeIcon(amenity.icon);
-                        return (
-                          <li
-                            key={`${amenity.icon}-${amenity.label}`}
-                            className="flex items-center gap-3 text-[14px]"
-                          >
-                            <Icon
-                              className="size-4 shrink-0 text-evergreen/70"
-                              strokeWidth={1.5}
-                            />
-                            <span className="min-w-0 truncate">
-                              {amenity.label}
-                            </span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </section>
-          </Reveal>
-        )}
-
         {/* Inventory — the interactive facade/floor explorer */}
         <Reveal>
-          <section id="inventory" className="mt-14 scroll-mt-8">
+          <section id="inventory" className="mt-14 scroll-mt-20">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-display text-2xl font-medium tracking-tight">
                 Inventory
@@ -411,17 +331,94 @@ export default async function ProjectPage({
           </Reveal>
         )}
 
+        {/* Location / Nearby / Amenities — last stop before the footer */}
+        {locationColumns > 0 && (
+          <Reveal>
+            <section
+              data-location-card
+              className="mt-14 overflow-hidden rounded-xl border bg-card"
+            >
+              <div
+                className={`grid divide-y divide-border md:divide-x md:divide-y-0 ${
+                  locationColumns === 3
+                    ? "md:grid-cols-3"
+                    : locationColumns === 2
+                      ? "md:grid-cols-2"
+                      : ""
+                }`}
+              >
+                {hasCoords && (
+                  <div className="p-6 sm:p-7">
+                    <ColumnHeading>Location</ColumnHeading>
+                    <div className="mt-4">
+                      <LocationMap
+                        latitude={project.latitude!}
+                        longitude={project.longitude!}
+                      />
+                    </div>
+                  </div>
+                )}
+                {nearby.length > 0 && (
+                  <div className="p-6 sm:p-7">
+                    <ColumnHeading>Nearby</ColumnHeading>
+                    <ul className="mt-4 space-y-3.5">
+                      {nearby.map((place) => {
+                        const Icon = placeIcon(place.icon);
+                        return (
+                          <li
+                            key={`${place.icon}-${place.label}`}
+                            className="flex items-center gap-3 text-[14px]"
+                          >
+                            <Icon
+                              className="size-4 shrink-0 text-evergreen/70"
+                              strokeWidth={1.5}
+                            />
+                            <span className="min-w-0 flex-1 truncate">
+                              {place.label}
+                            </span>
+                            <span className="shrink-0 text-muted-foreground tabular-nums">
+                              {place.minutes} min
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+                {amenities.length > 0 && (
+                  <div className="p-6 sm:p-7">
+                    <ColumnHeading>Amenities</ColumnHeading>
+                    <ul className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
+                      {amenities.map((amenity) => {
+                        const Icon = placeIcon(amenity.icon);
+                        return (
+                          <li
+                            key={`${amenity.icon}-${amenity.label}`}
+                            className="flex items-center gap-3 text-[14px]"
+                          >
+                            <Icon
+                              className="size-4 shrink-0 text-evergreen/70"
+                              strokeWidth={1.5}
+                            />
+                            <span className="min-w-0 truncate">
+                              {amenity.label}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </section>
+          </Reveal>
+        )}
+
         <footer className="mt-14 border-t pt-6 pb-2 text-[12px] text-muted-foreground">
           © {new Date().getFullYear()} Evera Developments · availability
           updates live from Evera One
         </footer>
       </div>
-
-      <StickyCta
-        projectName={project.name}
-        projectSlug={project.slug}
-        hasInventory={stats.total > 0}
-      />
     </main>
   );
 }

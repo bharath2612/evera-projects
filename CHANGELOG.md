@@ -2,6 +2,34 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-21 — Project page reflow, floor side sheet, unit page media
+
+**Changed**
+- **Project page**: sticky top bar (back arrow · name · Inventory +
+  Enquire) replaces the back-link and the bottom slide-in bar; hero
+  price line folded into the key-facts strip as a **Starting From**
+  cell — order now Floors → Residences → Available → Starting From →
+  Payment Plan → Handover, one row on desktop with per-count fillers;
+  About is full-width, left-aligned and justified; Location/Nearby/
+  Amenities moved below Documents; slideshow slides click open a
+  full-screen lightbox. Map card mirrors the same fact order and the
+  floors/launch-price overrides.
+- **Floor explorer**: the centered dialog became a right-side sheet
+  with the CRM unit-peek chrome (max-w-md, light scrim, 300ms
+  off-canvas slide), **portaled to `<body>`**. Root cause of both the
+  "never centered" and "ghost sheet mid-page on back-nav" bugs: the
+  scroll-reveal wrapper kept a persistent CSS transform, making the
+  section the containing block for position:fixed — `Reveal` now uses
+  a one-shot keyframe (transform ends `none`) and overlays portal out.
+- **Key plan**: only for-sale residences are interactive; unreleased
+  fully greyed out, reserved solid orange, sold solid muted evergreen
+  (white numerals on solids); the residence rows follow the same rule.
+- **Unit page**: floor plan is a single expandable hero beside the
+  sticky CTA card (one row); price band + Residence details (now
+  3-col) full width below; a **Media** grid (unit shots then project
+  artwork, square thumbs, shared portaled lightbox) replaces the
+  slideshow. `hero-slideshow` remains project-page only.
+
 ## 2026-08-21 — Unit page joins the landing-page language
 
 **Changed**

@@ -73,21 +73,32 @@ export function ProjectSidebar({
           {project.name}
         </h2>
 
+        {/* Manual launch price always wins over the derived line. */}
         <p
           className={
-            availability.tone === "price"
+            project.launch_price || availability.tone === "price"
               ? "mt-1.5 text-[15px] font-medium"
               : "mt-1.5 text-[14px] font-medium text-muted-foreground"
           }
         >
-          {availability.text}
+          {project.launch_price
+            ? /from/i.test(project.launch_price)
+              ? project.launch_price
+              : `Starting From: ${project.launch_price}`
+            : availability.text}
         </p>
 
+        {/* Same facts, same order as the project page's key-facts strip:
+            Floors → Residences → Available → Payment Plan → Handover
+            (Starting From is the headline price line above). */}
         <dl className="mt-4 space-y-2.5 border-t pt-4 text-[13px]">
-          {handover && (
+          {(project.floors_label || stats?.floors) && (
             <div className="flex items-baseline justify-between gap-3">
-              <dt className="text-muted-foreground">Handover</dt>
-              <dd className="font-medium">{handover}</dd>
+              <dt className="text-muted-foreground">Floors</dt>
+              <dd className="font-medium tabular-nums">
+                {project.floors_label ??
+                  `${stats!.floors!.min}–${stats!.floors!.max}`}
+              </dd>
             </div>
           )}
           {stats && stats.total > 0 && (
@@ -100,15 +111,21 @@ export function ProjectSidebar({
                 <dt className="text-muted-foreground">Available now</dt>
                 <dd className="font-medium tabular-nums">{stats.available}</dd>
               </div>
-              {stats.floors && (
-                <div className="flex items-baseline justify-between gap-3">
-                  <dt className="text-muted-foreground">Floors</dt>
-                  <dd className="font-medium tabular-nums">
-                    {stats.floors.min}–{stats.floors.max}
-                  </dd>
-                </div>
-              )}
             </>
+          )}
+          {project.payment_plan_label && (
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">Payment plan</dt>
+              <dd className="font-medium tabular-nums">
+                {project.payment_plan_label}
+              </dd>
+            </div>
+          )}
+          {handover && (
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">Handover</dt>
+              <dd className="font-medium">{handover}</dd>
+            </div>
           )}
         </dl>
 

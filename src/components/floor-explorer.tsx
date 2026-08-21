@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Sparkles, X } from "lucide-react";
@@ -59,20 +60,9 @@ function UnitRow({
 }) {
   const meta = STATUS_META[unit.status];
   const available = unit.status === "available";
-  return (
-    <Link
-      href={href}
-      onMouseEnter={() => onHover(posOf(unit))}
-      onMouseLeave={() => onHover(null)}
-      onFocus={() => onHover(posOf(unit))}
-      onBlur={() => onHover(null)}
-      data-unit-row={unit.unit_number}
-      className={`flex w-full shrink-0 cursor-pointer items-center gap-3 rounded-lg border px-2.5 py-2 text-left transition-all ${
-        highlighted
-          ? "border-brand/60 bg-brand/8"
-          : "border-transparent hover:border-brand/40 hover:bg-brand/5"
-      } ${dimmed && !highlighted ? "opacity-40" : ""}`}
-    >
+
+  const body = (
+    <>
       <span
         className={`flex h-8 min-w-11 items-center justify-center rounded-md px-1.5 text-[13px] font-semibold tracking-wide tabular-nums ${meta.chip}`}
       >
@@ -99,6 +89,40 @@ function UnitRow({
           {meta.label}
         </span>
       )}
+    </>
+  );
+
+  // Only for-sale residences link out; the rest are inert rows —
+  // unreleased additionally reads fully greyed out.
+  if (!available) {
+    return (
+      <div
+        data-unit-row={unit.unit_number}
+        aria-disabled
+        className={`flex w-full shrink-0 cursor-default items-center gap-3 rounded-lg border border-transparent px-2.5 py-2 text-left ${
+          unit.status === "unreleased" ? "opacity-45" : ""
+        } ${dimmed ? "opacity-40" : ""}`}
+      >
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      onMouseEnter={() => onHover(posOf(unit))}
+      onMouseLeave={() => onHover(null)}
+      onFocus={() => onHover(posOf(unit))}
+      onBlur={() => onHover(null)}
+      data-unit-row={unit.unit_number}
+      className={`flex w-full shrink-0 cursor-pointer items-center gap-3 rounded-lg border px-2.5 py-2 text-left transition-all ${
+        highlighted
+          ? "border-brand/60 bg-brand/8"
+          : "border-transparent hover:border-brand/40 hover:bg-brand/5"
+      } ${dimmed && !highlighted ? "opacity-40" : ""}`}
+    >
+      {body}
     </Link>
   );
 }
@@ -305,22 +329,31 @@ export function FloorExplorer({
         />
       )}
 
-      {/* ——— Floor dialog: the brochure card over the render ——— */}
-      {floor !== null && (
+      {/* ——— Floor sheet — PORTALED to <body>: any animating/transformed
+          ancestor (e.g. the section's scroll-reveal) would otherwise
+          become the containing block for position:fixed and briefly
+          anchor the sheet mid-page on back-navigation. ——— */}
+      {floor !== null &&
+        createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-6"
+          // Right-side sheet: full-height, edge-anchored — no centering
+          // math to drift, and floors with 2 or 10 residences render in
+          // the identical frame (the list scrolls inside).
+          className="fixed inset-0 z-50"
           role="dialog"
           aria-modal="true"
           aria-label={`Floor ${floor} residences`}
           data-floor-dialog
         >
+          {/* Same chrome as the CRM inventory's unit peek: light scrim,
+              max-w-md panel sliding fully in from the right. */}
           <button
             type="button"
             aria-label="Close"
             onClick={close}
-            className="absolute inset-0 cursor-default bg-evergreen/35 backdrop-blur-[3px]"
+            className="backdrop-fade absolute inset-0 cursor-default bg-foreground/10 backdrop-blur-[1px]"
           />
-          <div className="floor-swap relative flex max-h-[88dvh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border bg-card shadow-[0_24px_80px_rgba(44,55,50,0.35)]">
+          <div className="sheet-in absolute inset-y-0 right-0 flex h-full w-full max-w-md flex-col overflow-hidden border-l bg-background shadow-2xl">
             {/* Wordmark header. The logo is capped by HEIGHT, not width —
                 square logo assets at a fixed width ate ~180px of a short
                 laptop's viewport and squeezed the key plan out. */}
@@ -476,7 +509,8 @@ export function FloorExplorer({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
