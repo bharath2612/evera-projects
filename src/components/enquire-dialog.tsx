@@ -158,7 +158,7 @@ export function EnquireDialog({
                   htmlFor="enq-name"
                   className="mb-1 block text-[12px] font-medium text-muted-foreground"
                 >
-                  Full name
+                  Full name <span aria-hidden className="text-red-700">*</span>
                 </label>
                 <input
                   id="enq-name"
@@ -176,7 +176,7 @@ export function EnquireDialog({
                   htmlFor="enq-phone"
                   className="mb-1 block text-[12px] font-medium text-muted-foreground"
                 >
-                  Phone
+                  Phone <span aria-hidden className="text-red-700">*</span>
                 </label>
                 <div className="flex gap-2">
                   <select

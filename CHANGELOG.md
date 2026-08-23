@@ -2,7 +2,15 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
-## 2026-08-21 — Project page reflow, floor side sheet, unit page media
+## 2026-08-23 — Required-field asterisks in the enquire dialog
+
+**Changed**
+- **Enquire Now dialog**: Full name and Phone (the two required
+  fields) now carry a red `*` after the label, matching the existing
+  "(optional)" tag on Email. Same convention as Evera One, where every
+  required form field is now asterisk-marked.
+
+
 
 **Changed**
 - **Project page**: sticky top bar (back arrow · name · Inventory +
