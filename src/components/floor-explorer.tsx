@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -141,11 +141,15 @@ export function FloorExplorer({
   facade,
   slug,
   projectName,
+  accentStyle,
 }: {
   units: PublicUnit[];
   facade: FacadeConfig;
   slug: string;
   projectName: string;
+  /** Validated --brand override — the sheet portals to <body> and escapes
+      the [slug] layout's accent wrapper, so it needs the var itself. */
+  accentStyle?: CSSProperties;
 }) {
   const brand = brandFor(slug);
   const router = useRouter();
@@ -340,6 +344,7 @@ export function FloorExplorer({
           // math to drift, and floors with 2 or 10 residences render in
           // the identical frame (the list scrolls inside).
           className="fixed inset-0 z-50"
+          style={accentStyle}
           role="dialog"
           aria-modal="true"
           aria-label={`Floor ${floor} residences`}

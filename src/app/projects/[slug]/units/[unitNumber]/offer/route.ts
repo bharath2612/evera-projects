@@ -31,6 +31,17 @@ const EVERGREEN = rgb(0x2c / 255, 0x37 / 255, 0x32 / 255);
 const MUTED = rgb(0.45, 0.5, 0.47);
 const HAIRLINE = rgb(0.88, 0.85, 0.82);
 
+/** The project's accent as a pdf-lib color; null/invalid → house bronze.
+    Mirrors the web pages, where accent_color overrides --brand. */
+function accentRgb(hex: string | null) {
+  if (!hex || !/^#[0-9a-f]{6}$/i.test(hex)) return BRONZE;
+  return rgb(
+    parseInt(hex.slice(1, 3), 16) / 255,
+    parseInt(hex.slice(3, 5), 16) / 255,
+    parseInt(hex.slice(5, 7), 16) / 255,
+  );
+}
+
 const AED = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const AREA = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
@@ -73,6 +84,7 @@ export async function GET(
   const projects = await fetchProjects();
   const project = projects.find((p) => p.slug === slug);
   if (!project) return new NextResponse("Not found", { status: 404 });
+  const ACCENT = accentRgb(project.accent_color);
   const units = await fetchUnits(project.id);
   const unit = units.find(
     (u) => u.unit_number === decodeURIComponent(unitNumber),
@@ -190,7 +202,7 @@ export async function GET(
     });
   }
   y -= 12;
-  rule(BRONZE, 1.2);
+  rule(ACCENT, 1.2);
 
   // ——— Identity block — three columns, two aligned label/value rows ———
   y -= 24;
@@ -235,13 +247,13 @@ export async function GET(
         : [`${project.name},`, project.location];
     const topY = y;
     for (const line of lines) {
-      text(line, cols[2], 9.5, sansBold, BRONZE);
+      text(line, cols[2], 9.5, sansBold, ACCENT);
       const width = sansBold.widthOfTextAtSize(line, 9.5);
       page.drawLine({
         start: { x: cols[2], y: y - 2 },
         end: { x: cols[2] + width, y: y - 2 },
         thickness: 0.6,
-        color: BRONZE,
+        color: ACCENT,
       });
       if (line !== lines[lines.length - 1]) y -= 12;
     }
@@ -258,7 +270,7 @@ export async function GET(
 
   // ——— Unit details ———
   y -= 34;
-  text("UNIT DETAILS", left, 8, sansBold, BRONZE);
+  text("UNIT DETAILS", left, 8, sansBold, ACCENT);
   y -= 8;
   rule();
   const leftDetails: Array<[string, string]> = [
@@ -323,18 +335,18 @@ export async function GET(
     width: right - left,
     height: 36,
     color: rgb(0.976, 0.968, 0.958),
-    borderColor: BRONZE,
+    borderColor: ACCENT,
     borderWidth: 0.75,
   });
   const bannerBaseline = y;
   y = bannerBaseline + 1;
-  text("UNIT PRICE", left + 14, 8, sansBold, BRONZE);
+  text("UNIT PRICE", left + 14, 8, sansBold, ACCENT);
   text(`AED ${AED.format(price)}`, right - 14, 15, sansBold, EVERGREEN, "right");
   y = bannerBaseline;
 
   // ——— Payment plan (configured per unit type in Offer Settings) ———
   y -= 40;
-  text("PAYMENT PLAN", left, 8, sansBold, BRONZE);
+  text("PAYMENT PLAN", left, 8, sansBold, ACCENT);
   y -= 8;
   rule();
   y -= 16;
@@ -350,14 +362,14 @@ export async function GET(
     text(AED.format((price * instalment.pct) / 100), right, 10, sans, EVERGREEN, "right");
   }
   y -= 10;
-  rule(BRONZE, 1);
+  rule(ACCENT, 1);
   y -= 19;
-  text("TOTAL", left, 10, sansBold, BRONZE);
+  text("TOTAL", left, 10, sansBold, ACCENT);
   text(`AED ${AED.format(price)}`, right, 14, sansBold, EVERGREEN, "right");
 
   // ——— Fees ———
   y -= 30;
-  text("GOVERNMENT FEES", left, 8, sansBold, BRONZE);
+  text("GOVERNMENT FEES", left, 8, sansBold, ACCENT);
   y -= 8;
   rule();
   y -= 16;
@@ -447,14 +459,14 @@ export async function GET(
         };
 
         // header
-        t3("FLOOR PLAN", left, 10, sansBold, BRONZE);
+        t3("FLOOR PLAN", left, 10, sansBold, ACCENT);
         t3(`No.${unit.unit_number} — ${unit.type_label}`, right, 10, sansBold, MUTED, "right");
         y3 -= 10;
         p3.drawLine({
           start: { x: left, y: y3 },
           end: { x: right, y: y3 },
           thickness: 1.2,
-          color: BRONZE,
+          color: ACCENT,
         });
 
         // the plan card, full content width — blank slot when no artwork

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink, FileText, LayoutGrid } from "lucide-react";
 import {
+  accentStyle,
   availabilityLine,
   deriveStats,
   fetchProjectMedia,
@@ -277,6 +278,7 @@ export default async function ProjectPage({
                     facade={project.facade_config}
                     slug={project.slug}
                     projectName={project.name}
+                    accentStyle={accentStyle(project)}
                   />
                 ) : (
                   <InventoryExplorer

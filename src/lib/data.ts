@@ -1,4 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
+import { cache } from "react";
+import type { CSSProperties } from "react";
 
 /**
  * Read-only data layer. The anon key can see exactly two whitelisted views
@@ -61,6 +63,23 @@ export interface PublicProject {
   factsheet_path: string | null;
   payment_plan_doc_path: string | null;
   floor_plan_doc_path: string | null;
+  /** 6-digit hex set in the CRM; overrides --brand on this project's
+      pages and tints its sales-offer PDF. Null = house bronze. */
+  accent_color: string | null;
+}
+
+/**
+ * Inline-style override of the site-wide --brand for one project's pages.
+ * Only a validated 6-digit hex ever reaches the style attribute (a raw DB
+ * value must not be interpolated into CSS); anything else = house bronze.
+ */
+export function accentStyle(
+  project: Pick<PublicProject, "accent_color">,
+): CSSProperties | undefined {
+  const accent = project.accent_color;
+  return accent && /^#[0-9a-f]{6}$/i.test(accent)
+    ? ({ "--brand": accent } as CSSProperties)
+    : undefined;
 }
 
 export type PublicUnitStatus = "unreleased" | "available" | "reserved" | "sold";
@@ -257,13 +276,16 @@ export interface ProjectStats {
   floors: { min: number; max: number } | null;
 }
 
-export async function fetchProjects(): Promise<PublicProject[]> {
-  const { data } = await supabase
-    .from("public_projects")
-    .select("*")
-    .order("name");
-  return (data as PublicProject[]) ?? [];
-}
+// cache(): the [slug] layout and its page both call this per request.
+export const fetchProjects = cache(
+  async (): Promise<PublicProject[]> => {
+    const { data } = await supabase
+      .from("public_projects")
+      .select("*")
+      .order("name");
+    return (data as PublicProject[]) ?? [];
+  },
+);
 
 export async function fetchUnits(projectId?: string): Promise<PublicUnit[]> {
   let query = supabase.from("public_units").select("*");

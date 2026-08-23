@@ -2,6 +2,28 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-23 — Per-project accent color
+
+**Added**
+- **Each project can now carry its own accent** (`accent_color`, set in
+  the evera-one CRM; migration 0050 there): a new
+  `projects/[slug]/layout.tsx` overrides the site-wide `--brand` on a
+  `display: contents` wrapper, so every brand utility and inline
+  `var(--brand)` (key plan, facade picker) on the project, inventory and
+  unit pages retints with zero component changes. Accent-only by
+  design — hairline borders, muted washes and evergreen ink still derive
+  from `--brand-bronze`, so pages stay recognisably Evera. Null/invalid
+  hex → house bronze; `accentStyle()` in `lib/data.ts` validates before
+  anything reaches an inline style.
+- **Floor sheet**: portaled to `<body>`, so it escapes the wrapper — it
+  now receives the validated accent as a prop and sets the var on its
+  own portal root.
+- **Sales-offer PDF**: the pdf-lib `BRONZE` accents (rules, section
+  headings, price box border) become the project accent via
+  `accentRgb()`; ink/muted/hairline unchanged, bronze fallback.
+- `fetchProjects` wrapped in React `cache()` — the segment layout and
+  page share one view read per request.
+
 ## 2026-08-23 — Required-field asterisks in the enquire dialog
 
 **Changed**
