@@ -1,16 +1,16 @@
 import { PDFDocument, PDFFont, PDFImage, StandardFonts, rgb } from "pdf-lib";
 
 /**
- * Inventory List PDF — landscape A4, modeled on the client's reference
- * export: the sales-offer cover as page one with a timestamp chip, the
- * for-sale table under an evergreen header band, then one full-bleed
- * floor-plan page per unit. Pure builder shared VERBATIM between
+ * Inventory List PDF — portrait A4: the sales-offer cover as page one,
+ * the for-sale table under an evergreen header band with the generation
+ * date/time stamped above it, then one full-bleed floor-plan page per
+ * unit. Pure builder shared VERBATIM between
  * evera-one (CRM export dropdown) and evera-projects (public inventory
  * download) — keep the two copies identical; data plumbing differs on
  * each side, bytes in / bytes out here.
  */
 
-const PAGE = { width: 841.89, height: 595.28, margin: 48 } as const; // A4 landscape
+const PAGE = { width: 595.28, height: 841.89, margin: 48 } as const; // A4 portrait
 const EVERGREEN = rgb(0x2c / 255, 0x37 / 255, 0x32 / 255);
 const INK = rgb(0.2, 0.22, 0.21);
 const HAIRLINE = rgb(0.78, 0.8, 0.79);
@@ -116,27 +116,6 @@ export async function buildInventoryPdf(
       color: WHITE,
     });
   }
-  // Timestamp chip, bottom-right (as in the reference export).
-  const stampSize = 11;
-  const stampWidth = sans.widthOfTextAtSize(input.generatedAt, stampSize);
-  const chipW = stampWidth + 20;
-  const chipH = 24;
-  const chipX = PAGE.width - chipW - 28;
-  const chipY = 28;
-  cover.drawRectangle({
-    x: chipX,
-    y: chipY,
-    width: chipW,
-    height: chipH,
-    color: EVERGREEN,
-  });
-  cover.drawText(input.generatedAt, {
-    x: chipX + 10,
-    y: chipY + (chipH - stampSize) / 2 + 1.5,
-    size: stampSize,
-    font: sans,
-    color: WHITE,
-  });
 
   // ── table pages ────────────────────────────────────────────────────
   const left = PAGE.margin;
@@ -146,42 +125,62 @@ export async function buildInventoryPdf(
     width: number;
     value: (row: InventoryRow, index: number) => string;
   }> = [
-    { label: "Sr No", width: 46, value: (_row, index) => String(index + 1) },
-    { label: "Floor", width: 96, value: (row) => floorLabel(row.floor) },
-    { label: "Unit No", width: 70, value: (row) => row.unitNumber },
-    { label: "Unit Type", width: 100, value: (row) => row.typeLabel },
+    { label: "Sr", width: 30, value: (_row, index) => String(index + 1) },
+    { label: "Floor", width: 72, value: (row) => floorLabel(row.floor) },
+    { label: "Unit No", width: 48, value: (row) => row.unitNumber },
+    { label: "Unit Type", width: 88, value: (row) => row.typeLabel },
     {
-      label: "Suite Area",
-      width: 92,
+      label: "Suite",
+      width: 56,
       value: (row) =>
         row.suiteSqft === null ? "—" : NUM.format(row.suiteSqft),
     },
     {
-      label: "Balcony Area",
-      width: 96,
+      label: "Balcony",
+      width: 58,
       value: (row) =>
         row.balconySqft === null ? "—" : NUM.format(row.balconySqft),
     },
     {
-      label: "Total Area (sqft)",
-      width: 116,
+      label: "Total (sqft)",
+      width: 70,
       value: (row) => NUM.format(row.totalSqft),
     },
     {
       label: "Price AED",
-      width: contentWidth - 46 - 96 - 70 - 100 - 92 - 96 - 116,
+      width: contentWidth - 30 - 72 - 48 - 88 - 56 - 58 - 70,
       value: (row) => PRICE.format(row.priceAed),
     },
   ];
-  const ROW_H = 27;
-  const ROWS_PER_PAGE = Math.floor(
-    (PAGE.height - PAGE.margin * 2 - ROW_H) / ROW_H,
-  );
+  const ROW_H = 24;
+  // The first table page reserves a band above the table for the
+  // generation stamp; later pages use the full height.
+  const STAMP_BAND = 26;
+  const rowsThatFit = (reserved: number) =>
+    Math.floor((PAGE.height - PAGE.margin * 2 - reserved - ROW_H) / ROW_H);
 
-  for (let start = 0; start < input.rows.length; start += ROWS_PER_PAGE) {
+  let start = 0;
+  let firstTablePage = true;
+  while (start < input.rows.length) {
+    const reserved = firstTablePage ? STAMP_BAND : 0;
     const page = doc.addPage([PAGE.width, PAGE.height]);
-    const slice = input.rows.slice(start, start + ROWS_PER_PAGE);
-    let y = PAGE.height - PAGE.margin - ROW_H;
+    const slice = input.rows.slice(start, start + rowsThatFit(reserved));
+    let y = PAGE.height - PAGE.margin - reserved - ROW_H;
+
+    if (firstTablePage) {
+      // Date + time of generation, right-aligned above the table.
+      const stampSize = 10;
+      page.drawText(input.generatedAt, {
+        x:
+          left +
+          contentWidth -
+          sans.widthOfTextAtSize(input.generatedAt, stampSize),
+        y: PAGE.height - PAGE.margin - stampSize,
+        size: stampSize,
+        font: sans,
+        color: INK,
+      });
+    }
 
     // Header band.
     page.drawRectangle({
@@ -194,9 +193,9 @@ export async function buildInventoryPdf(
     let x = left;
     for (const col of COLS) {
       page.drawText(col.label, {
-        x: x + 8,
-        y: y + 9,
-        size: 10.5,
+        x: x + 7,
+        y: y + 8,
+        size: 9.5,
         font: sansBold,
         color: WHITE,
       });
@@ -210,9 +209,9 @@ export async function buildInventoryPdf(
       font: PDFFont,
     ) =>
       page.drawText(text, {
-        x: colX + 8,
-        y: rowY + 9,
-        size: 10.5,
+        x: colX + 7,
+        y: rowY + 8,
+        size: 9.5,
         font,
         color: INK,
       });
@@ -233,7 +232,7 @@ export async function buildInventoryPdf(
     });
 
     // Outer frame + column separators over the drawn block.
-    const blockTop = PAGE.height - PAGE.margin;
+    const blockTop = PAGE.height - PAGE.margin - reserved;
     const blockBottom = y;
     page.drawRectangle({
       x: left,
@@ -253,6 +252,9 @@ export async function buildInventoryPdf(
         color: HAIRLINE,
       });
     }
+
+    start += slice.length;
+    firstTablePage = false;
   }
 
   // ── one floor-plan page per unit ───────────────────────────────────
