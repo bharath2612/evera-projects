@@ -52,7 +52,7 @@ Entry before every push: what was added, what is left. Newest first.
   "(optional)" tag on Email. Same convention as Evera One, where every
   required form field is now asterisk-marked.
 
-
+## 2026-08-21 — Project page reflow, floor side sheet, unit page media
 
 **Changed**
 - **Project page**: sticky top bar (back arrow · name · Inventory +
