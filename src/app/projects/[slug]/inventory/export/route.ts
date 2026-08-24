@@ -70,7 +70,16 @@ export async function GET(
       day: "numeric",
       year: "numeric",
       timeZone: "Asia/Dubai",
-    })} at ${now.toLocaleTimeString("en-US", { timeZone: "Asia/Dubai" })}`,
+    })} · ${now.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "Asia/Dubai",
+    })}`,
+    typeFilterLabel:
+      typeFilter && typeFilter !== "all"
+        ? (units.find((unit) => unit.type_code === typeFilter)?.type_label ??
+          typeFilter)
+        : null,
     cover,
     rows: units.map((unit) => ({
       floor: unit.floor,

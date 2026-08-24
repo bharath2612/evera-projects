@@ -12,6 +12,8 @@ import { PDFDocument, PDFFont, PDFImage, StandardFonts, rgb } from "pdf-lib";
 
 const PAGE = { width: 595.28, height: 841.89, margin: 48 } as const; // A4 portrait
 const EVERGREEN = rgb(0x2c / 255, 0x37 / 255, 0x32 / 255);
+const BRONZE = rgb(0x98 / 255, 0x7f / 255, 0x6a / 255);
+const MUTED = rgb(0.45, 0.48, 0.46);
 const INK = rgb(0.2, 0.22, 0.21);
 const HAIRLINE = rgb(0.78, 0.8, 0.79);
 const WHITE = rgb(1, 1, 1);
@@ -28,8 +30,11 @@ export interface InventoryRow {
 
 export interface InventoryPdfInput {
   projectName: string;
-  /** Pre-formatted stamp, e.g. "August 24, 2026 at 11:59:58 AM". */
+  /** Pre-formatted stamp, e.g. "August 24, 2026 · 2:58 PM". */
   generatedAt: string;
+  /** Human label of the active unit-type filter ("1 Bedroom"), or null
+      for the full inventory — shown as a chip in the page header. */
+  typeFilterLabel: string | null;
   /** Sales-offer cover artwork (jpg/png); null → typographic cover. */
   cover: Uint8Array | null;
   rows: InventoryRow[];
@@ -75,6 +80,7 @@ export async function buildInventoryPdf(
   doc.setTitle(`${input.projectName} — Inventory List`);
   const sans = await doc.embedFont(StandardFonts.Helvetica);
   const sansBold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const serif = await doc.embedFont(StandardFonts.TimesRoman);
 
   // ── cover ──────────────────────────────────────────────────────────
   const cover = doc.addPage([PAGE.width, PAGE.height]);
@@ -153,32 +159,112 @@ export async function buildInventoryPdf(
     },
   ];
   const ROW_H = 24;
-  // The first table page reserves a band above the table for the
-  // generation stamp; later pages use the full height.
-  const STAMP_BAND = 26;
+  // First table page carries the full designed header (project eyebrow,
+  // "Inventory List" title, filter chip, generation stamp, bronze rule);
+  // continuation pages repeat a slim one so every page stays labelled.
+  const HEADER_BAND = 96;
+  const SLIM_BAND = 34;
   const rowsThatFit = (reserved: number) =>
     Math.floor((PAGE.height - PAGE.margin * 2 - reserved - ROW_H) / ROW_H);
+
+  const chipText =
+    input.typeFilterLabel === null
+      ? "All unit types"
+      : `${input.typeFilterLabel} only`;
+
+  const drawChip = (
+    page: ReturnType<typeof doc.addPage>,
+    text: string,
+    rightEdge: number,
+    baselineY: number,
+  ) => {
+    const size = 9;
+    const w = sansBold.widthOfTextAtSize(text, size) + 18;
+    const h = 19;
+    page.drawRectangle({
+      x: rightEdge - w,
+      y: baselineY,
+      width: w,
+      height: h,
+      color: input.typeFilterLabel === null ? EVERGREEN : BRONZE,
+    });
+    page.drawText(text, {
+      x: rightEdge - w + 9,
+      y: baselineY + 6,
+      size,
+      font: sansBold,
+      color: WHITE,
+    });
+  };
 
   let start = 0;
   let firstTablePage = true;
   while (start < input.rows.length) {
-    const reserved = firstTablePage ? STAMP_BAND : 0;
+    const reserved = firstTablePage ? HEADER_BAND : SLIM_BAND;
     const page = doc.addPage([PAGE.width, PAGE.height]);
     const slice = input.rows.slice(start, start + rowsThatFit(reserved));
     let y = PAGE.height - PAGE.margin - reserved - ROW_H;
 
+    const top = PAGE.height - PAGE.margin;
     if (firstTablePage) {
-      // Date + time of generation, right-aligned above the table.
-      const stampSize = 10;
-      page.drawText(input.generatedAt, {
-        x:
-          left +
-          contentWidth -
-          sans.widthOfTextAtSize(input.generatedAt, stampSize),
-        y: PAGE.height - PAGE.margin - stampSize,
-        size: stampSize,
+      // Eyebrow: project name, spaced uppercase.
+      page.drawText(input.projectName.toUpperCase().split("").join(" "), {
+        x: left,
+        y: top - 10,
+        size: 9.5,
+        font: sansBold,
+        color: BRONZE,
+      });
+      // Title.
+      page.drawText("Inventory List", {
+        x: left,
+        y: top - 40,
+        size: 27,
+        font: serif,
+        color: EVERGREEN,
+      });
+      // Right column: filter chip over the generation stamp.
+      drawChip(page, chipText, left + contentWidth, top - 26);
+      const stamp = `Generated ${input.generatedAt}`;
+      page.drawText(stamp, {
+        x: left + contentWidth - sans.widthOfTextAtSize(stamp, 9),
+        y: top - 42,
+        size: 9,
         font: sans,
-        color: INK,
+        color: MUTED,
+      });
+      // Bronze rule closing the header block.
+      page.drawLine({
+        start: { x: left, y: top - 58 },
+        end: { x: left + contentWidth, y: top - 58 },
+        thickness: 1.4,
+        color: BRONZE,
+      });
+      page.drawText(
+        `${input.rows.length} residence${input.rows.length === 1 ? "" : "s"} for sale`,
+        {
+          x: left,
+          y: top - 76,
+          size: 9.5,
+          font: sans,
+          color: MUTED,
+        },
+      );
+    } else {
+      page.drawText("Inventory List", {
+        x: left,
+        y: top - 14,
+        size: 12,
+        font: serif,
+        color: EVERGREEN,
+      });
+      const cont = `${input.projectName} · continued`;
+      page.drawText(cont, {
+        x: left + contentWidth - sans.widthOfTextAtSize(cont, 9),
+        y: top - 13,
+        size: 9,
+        font: sans,
+        color: MUTED,
       });
     }
 

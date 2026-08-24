@@ -8,7 +8,8 @@ Entry before every push: what was added, what is left. Newest first.
 - **Download inventory** button beside the chess board's legend: streams
   a branded Inventory List PDF from the new
   `/projects/[slug]/inventory/export` route (portrait; offer cover,
-  date/time stamped above the for-sale table, one floor-plan page per unit) honoring the
+  designed table page with title, filter chip and
+  Generated stamp, one floor-plan page per unit) honoring the
   selected type chip via `?type=<type_code>`. Builder
   `src/lib/inventory-pdf.ts` is a verbatim copy of evera-one's — keep
   the two identical. Only `available` units with a price are listed;
