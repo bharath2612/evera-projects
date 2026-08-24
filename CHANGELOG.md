@@ -2,6 +2,13 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-24 — Four new place icons
+
+**Changed**
+- Icon mirror (`src/lib/place-icons.tsx`) gains `burj-khalifa`
+  (Building), `burj-al-arab` (Sailboat), `community` (Building2) and
+  `road` (Road), matching evera-one's vocabulary.
+
 ## 2026-08-23 — Per-project accent color
 
 **Added**
