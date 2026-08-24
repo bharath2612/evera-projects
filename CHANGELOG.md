@@ -2,6 +2,19 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-24 — Inventory download on the full-inventory page
+
+**Added**
+- **Download inventory** button beside the chess board's legend: streams
+  a branded Inventory List PDF from the new
+  `/projects/[slug]/inventory/export` route (offer cover + timestamp
+  chip, for-sale table, one floor-plan page per unit) honoring the
+  selected type chip via `?type=<type_code>`. Builder
+  `src/lib/inventory-pdf.ts` is a verbatim copy of evera-one's — keep
+  the two identical. Only `available` units with a price are listed;
+  an empty selection returns 404, media failures drop pages not the
+  export.
+
 ## 2026-08-24 — Four new place icons
 
 **Changed**

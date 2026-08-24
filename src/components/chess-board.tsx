@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { Download } from "lucide-react";
 import type { PublicUnit, PublicUnitStatus } from "@/lib/data";
 import { formatAed, unitHref } from "@/lib/data";
 
@@ -105,6 +106,17 @@ export function ChessBoard({
           <span className="tabular-nums">
             {availableCount} of {units.length} available
           </span>
+          {/* Server-rendered PDF: cover + timestamped for-sale table +
+              floor plans, honoring the selected type. */}
+          <a
+            href={`/projects/${slug}/inventory/export${
+              typeFilter !== "all" ? `?type=${encodeURIComponent(typeFilter)}` : ""
+            }`}
+            className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[12px] text-foreground transition-colors hover:border-brand/50"
+          >
+            <Download className="size-3.5" />
+            Download inventory
+          </a>
         </div>
       </div>
 
