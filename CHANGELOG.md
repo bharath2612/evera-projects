@@ -2,6 +2,14 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-25 — Handover renders as free text
+
+**Changed**
+- `handover_date` is free text in the DB now (evera-one 0055 — "Q4
+  2027", "December 2027", …): `formatHandover` stops date-parsing and
+  shows the text exactly as the team typed it, everywhere it appears
+  (project page key facts, unit page, sidebar, offer PDF).
+
 ## 2026-08-24 — Inventory download on the full-inventory page
 
 **Added**

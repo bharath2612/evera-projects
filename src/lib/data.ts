@@ -44,6 +44,7 @@ export interface PublicProject {
   slug: string;
   name: string;
   location: string | null;
+  /** Free text since evera-one 0055 — "Q4 2027", … */
   handover_date: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -345,12 +346,10 @@ export function formatAed(value: number): string {
   return `AED ${AED.format(value)}`;
 }
 
-export function formatHandover(date: string | null): string | null {
-  if (!date) return null;
-  return new Intl.DateTimeFormat("en-GB", {
-    month: "short",
-    year: "numeric",
-  }).format(new Date(date));
+/** Free text since evera-one 0055 ("Q4 2027", "December 2027", …) —
+ *  shown exactly as the team typed it. */
+export function formatHandover(text: string | null): string | null {
+  return text?.trim() || null;
 }
 
 /** The one line under a project name: price, sold out, or launching soon. */
