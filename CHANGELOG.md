@@ -2,6 +2,15 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-26 — Inventory PDF themed by the project's accent color
+
+**Changed**
+- The inventory download now themes to the project's `accent_color`
+  (same override the web pages and the offer PDF already honor): accent
+  where bronze sat, a darkened shade where evergreen sat — table band,
+  chips, cover and unit tags included. Projects without an accent keep
+  the house palette. Builder synced byte-identical with evera-one.
+
 ## 2026-08-25 — Handover renders as free text
 
 **Changed**

@@ -30,6 +30,11 @@ export interface InventoryRow {
 
 export interface InventoryPdfInput {
   projectName: string;
+  /** The project's accent hex (#rrggbb) from settings. When set, it
+      themes the sheet: accent verbatim where bronze sits, a darkened
+      shade where evergreen sits (table band, chips, cover, unit tags).
+      null/invalid → the house evergreen/bronze palette. */
+  accentColor?: string | null;
   /** Pre-formatted stamp, e.g. "August 24, 2026 · 2:58 PM". */
   generatedAt: string;
   /** Human label of the active unit-type filter ("1 Bedroom"), or null
@@ -76,6 +81,23 @@ async function embedImage(
 export async function buildInventoryPdf(
   input: InventoryPdfInput,
 ): Promise<Uint8Array> {
+  // Project theme: ACCENT stands in for bronze, DEEP for evergreen.
+  // Settings enforce ≥4.5 contrast on white, so darkening the accent
+  // (×0.6 per channel) yields a rich band color, never a pastel one.
+  const hex = input.accentColor;
+  const channels =
+    hex && /^#[0-9a-f]{6}$/i.test(hex)
+      ? ([1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255) as [
+          number,
+          number,
+          number,
+        ])
+      : null;
+  const ACCENT = channels ? rgb(...channels) : BRONZE;
+  const DEEP = channels
+    ? rgb(channels[0] * 0.6, channels[1] * 0.6, channels[2] * 0.6)
+    : EVERGREEN;
+
   const doc = await PDFDocument.create();
   doc.setTitle(`${input.projectName} — Inventory List`);
   const sans = await doc.embedFont(StandardFonts.Helvetica);
@@ -105,7 +127,7 @@ export async function buildInventoryPdf(
       y: 0,
       width: PAGE.width,
       height: PAGE.height,
-      color: EVERGREEN,
+      color: DEEP,
     });
     cover.drawText(input.projectName, {
       x: PAGE.margin,
@@ -186,7 +208,7 @@ export async function buildInventoryPdf(
       y: baselineY,
       width: w,
       height: h,
-      color: input.typeFilterLabel === null ? EVERGREEN : BRONZE,
+      color: input.typeFilterLabel === null ? DEEP : ACCENT,
     });
     page.drawText(text, {
       x: rightEdge - w + 9,
@@ -213,7 +235,7 @@ export async function buildInventoryPdf(
         y: top - 10,
         size: 9.5,
         font: sansBold,
-        color: BRONZE,
+        color: ACCENT,
       });
       // Title.
       page.drawText("Inventory List", {
@@ -221,7 +243,7 @@ export async function buildInventoryPdf(
         y: top - 40,
         size: 27,
         font: serif,
-        color: EVERGREEN,
+        color: DEEP,
       });
       // Right column: filter chip over the generation stamp.
       drawChip(page, chipText, left + contentWidth, top - 26);
@@ -238,7 +260,7 @@ export async function buildInventoryPdf(
         start: { x: left, y: top - 58 },
         end: { x: left + contentWidth, y: top - 58 },
         thickness: 1.4,
-        color: BRONZE,
+        color: ACCENT,
       });
       page.drawText(
         `${input.rows.length} residence${input.rows.length === 1 ? "" : "s"} for sale`,
@@ -256,7 +278,7 @@ export async function buildInventoryPdf(
         y: top - 14,
         size: 12,
         font: serif,
-        color: EVERGREEN,
+        color: DEEP,
       });
       const cont = `${input.projectName} · continued`;
       page.drawText(cont, {
@@ -274,7 +296,7 @@ export async function buildInventoryPdf(
       y,
       width: contentWidth,
       height: ROW_H,
-      color: EVERGREEN,
+      color: DEEP,
     });
     let x = left;
     for (const col of COLS) {
@@ -371,7 +393,7 @@ export async function buildInventoryPdf(
       y: PAGE.height - 40,
       width: tagW,
       height: 22,
-      color: EVERGREEN,
+      color: DEEP,
     });
     page.drawText(tag, {
       x: PAGE.width - tagW - 12,

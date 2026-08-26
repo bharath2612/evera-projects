@@ -65,6 +65,7 @@ export async function GET(
   const now = new Date();
   const bytes = await buildInventoryPdf({
     projectName: project.name,
+    accentColor: project.accent_color,
     generatedAt: `${now.toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
