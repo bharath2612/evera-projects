@@ -2,6 +2,15 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-08-27 — Key plan: reserved units calm down
+
+**Changed** (per Bharath)
+- Reserved residences on the floor key plan were SOLID orange-500 with
+  white labels — screaming against the soft plan. They now wear the CRM
+  chess "Hold" treatment: a 24% orange tint on white, muted orange
+  outline, deep-orange label, orange dot. All tones derive from
+  `--color-orange-500` (the one palette var the plate already used).
+
 ## 2026-08-26 — Inventory PDF themed by the project's accent color
 
 **Changed**

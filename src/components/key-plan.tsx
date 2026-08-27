@@ -5,9 +5,10 @@ import type { PublicUnit, PublicUnitStatus } from "@/lib/data";
 
 /**
  * Per-status plate treatment. Only `available` renders as an open white
- * shape (interactive, bronze on hover); everything else is a solid status
- * swatch: unreleased fully greyed out, reserved solid orange, sold solid
- * muted evergreen. Dots mirror the card legend, flipped light on solids.
+ * shape (interactive, bronze on hover); everything else is a status
+ * swatch: unreleased fully greyed out, reserved a soft orange tint (the
+ * CRM Hold treatment — solid orange screamed against the plan), sold
+ * solid muted evergreen. Dots mirror the card legend.
  */
 const STATUS_LOOK: Record<
   PublicUnitStatus,
@@ -28,10 +29,12 @@ const STATUS_LOOK: Record<
     weight: 300,
   },
   reserved: {
-    fill: "var(--color-orange-500)",
-    stroke: "color-mix(in oklab, var(--color-orange-500) 85%, black)",
-    text: "rgba(255,255,255,0.95)",
-    dot: "rgba(255,255,255,0.85)",
+    // Mirrors the CRM chess "Hold" cell: bg-orange-500/24 on white with
+    // a muted orange-600 border and deep-orange text.
+    fill: "color-mix(in oklab, var(--color-orange-500) 24%, white)",
+    stroke: "color-mix(in oklab, var(--color-orange-500) 50%, white)",
+    text: "color-mix(in oklab, var(--color-orange-500) 60%, black)",
+    dot: "var(--color-orange-500)",
     weight: 500,
   },
   sold: {
