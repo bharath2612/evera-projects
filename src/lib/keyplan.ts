@@ -27,6 +27,16 @@ export interface KeyPlanUnit {
   label: [number, number];
 }
 
+/** Non-residence room (gym, sauna) — solid grey block with a small
+ *  label, non-interactive. */
+export interface KeyPlanAmenity {
+  label: string;
+  points: string;
+  at: [number, number];
+  /** Rotate the label 90° for tall narrow rooms. */
+  vertical?: boolean;
+}
+
 export interface KeyPlanPlate {
   width: number;
   height: number;
@@ -35,6 +45,7 @@ export interface KeyPlanPlate {
   /** Non-residence white cut-outs (shafts/balconies) drawn over the hatch. */
   voids?: string[];
   units: KeyPlanUnit[];
+  amenities?: KeyPlanAmenity[];
 }
 
 const BRANDS: Record<string, ProjectBrand> = {
@@ -116,6 +127,169 @@ const MERDAN_PODIUM: KeyPlanPlate = {
 };
 
 /**
+ * Merdan ground plate (1st floor): four residences around the amenity
+ * band, traced from the stacking sheet (WhatsApp master, measured at 4×
+ * into a 1132×992 space). Preserved details: 04's five-step staircase
+ * edge into the corridor; 01's foot dropping between the corridor and
+ * 02; 02's double-stepped SW corner; 03's L-block reaching below the
+ * main slab (outline steps down at x726) with the shaft pocket
+ * (806–858 × 644–746) biting into its top edge; the hatched sliver
+ * between the gym and the men's sauna.
+ */
+const MERDAN_GROUND: KeyPlanPlate = {
+  width: 1132,
+  height: 992,
+  outline: "4,2 1128,2 1128,990 726,990 726,936 4,936",
+  units: [
+    {
+      pos: "04",
+      points:
+        "4,2 354,2 354,358 238,358 238,394 154,394 154,456 190,456 190,554 154,554 154,570 4,570",
+      label: [170, 218],
+    },
+    {
+      pos: "01",
+      points: "354,2 764,2 764,570 690,570 690,430 354,430",
+      label: [562, 218],
+    },
+    {
+      pos: "02",
+      points:
+        "764,2 1128,2 1128,570 946,570 946,502 966,502 966,446 886,446 886,358 764,358",
+      label: [925, 218],
+    },
+    {
+      pos: "03",
+      points:
+        "711,644 806,644 806,746 858,746 858,674 962,674 962,644 1128,644 1128,990 726,990 726,936 711,936",
+      label: [920, 800],
+    },
+  ],
+  amenities: [
+    {
+      label: "SAUNA (SHE)",
+      points: "4,644 176,644 176,936 4,936",
+      at: [90, 790],
+      vertical: true,
+    },
+    { label: "GYM", points: "176,644 486,644 486,936 176,936", at: [331, 790] },
+    {
+      label: "SAUNA (HE)",
+      points: "546,644 711,644 711,936 546,936",
+      at: [628, 790],
+      vertical: true,
+    },
+  ],
+};
+
+/**
+ * Merdan mid-rise partitions, shared by the 7th-floor and 08–14 plates:
+ * the top splits into two residences at x678 with the lift-shaft pocket
+ * (642–712 × 201–271) poking up from the corridor between them; the old
+ * podium foot is gone, so the corridor's NE corner sits at x876 and its
+ * top edge at y271. The west residence keeps the podium 08 chain
+ * (shaft bar, leg down the slant); the east one keeps 02's stepped
+ * corridor boundary.
+ */
+const MERDAN_TOP_WEST =
+  "123,13 678,13 678,201 642,201 642,271 478,271 478,189 358,189 358,225 274,225 274,286 310,286 310,385 274,385 274,401 127,401 127,571 42,571";
+const MERDAN_TOP_EAST =
+  "678,13 1252,13 1252,401 1069,401 1069,331 1088,331 1088,278 1009,278 1009,190 876,190 876,271 712,271 712,201 678,201";
+
+/**
+ * Merdan tower bottom halves (08–14 and 15–18): the podium's five
+ * residences merge into two, split by the corridor stem (658–694
+ * descending to y559) and the party wall at x682. Every podium corridor
+ * pocket survives on the merged top edges: 07's step (282–308), 06's
+ * door notch (359–428), 05's notch (772–864), 04's notch (945–1013),
+ * the 04|03 step (1064–1089) and 03's SE edge notch (1214/550).
+ */
+const MERDAN_BOTTOM_WEST =
+  "157,477 282,477 282,507 308,507 308,477 359,477 359,505 428,505 428,477 658,477 658,559 682,559 682,769 13,769 42,571 127,571 127,549 157,549";
+const MERDAN_BOTTOM_EAST =
+  "694,477 772,477 772,500 864,500 864,477 945,477 945,505 1013,505 1013,477 1064,477 1064,507 1089,507 1089,477 1214,477 1214,550 1252,550 1252,769 682,769 682,559 694,559";
+
+/** Merdan 7th floor: two residences on top, the podium's five below —
+ *  positions shifted one down (06…02) per the stacking sheet. */
+const MERDAN_SEVENTH: KeyPlanPlate = {
+  width: 1264,
+  height: 778,
+  outline: "123,13 1252,13 1252,769 13,769",
+  units: [
+    { pos: "07", points: MERDAN_TOP_WEST, label: [430, 124] },
+    { pos: "01", points: MERDAN_TOP_EAST, label: [950, 130] },
+    {
+      pos: "06",
+      points:
+        "157,477 282,477 282,507 308,507 308,769 13,769 42,571 127,571 127,549 157,549",
+      label: [172, 640],
+    },
+    {
+      pos: "05",
+      points: "308,477 359,477 359,505 428,505 428,566 524,566 524,769 308,769",
+      label: [415, 640],
+    },
+    {
+      pos: "04",
+      points:
+        "428,477 772,477 772,500 864,500 864,477 945,477 945,566 846,566 846,769 524,769 524,566 428,566",
+      label: [688, 640],
+    },
+    {
+      pos: "03",
+      points: "846,566 945,566 945,505 1013,505 1013,477 1064,477 1064,769 846,769",
+      label: [958, 646],
+    },
+    {
+      pos: "02",
+      points: "1089,477 1214,477 1214,550 1252,550 1252,769 1064,769 1064,507 1089,507",
+      label: [1160, 646],
+    },
+  ],
+};
+
+/** Merdan tower plate (floors 8–14): four residences, one per quadrant. */
+const MERDAN_TOWER: KeyPlanPlate = {
+  width: 1264,
+  height: 778,
+  outline: "123,13 1252,13 1252,769 13,769",
+  units: [
+    { pos: "04", points: MERDAN_TOP_WEST, label: [430, 124] },
+    { pos: "01", points: MERDAN_TOP_EAST, label: [950, 130] },
+    { pos: "03", points: MERDAN_BOTTOM_WEST, label: [420, 640] },
+    { pos: "02", points: MERDAN_BOTTOM_EAST, label: [950, 652] },
+  ],
+};
+
+/**
+ * Merdan upper plate (floors 15–18): 04 goes back to the full podium 08
+ * shape (split at x478), and 01 spans the old 01+02 with a shortened
+ * foot — down x814 to the y315 shelf, back up at x890 to the y190 east
+ * edge. Bottom matches the 08–14 plate.
+ */
+const MERDAN_UPPER: KeyPlanPlate = {
+  width: 1264,
+  height: 778,
+  outline: "123,13 1252,13 1252,769 13,769",
+  units: [
+    {
+      pos: "04",
+      points:
+        "123,13 478,13 478,189 358,189 358,225 274,225 274,286 310,286 310,385 274,385 274,401 127,401 127,571 42,571",
+      label: [250, 150],
+    },
+    {
+      pos: "01",
+      points:
+        "478,13 1252,13 1252,401 1069,401 1069,331 1088,331 1088,278 1009,278 1009,190 890,190 890,315 814,315 814,262 478,262",
+      label: [950, 130],
+    },
+    { pos: "03", points: MERDAN_BOTTOM_WEST, label: [420, 640] },
+    { pos: "02", points: MERDAN_BOTTOM_EAST, label: [950, 652] },
+  ],
+};
+
+/**
  * Arché typical-floor plate (floors 1–6): ten residences in a U around the
  * open courtyard (white — corridors are the thin hatched seams between
  * blocks). Traced programmatically from the brochure unit map
@@ -193,8 +367,14 @@ const ARCHE_TYPICAL: KeyPlanPlate = {
 };
 
 const PLATES: Record<string, (floor: number) => KeyPlanPlate | null> = {
-  "merdan-residences": (floor) =>
-    floor >= 2 && floor <= 6 ? MERDAN_PODIUM : null,
+  "merdan-residences": (floor) => {
+    if (floor === 1) return MERDAN_GROUND;
+    if (floor >= 2 && floor <= 6) return MERDAN_PODIUM;
+    if (floor === 7) return MERDAN_SEVENTH;
+    if (floor >= 8 && floor <= 14) return MERDAN_TOWER;
+    if (floor >= 15 && floor <= 18) return MERDAN_UPPER;
+    return null;
+  },
   "arche-residence": (floor) =>
     floor >= 1 && floor <= 6 ? ARCHE_TYPICAL : null,
 };

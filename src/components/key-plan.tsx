@@ -204,6 +204,40 @@ export function KeyPlan({
         );
       })}
 
+      {/* Non-residence rooms (gym, saunas) — solid grey blocks, never
+          interactive. Labels rotate for the tall narrow saunas. */}
+      {plate.amenities?.map((room) => (
+        <g key={room.label} role="img" aria-label={room.label}>
+          <polygon
+            points={room.points}
+            fill="color-mix(in oklab, var(--color-slate-400) 42%, white)"
+            stroke="color-mix(in oklab, var(--brand) 90%, white)"
+            strokeWidth={wallStroke}
+            strokeLinejoin="miter"
+          />
+          <text
+            x={room.at[0]}
+            y={room.at[1]}
+            textAnchor="middle"
+            dominantBaseline="central"
+            className="select-none"
+            transform={
+              room.vertical
+                ? `rotate(-90 ${room.at[0]} ${room.at[1]})`
+                : undefined
+            }
+            style={{
+              fill: "rgba(255,255,255,0.95)",
+              fontSize: fontSize * 0.42,
+              fontWeight: 500,
+              letterSpacing: plate.width * 0.003,
+            }}
+          >
+            {room.label}
+          </text>
+        </g>
+      ))}
+
       {plate.voids?.map((points) => (
         <polygon
           key={points}

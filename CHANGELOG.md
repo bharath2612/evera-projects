@@ -2,6 +2,33 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-02 — Merdan: every floor band gets its own key plan
+
+**Added** (per Bharath, traced from the marketing stacking sheet)
+- The floor selector previously rendered one plate style (the podium,
+  floors 2–6) — now all five Merdan bands have their own traced plate:
+  - **1st floor** (new 1132×992 space): residences 01/02/04 up top with
+    04's five-step staircase edge, 01's foot, 02's double-stepped SW
+    corner; 03's L-block reaching below the main slab with the shaft
+    pocket biting its top edge; SAUNA (SHE) / GYM / SAUNA (HE) as grey
+    amenity blocks (new `amenities` plate slot, non-interactive, with
+    rotated labels for the narrow saunas).
+  - **7th floor**: two residences on top (07 | 01, split at x678 with
+    the lift-shaft pocket between them, corridor NE corner at x876);
+    the podium's five below, positions shifted (06…02).
+  - **8–14**: four quadrants — top like the 7th (04 | 01), bottom
+    merged to 03 | 02 around the corridor stem and the x682 party
+    wall; every podium door-notch/pocket preserved on the merged edges.
+  - **15–18**: 04 returns to the full podium-08 shape (split at x478),
+    01 spans old 01+02 with the shortened foot (down to the y315 shelf,
+    up at x890); bottom matches 8–14.
+- Method per docs/keyplan-tracing.md: the WhatsApp master measured at
+  4× against the podium trace (frame fit exact to 1px), wall segments +
+  ASCII junction probes + hatch-density checks (the shaft and stem are
+  hatched corridor, not voids), then red-line overlays of every polygon
+  on the artwork to verify edge-for-edge. DB positions confirmed against
+  plate slots for floors 1/7/8/15.
+
 ## 2026-08-27 — Key plan: reserved units calm down
 
 **Changed** (per Bharath)
