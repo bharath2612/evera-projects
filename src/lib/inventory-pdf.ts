@@ -366,42 +366,156 @@ export async function buildInventoryPdf(
   }
 
   // ── one floor-plan page per unit ───────────────────────────────────
+  // The sales offer's floor-plan page (offer-pdf.ts "page 3") minus the
+  // signature block: FLOOR PLAN header + unit caption, accent rule, the
+  // plan artwork, the sq.m/sq.ft area table, and the legal fine print.
+  // Offer geometry (56pt margins), themed ACCENT/DEEP like the sheet.
+  const planLeft = 56;
+  const planRight = PAGE.width - 56;
+  const planTableHairline = rgb(0.88, 0.85, 0.82);
   for (let index = 0; index < input.rows.length; index += 1) {
     const bytes = input.floorPlans[index];
     if (!bytes) continue;
     const image = await embedImage(doc, bytes);
     if (!image) continue;
+    const row = input.rows[index];
     const page = doc.addPage([PAGE.width, PAGE.height]);
-    // Contain-fit, full bleed — the plan artwork is the whole page.
-    const scale = Math.min(
-      PAGE.width / image.width,
-      PAGE.height / image.height,
+    let y = PAGE.height - 56;
+    const text = (
+      value: string,
+      x: number,
+      size: number,
+      font: PDFFont,
+      color = DEEP,
+      align: "left" | "right" = "left",
+    ) => {
+      const width = font.widthOfTextAtSize(value, size);
+      page.drawText(value, {
+        x: align === "right" ? x - width : x,
+        y,
+        size,
+        font,
+        color,
+      });
+    };
+
+    text("FLOOR PLAN", planLeft, 10, sansBold, ACCENT);
+    text(
+      `No.${row.unitNumber} — ${row.typeLabel}`,
+      planRight,
+      10,
+      sansBold,
+      MUTED,
+      "right",
     );
-    const w = image.width * scale;
-    const h = image.height * scale;
+    y -= 10;
+    page.drawLine({
+      start: { x: planLeft, y },
+      end: { x: planRight, y },
+      thickness: 1.2,
+      color: ACCENT,
+    });
+
+    y -= 16;
+    const planWidth = planRight - planLeft;
+    const planHeight = (image.height / image.width) * planWidth;
     page.drawImage(image, {
-      x: (PAGE.width - w) / 2,
-      y: (PAGE.height - h) / 2,
-      width: w,
-      height: h,
+      x: planLeft,
+      y: y - planHeight,
+      width: planWidth,
+      height: planHeight,
     });
-    // Unit tag so identical type plans stay attributable per unit.
-    const tag = `No. ${input.rows[index].unitNumber}`;
-    const tagW = sansBold.widthOfTextAtSize(tag, 10) + 16;
-    page.drawRectangle({
-      x: PAGE.width - tagW - 20,
-      y: PAGE.height - 40,
-      width: tagW,
-      height: 22,
-      color: DEEP,
-    });
-    page.drawText(tag, {
-      x: PAGE.width - tagW - 12,
-      y: PAGE.height - 33,
-      size: 10,
-      font: sansBold,
-      color: WHITE,
-    });
+    y -= planHeight + 36;
+
+    // 10.764 matches the pricing sheet's conversion basis. Rounding each
+    // row independently makes the sq.m column visibly not add up
+    // (69.15 + 26.15 ≠ 95.29) — so the balcony row absorbs the rounding
+    // remainder: displayed suite + balcony always equals displayed total.
+    const round2 = (v: number) => Math.round((v / 10.764) * 100) / 100;
+    const suiteSqm = row.suiteSqft !== null ? round2(row.suiteSqft) : null;
+    const totalSqm = round2(row.totalSqft);
+    const balconySqm =
+      row.balconySqft !== null
+        ? suiteSqm !== null
+          ? Math.round((totalSqm - suiteSqm) * 100) / 100
+          : round2(row.balconySqft)
+        : null;
+    const tableRows: Array<[string, string, string, boolean]> = [
+      ["Sellable area", "sq.m", "sq.ft", true],
+      ...(row.suiteSqft !== null
+        ? ([
+            ["Suite area", NUM.format(suiteSqm!), NUM.format(row.suiteSqft), false],
+          ] as Array<[string, string, string, boolean]>)
+        : []),
+      ...(row.balconySqft !== null
+        ? ([
+            ["Balcony", NUM.format(balconySqm!), NUM.format(row.balconySqft), false],
+          ] as Array<[string, string, string, boolean]>)
+        : []),
+      ["Total area", NUM.format(totalSqm), NUM.format(row.totalSqft), true],
+    ];
+    const tableWidth = 330;
+    const colWidths = [150, 90, 90];
+    const rowHeight = 22;
+    const tableX = planLeft + (planWidth - tableWidth) / 2;
+    const tableTop = y;
+    for (const [i, [label, sqm, sqft, bold]] of tableRows.entries()) {
+      const rowY = tableTop - rowHeight * (i + 1);
+      page.drawRectangle({
+        x: tableX,
+        y: rowY,
+        width: tableWidth,
+        height: rowHeight,
+        borderColor: planTableHairline,
+        borderWidth: 0.75,
+      });
+      const font = bold ? sansBold : sans;
+      let colX = tableX;
+      for (const [c, value] of [label, sqm, sqft].entries()) {
+        const width = font.widthOfTextAtSize(value, 10);
+        page.drawText(value, {
+          x: colX + (colWidths[c] - width) / 2,
+          y: rowY + 7,
+          size: 10,
+          font,
+          color: DEEP,
+        });
+        colX += colWidths[c];
+      }
+    }
+
+    const paragraph =
+      "All drawings and dimensions are approximate. Drawings not to scale are subject to change without notice. " +
+      "The Developer reserves the right to make revisions. The units are taken from the typical floor of the building " +
+      "and columns may vary in size depending on the floor level. The furnishings and accessories shown are " +
+      "representation only. The length and width of the unit and balcony varies depending on which floor and which " +
+      "orientation the unit is located within the building to comply with the building authority regulations.";
+    // fine print by intent — it should read as legal small type
+    const words = paragraph.split(" ");
+    const lines: string[] = [];
+    let line = "";
+    for (const word of words) {
+      const candidate = line ? `${line} ${word}` : word;
+      if (sans.widthOfTextAtSize(candidate, 7) > planWidth - 40 && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = candidate;
+      }
+    }
+    if (line) lines.push(line);
+    y = tableTop - rowHeight * tableRows.length - 40;
+    for (const entry of lines) {
+      const width = sans.widthOfTextAtSize(entry, 7);
+      page.drawText(entry, {
+        x: planLeft + (planWidth - width) / 2,
+        y,
+        size: 7,
+        font: sans,
+        color: MUTED,
+      });
+      y -= 10;
+    }
   }
 
   return doc.save();

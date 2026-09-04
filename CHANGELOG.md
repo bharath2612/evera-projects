@@ -2,6 +2,23 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-04 — Inventory download: multi-select types, offer-style plan pages
+
+**Changed** (per Bharath)
+- The stacking plan's unit-type chips are **multi-select** now — toggle
+  several types (All types clears), non-matching cells dim, and
+  Download inventory carries them all (`?types=a,b`; legacy single
+  `?type=` still accepted by the export route). The PDF's header chip
+  joins the labels ("1 Bedroom · 2 Bedroom only"), resolved against the
+  full inventory so a type with nothing for sale still names itself.
+- The inventory PDF's per-unit floor-plan pages are the **sales offer's
+  floor-plan page** now (minus the signature block): FLOOR PLAN header
+  with the unit №/type caption, accent rule, the plan artwork, the
+  sq.m/sq.ft sellable-area table (balcony absorbs the rounding
+  remainder) and the legal fine print — replacing the old full-bleed
+  image + unit tag. `src/lib/inventory-pdf.ts` stays byte-identical
+  with the evera-one copy; both sides updated together.
+
 ## 2026-09-02 — Merdan: every floor band gets its own key plan
 
 **Added** (per Bharath, traced from the marketing stacking sheet)

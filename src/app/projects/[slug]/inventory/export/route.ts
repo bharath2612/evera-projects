@@ -12,25 +12,38 @@ export const revalidate = 0; // always current — the sheet carries a timestamp
 
 /**
  * Inventory List PDF for the presentation view: offer cover, timestamped
- * for-sale table (optionally one unit type via ?type=<type_code>), then
- * a floor-plan page per unit. Same builder as the CRM export.
+ * for-sale table (optionally some unit types via
+ * ?types=<code>,<code>… — legacy single ?type=<code> still accepted),
+ * then a floor-plan page per unit. Same builder as the CRM export.
  */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const typeFilter = new URL(request.url).searchParams.get("type");
+  const search = new URL(request.url).searchParams;
+  const typeFilters = new Set(
+    (search.get("types") ?? search.get("type") ?? "")
+      .split(",")
+      .map((code) => code.trim())
+      .filter((code) => code && code !== "all"),
+  );
 
   const project = (await fetchProjects()).find((p) => p.slug === slug);
   if (!project) return new NextResponse("Not found", { status: 404 });
 
-  const units = (await fetchUnits(project.id))
+  const allUnits = await fetchUnits(project.id);
+  // Chip labels resolve against the full inventory — a selected type may
+  // have nothing for sale yet still name the filter correctly.
+  const typeLabelByCode = new Map(
+    allUnits.map((unit) => [unit.type_code, unit.type_label]),
+  );
+  const units = allUnits
     .filter(
       (unit) =>
         unit.status === "available" &&
         unit.price_aed !== null &&
-        (!typeFilter || typeFilter === "all" || unit.type_code === typeFilter),
+        (typeFilters.size === 0 || typeFilters.has(unit.type_code)),
     )
     .sort(
       (a, b) =>
@@ -77,9 +90,11 @@ export async function GET(
       timeZone: "Asia/Dubai",
     })}`,
     typeFilterLabel:
-      typeFilter && typeFilter !== "all"
-        ? (units.find((unit) => unit.type_code === typeFilter)?.type_label ??
-          typeFilter)
+      typeFilters.size > 0
+        ? [...typeFilters]
+            .map((code) => typeLabelByCode.get(code) ?? code)
+            .sort((a, b) => a.localeCompare(b))
+            .join(" · ")
         : null,
     cover,
     rows: units.map((unit) => ({

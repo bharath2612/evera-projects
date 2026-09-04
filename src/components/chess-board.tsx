@@ -46,7 +46,10 @@ export function ChessBoard({
   units: PublicUnit[];
   slug: string;
 }) {
-  const [typeFilter, setTypeFilter] = useState<string>("all");
+  // Multi-select type filter; empty set = all types.
+  const [typeFilters, setTypeFilters] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
 
   const floors = useMemo(() => {
     const map = new Map<number, PublicUnit[]>();
@@ -80,20 +83,32 @@ export function ChessBoard({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-1.5">
           {[["all", "All types"] as const, ...typeOptions].map(
-            ([code, label]) => (
-              <button
-                key={code}
-                type="button"
-                onClick={() => setTypeFilter(code)}
-                className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
-                  typeFilter === code
-                    ? "border-brand bg-brand text-brand-foreground"
-                    : "bg-card hover:border-brand/50"
-                }`}
-              >
-                {label}
-              </button>
-            ),
+            ([code, label]) => {
+              const active =
+                code === "all" ? typeFilters.size === 0 : typeFilters.has(code);
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() =>
+                    setTypeFilters((prev) => {
+                      if (code === "all") return new Set();
+                      const next = new Set(prev);
+                      if (next.has(code)) next.delete(code);
+                      else next.add(code);
+                      return next;
+                    })
+                  }
+                  className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
+                    active
+                      ? "border-brand bg-brand text-brand-foreground"
+                      : "bg-card hover:border-brand/50"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            },
           )}
         </div>
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
@@ -107,10 +122,14 @@ export function ChessBoard({
             {availableCount} of {units.length} available
           </span>
           {/* Server-rendered PDF: cover + timestamped for-sale table +
-              floor plans, honoring the selected type. */}
+              floor plans, honoring the selected types. */}
           <a
             href={`/projects/${slug}/inventory/export${
-              typeFilter !== "all" ? `?type=${encodeURIComponent(typeFilter)}` : ""
+              typeFilters.size > 0
+                ? `?types=${[...typeFilters]
+                    .map((code) => encodeURIComponent(code))
+                    .join(",")}`
+                : ""
             }`}
             className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[12px] text-foreground transition-colors hover:border-brand/50"
           >
@@ -132,7 +151,7 @@ export function ChessBoard({
                 {floorUnits.map((unit) => {
                   const meta = STATUS_META[unit.status];
                   const dimmed =
-                    typeFilter !== "all" && unit.type_code !== typeFilter;
+                    typeFilters.size > 0 && !typeFilters.has(unit.type_code);
                   return (
                     <Link
                       key={unit.unit_number}
