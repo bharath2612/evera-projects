@@ -500,17 +500,35 @@ export async function GET(
           color: ACCENT,
         });
 
-        // the plan card, full content width — blank slot when no artwork
+        // The plan card, scaled to whatever is left AFTER the area
+        // table, the initials block and the fine print are reserved.
+        //
+        // Drawing it at full column width whatever its shape is what
+        // cost Olivo its signature block: a portrait plan (904×1130,
+        // where every other project's is landscape) grew to 604pt and
+        // pushed the initials to y = −38. pdf-lib draws off-canvas
+        // silently. Mirrors evera-one's offer-pdf.ts.
         y3 -= 16;
         const planWidth = right - left;
-        const planHeight = planImage
+        const RESERVED_BELOW_PLAN =
+          36 + 22 * 4 + 70 + 16 + 60 + 10 * 6 + 24;
+        const naturalHeight = planImage
           ? (planImage.height / planImage.width) * planWidth
           : planWidth * 0.637; // standard card ratio, keeps the layout steady
+        const maxPlanHeight = Math.max(
+          120,
+          y3 - PAGE.margin - RESERVED_BELOW_PLAN,
+        );
+        const planHeight = Math.min(naturalHeight, maxPlanHeight);
+        const drawnWidth =
+          planHeight === naturalHeight
+            ? planWidth
+            : planWidth * (planHeight / naturalHeight);
         if (planImage) {
           p3.drawImage(planImage, {
-            x: left,
+            x: left + (planWidth - drawnWidth) / 2,
             y: y3 - planHeight,
-            width: planWidth,
+            width: drawnWidth,
             height: planHeight,
           });
         }

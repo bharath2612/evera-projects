@@ -2,6 +2,26 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-11 — Offer floor-plan page kept its signature block
+
+**Fixed** (mirrors evera-one)
+- This route draws the floor plan at the full content width whatever its
+  shape, with no height cap. A **portrait** plan — Olivo's 904 × 1130,
+  where every other project's is landscape — grew to 604pt on a 483pt
+  column and pushed the "Purchaser's / Seller's Initials" rules to
+  y = −38, with the legal fine print below that. pdf-lib draws
+  off-canvas silently, so the page rendered looking complete with
+  nowhere to sign.
+- The plan is now scaled to the room left after the area table, the
+  initials block and the fine print are reserved, and centred when it
+  shrinks. Landscape artwork is unaffected.
+
+**Left**
+- That page still exists twice — here and in evera-one's
+  `src/lib/offer-pdf.ts` — without the "keep byte-identical" discipline
+  `inventory-pdf.ts` has. This is the second bug that had to be fixed in
+  both copies today. Worth collapsing.
+
 ## 2026-09-11 — Offer numbers lead with the unit
 
 **Changed** (mirroring evera-one migration 0069)
