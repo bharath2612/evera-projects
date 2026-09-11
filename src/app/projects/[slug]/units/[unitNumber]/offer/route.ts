@@ -178,6 +178,31 @@ export async function GET(
       color,
     });
   };
+
+  /**
+   * Draw at the largest size (down to `min`) that fits `maxWidth`.
+   *
+   * Offer numbers lead with the unit and its type since evera-one 0069,
+   * so their length varies with the type code — "1BR" just fits the
+   * column, "PENTHOUSE" overruns it and would collide with the next
+   * column's heading. Shrink rather than clip: it stays one quotable
+   * token. Mirrors evera-one's offer-pdf.ts.
+   */
+  const fittedText = (
+    value: string,
+    x: number,
+    size: number,
+    font: PDFFont,
+    maxWidth: number,
+    color = EVERGREEN,
+    min = 7,
+  ) => {
+    let fitted = size;
+    while (fitted > min && font.widthOfTextAtSize(value, fitted) > maxWidth) {
+      fitted -= 0.25;
+    }
+    page.drawText(value, { x, y, size: fitted, font, color });
+  };
   const rule = (color = HAIRLINE, thickness = 0.75) =>
     page.drawLine({
       start: { x: left, y },
@@ -234,7 +259,10 @@ export async function GET(
   if (offerNo) text("OFFER NO", cols[1], 7.5, sansBold, MUTED);
   if (project.location) text("PROJECT LOCATION", cols[2], 7.5, sansBold, MUTED);
   y -= 13;
-  if (offerNo) text(offerNo, cols[1], 9.5, sansBold, EVERGREEN);
+  if (offerNo) {
+    // Stop 6pt short of the next column so a long number never touches it.
+    fittedText(offerNo, cols[1], 9.5, sansBold, colWidth - 6, EVERGREEN);
+  }
   if (project.location) {
     // "Name, Location" in bronze with a hairline underline — wrapped
     // onto two lines when the column can't fit it; the annotation opens
@@ -599,8 +627,10 @@ export async function GET(
   }
 
   const bytes = await doc.save();
+  // The offer number already leads with the unit and its type since
+  // evera-one 0069, so repeating "-No<unit>" here just stutters.
   const filename = offerNo
-    ? `${offerNo}-No${unit.unit_number}-Sales-Offer.pdf`
+    ? `${offerNo}-Sales-Offer.pdf`
     : `${project.name.replace(/\s+/g, "-")}-No${unit.unit_number}-Sales-Offer.pdf`;
   return new NextResponse(Buffer.from(bytes), {
     headers: {

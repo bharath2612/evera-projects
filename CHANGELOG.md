@@ -2,6 +2,27 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-11 — Offer numbers lead with the unit
+
+**Changed** (mirroring evera-one migration 0069)
+- Sales offer numbers are `<unit>-<TYPE>-EVR-<project>-OFR-<year>-<serial>`
+  now (`0801-1BR-EVR-OLV-OFR-2026-0009`). Minted by the same DB function,
+  so nothing changes on this side except how the number renders.
+- **The presentation offer PDF shrinks the number to fit its column.**
+  This route carries its OWN copy of that header block, so the fix from
+  evera-one's `offer-pdf.ts` had to land here too: at 9.5pt a `PENTHOUSE`
+  number measures 198.8pt against a 161pt column and would have run
+  through the "PROJECT LOCATION" heading beside it. It steps the size
+  down to a 7pt floor rather than clipping or wrapping.
+- The download filename drops its `-No<unit>` segment — the number
+  already carries the unit.
+
+**Left**
+- That offer-PDF header is duplicated between this route and evera-one's
+  `src/lib/offer-pdf.ts`, like `inventory-pdf.ts` but WITHOUT the
+  "keep byte-identical" discipline — the two have already drifted.
+  Worth collapsing.
+
 ## 2026-09-11 — The presentation inventory filters and sorts
 
 From the client call (evera-one: `docs/specs/client-call-2026-09-11.md`).
