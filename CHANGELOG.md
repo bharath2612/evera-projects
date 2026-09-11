@@ -17,6 +17,12 @@ Entry before every push: what was added, what is left. Newest first.
 - The download filename drops its `-No<unit>` segment — the number
   already carries the unit.
 
+**Verified**
+- Measured all 12 unit-type codes in the catalog at a 4-digit unit
+  number: every one fits the 155.1pt column. TOWNHOUSE is the tightest
+  at exactly 7pt, which was the floor — so the floor is 6pt now, or the
+  next long code would overlap the heading again.
+
 **Left**
 - That offer-PDF header is duplicated between this route and evera-one's
   `src/lib/offer-pdf.ts`, like `inventory-pdf.ts` but WITHOUT the

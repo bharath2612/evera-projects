@@ -186,7 +186,10 @@ export async function GET(
    * so their length varies with the type code — "1BR" just fits the
    * column, "PENTHOUSE" overruns it and would collide with the next
    * column's heading. Shrink rather than clip: it stays one quotable
-   * token. Mirrors evera-one's offer-pdf.ts.
+   * token. The floor is 6pt, not 7, for headroom: TOWNHOUSE — the
+   * longest code in the catalog today — already needs exactly 7pt, so
+   * a 7pt floor would let the next long code overlap again.
+   * Mirrors evera-one's offer-pdf.ts.
    */
   const fittedText = (
     value: string,
@@ -195,7 +198,7 @@ export async function GET(
     font: PDFFont,
     maxWidth: number,
     color = EVERGREEN,
-    min = 7,
+    min = 6,
   ) => {
     let fitted = size;
     while (fitted > min && font.widthOfTextAtSize(value, fitted) > maxWidth) {
