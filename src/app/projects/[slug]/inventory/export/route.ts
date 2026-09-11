@@ -12,9 +12,14 @@ export const revalidate = 0; // always current — the sheet carries a timestamp
 
 /**
  * Inventory List PDF for the presentation view: offer cover, timestamped
- * for-sale table (optionally some unit types via
- * ?types=<code>,<code>… — legacy single ?type=<code> still accepted),
- * then a floor-plan page per unit. Same builder as the CRM export.
+ * for-sale table, then a floor-plan page per unit. Same builder as the
+ * CRM export.
+ *
+ * Every filter on the page is a query param — ?types=<code>,<code>…
+ * (legacy single ?type= still accepted), ?priceMin/?priceMax and
+ * ?areaMin/?areaMax — so the PDF is exactly the selection the person is
+ * looking at. A param that isn't a finite number is IGNORED rather than
+ * treated as zero: a typo must never quietly empty the sheet.
  */
 export async function GET(
   request: Request,
@@ -28,6 +33,16 @@ export async function GET(
       .map((code) => code.trim())
       .filter((code) => code && code !== "all"),
   );
+  const bound = (key: string): number | null => {
+    const raw = search.get(key);
+    if (raw === null || raw.trim() === "") return null;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  const priceMin = bound("priceMin");
+  const priceMax = bound("priceMax");
+  const areaMin = bound("areaMin");
+  const areaMax = bound("areaMax");
 
   const project = (await fetchProjects()).find((p) => p.slug === slug);
   if (!project) return new NextResponse("Not found", { status: 404 });
@@ -43,7 +58,11 @@ export async function GET(
       (unit) =>
         unit.status === "available" &&
         unit.price_aed !== null &&
-        (typeFilters.size === 0 || typeFilters.has(unit.type_code)),
+        (typeFilters.size === 0 || typeFilters.has(unit.type_code)) &&
+        (priceMin === null || unit.price_aed >= priceMin) &&
+        (priceMax === null || unit.price_aed <= priceMax) &&
+        (areaMin === null || unit.area_sqft >= areaMin) &&
+        (areaMax === null || unit.area_sqft <= areaMax),
     )
     .sort(
       (a, b) =>

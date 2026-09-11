@@ -2,6 +2,50 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-11 — The presentation inventory filters and sorts
+
+From the client call (evera-one: `docs/specs/client-call-2026-09-11.md`).
+The ask was to reach the same answers here that the CRM gives: which
+1-bedroom is cheapest, and send me that list.
+
+**Added** (per Bharath)
+- **Stack ⇄ List toggle** on the full-inventory page. The list is a
+  sortable price sheet — unit, floor, type, area, price, AED/ft², status
+  — clicking a header cycles ascending → descending → back to the house
+  order. Unpriced stock sorts to the bottom either way instead of
+  pretending to be the cheapest thing in the building.
+- **Price and area range filters**, plus an "Available only" chip, over
+  BOTH views. One filter set, so the two views can never disagree.
+- The count line names what is narrowing the view ("12 of 95 residences
+  · filtered by type, price") and a **Show all** button clears it.
+- **Download inventory carries every filter** — `?priceMin/?priceMax`,
+  `?areaMin/?areaMax` join the existing `?types=` — so the PDF is the
+  selection on screen, not a wider sheet. A param that isn't a finite
+  number is ignored rather than read as zero: a typo must never quietly
+  empty the sheet.
+
+**Changed**
+- `ChessBoard` is a pure stacking plan now; the filter chips, legend and
+  download button moved up into the new `PublicInventory` that owns the
+  shared filter state. Filtering still DIMS rather than removes in the
+  stack view — a stacking plan with holes stops reading as a building —
+  while the list removes.
+
+**Deliberately not done**
+- **No Excel download here.** The client wanted the sales team to have
+  the workbook and the public to have the PDF only. This site is public:
+  anon key, whitelisted views, no login and no service-role key, so an
+  Excel endpoint would hand the full inventory to anyone with the URL.
+  The sales team's workbook is the CRM's, behind
+  `crm.inventory.manage`. If it genuinely has to live on this host, it
+  needs a signed expiring link minted by evera-one — a real piece of
+  work, not a flag.
+
+**Left**
+- `src/lib/inventory-pdf.ts` is still byte-identical with the evera-one
+  copy; this change didn't touch it, but the two must stay in sync.
+- Not exercised against live data — build, typecheck and lint only.
+
 ## 2026-09-04 — Inventory download: multi-select types, offer-style plan pages
 
 **Changed** (per Bharath)

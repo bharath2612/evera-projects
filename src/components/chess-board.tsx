@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
-import { Download } from "lucide-react";
 import type { PublicUnit, PublicUnitStatus } from "@/lib/data";
 import { formatAed, unitHref } from "@/lib/data";
 
@@ -37,20 +36,22 @@ const AREA = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 /**
  * Public stacking plan ("chess sheet"): floors as rows, top floor first,
  * one cell per residence tinted by status. Every cell links to its unit
- * page; the type chips dim non-matching residences.
+ * page.
+ *
+ * Filtering dims rather than removes here — a stacking plan with holes
+ * in it stops reading as a building. `highlightIds` is the matching set
+ * (null = no filter active); everything else drops to 25% opacity.
  */
 export function ChessBoard({
   units,
   slug,
+  highlightIds = null,
 }: {
   units: PublicUnit[];
   slug: string;
+  /** Unit numbers surviving the parent's filters; null = show all. */
+  highlightIds?: ReadonlySet<string> | null;
 }) {
-  // Multi-select type filter; empty set = all types.
-  const [typeFilters, setTypeFilters] = useState<ReadonlySet<string>>(
-    new Set(),
-  );
-
   const floors = useMemo(() => {
     const map = new Map<number, PublicUnit[]>();
     for (const unit of units) {
@@ -69,78 +70,8 @@ export function ChessBoard({
       }));
   }, [units]);
 
-  const typeOptions = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const unit of units) seen.set(unit.type_code, unit.type_label);
-    return [...seen.entries()].sort((a, b) => a[1].localeCompare(b[1]));
-  }, [units]);
-
-  const availableCount = units.filter((u) => u.status === "available").length;
-
   return (
-    <div>
-      {/* Filter chips + legend */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-1.5">
-          {[["all", "All types"] as const, ...typeOptions].map(
-            ([code, label]) => {
-              const active =
-                code === "all" ? typeFilters.size === 0 : typeFilters.has(code);
-              return (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() =>
-                    setTypeFilters((prev) => {
-                      if (code === "all") return new Set();
-                      const next = new Set(prev);
-                      if (next.has(code)) next.delete(code);
-                      else next.add(code);
-                      return next;
-                    })
-                  }
-                  className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
-                    active
-                      ? "border-brand bg-brand text-brand-foreground"
-                      : "bg-card hover:border-brand/50"
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            },
-          )}
-        </div>
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-          {(Object.keys(STATUS_META) as PublicUnitStatus[]).map((status) => (
-            <span key={status} className="inline-flex items-center gap-1.5">
-              <span className={`size-2 rounded-full ${STATUS_META[status].dot}`} />
-              {STATUS_META[status].label}
-            </span>
-          ))}
-          <span className="tabular-nums">
-            {availableCount} of {units.length} available
-          </span>
-          {/* Server-rendered PDF: cover + timestamped for-sale table +
-              floor plans, honoring the selected types. */}
-          <a
-            href={`/projects/${slug}/inventory/export${
-              typeFilters.size > 0
-                ? `?types=${[...typeFilters]
-                    .map((code) => encodeURIComponent(code))
-                    .join(",")}`
-                : ""
-            }`}
-            className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[12px] text-foreground transition-colors hover:border-brand/50"
-          >
-            <Download className="size-3.5" />
-            Download inventory
-          </a>
-        </div>
-      </div>
-
-      {/* The sheet */}
-      <div className="mt-4 overflow-x-auto rounded-xl border bg-card p-4 shadow-[0_2px_14px_rgba(44,55,50,0.07)]">
+    <div className="overflow-x-auto rounded-xl border bg-card p-4 shadow-[0_2px_14px_rgba(44,55,50,0.07)]">
         <div className="space-y-2" data-chess-board>
           {floors.map(({ floor, units: floorUnits }) => (
             <div key={floor} className="flex items-center gap-2">
@@ -151,7 +82,8 @@ export function ChessBoard({
                 {floorUnits.map((unit) => {
                   const meta = STATUS_META[unit.status];
                   const dimmed =
-                    typeFilters.size > 0 && !typeFilters.has(unit.type_code);
+                    highlightIds !== null &&
+                    !highlightIds.has(unit.unit_number);
                   return (
                     <Link
                       key={unit.unit_number}
@@ -184,7 +116,6 @@ export function ChessBoard({
             </div>
           ))}
         </div>
-      </div>
     </div>
   );
 }

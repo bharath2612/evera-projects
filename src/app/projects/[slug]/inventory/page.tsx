@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchProjects, fetchUnits } from "@/lib/data";
-import { ChessBoard } from "@/components/chess-board";
+import { PublicInventory } from "@/components/public-inventory";
 
 export const revalidate = 60;
 
@@ -54,13 +54,13 @@ export default async function InventoryPage({
             Full <em className="text-brand">inventory</em>
           </h1>
           <p className="mt-2 text-[13px] text-muted-foreground">
-            Every residence at {project.name}, floor by floor — tap any unit
-            for details, renders and the sales offer.
+            Every residence at {project.name} — filter by type, price or
+            size, switch to the price list, and download the sheet you see.
           </p>
         </header>
 
         <div className="mt-6">
-          <ChessBoard units={units} slug={project.slug} />
+          <PublicInventory units={units} slug={project.slug} />
         </div>
 
         <footer className="mt-14 border-t pt-6 pb-2 text-[12px] text-muted-foreground">
