@@ -18,11 +18,15 @@ The ask was to reach the same answers here that the CRM gives: which
   BOTH views. One filter set, so the two views can never disagree.
 - The count line names what is narrowing the view ("12 of 95 residences
   · filtered by type, price") and a **Show all** button clears it.
-- **Download inventory carries every filter** — `?priceMin/?priceMax`,
-  `?areaMin/?areaMax` join the existing `?types=` — so the PDF is the
-  selection on screen, not a wider sheet. A param that isn't a finite
-  number is ignored rather than read as zero: a typo must never quietly
-  empty the sheet.
+- **Download inventory carries every filter and the sort** —
+  `?priceMin/?priceMax`, `?areaMin/?areaMax` and `?sort=<key>&dir=asc|desc`
+  join the existing `?types=` — so the PDF is the sheet on screen, in the
+  order it was put in. A param that isn't a finite number, or a sort key
+  that isn't one of ours, is ignored rather than read as zero or thrown:
+  a typo or a stale bookmark must never quietly empty the sheet.
+- The PDF stays **available-only** whatever the list shows. It is the
+  marketing document and its fixed-width A4 table has no status column,
+  so sold stock in it would read as for sale.
 
 **Changed**
 - `ChessBoard` is a pure stacking plan now; the filter chips, legend and

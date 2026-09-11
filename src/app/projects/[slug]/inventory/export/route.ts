@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { PublicUnit } from "@/lib/data";
 import {
   fetchProjectMedia,
   fetchProjects,
@@ -15,12 +16,65 @@ export const revalidate = 0; // always current — the sheet carries a timestamp
  * for-sale table, then a floor-plan page per unit. Same builder as the
  * CRM export.
  *
- * Every filter on the page is a query param — ?types=<code>,<code>…
- * (legacy single ?type= still accepted), ?priceMin/?priceMax and
- * ?areaMin/?areaMax — so the PDF is exactly the selection the person is
- * looking at. A param that isn't a finite number is IGNORED rather than
+ * Every filter AND the sort on the page are query params — ?types=
+ * <code>,<code>… (legacy single ?type= still accepted), ?priceMin/
+ * ?priceMax, ?areaMin/?areaMax and ?sort=<key>&?dir=asc|desc — so the
+ * PDF is exactly what the person is looking at, in the order they put
+ * it in. A param that isn't a finite number is IGNORED rather than
  * treated as zero: a typo must never quietly empty the sheet.
+ *
+ * The table stays AVAILABLE-ONLY whatever the list shows: it is the
+ * marketing document, and its fixed-width A4 layout has no status
+ * column, so sold stock in it would read as for sale.
  */
+
+type SortKey = "unit" | "floor" | "type" | "area" | "price" | "ppsf";
+const SORT_KEYS: SortKey[] = [
+  "unit",
+  "floor",
+  "type",
+  "area",
+  "price",
+  "ppsf",
+];
+
+/**
+ * The list view's order, rebuilt from the URL. An unknown key falls back
+ * to the house order (floor up, then unit) rather than erroring — a
+ * stale bookmark should still produce a sheet.
+ */
+function sortComparator(
+  rawKey: string | null,
+  rawDir: string | null,
+): (a: PublicUnit, b: PublicUnit) => number {
+  const byUnit = (a: PublicUnit, b: PublicUnit) =>
+    a.unit_number.localeCompare(b.unit_number, undefined, { numeric: true });
+  const key = SORT_KEYS.find((candidate) => candidate === rawKey);
+  if (!key) return (a, b) => a.floor - b.floor || byUnit(a, b);
+  const factor = rawDir === "desc" ? -1 : 1;
+  return (a, b) => {
+    switch (key) {
+      case "floor":
+        return factor * (a.floor - b.floor) || byUnit(a, b);
+      case "type":
+        return factor * a.type_label.localeCompare(b.type_label) || byUnit(a, b);
+      case "area":
+        return factor * (a.area_sqft - b.area_sqft) || byUnit(a, b);
+      // Unpriced stock is already filtered out of this sheet, so the
+      // nullish fallbacks here are belt-and-braces only.
+      case "price":
+        return factor * ((a.price_aed ?? 0) - (b.price_aed ?? 0)) || byUnit(a, b);
+      case "ppsf":
+        return (
+          factor * ((a.price_per_sqft ?? 0) - (b.price_per_sqft ?? 0)) ||
+          byUnit(a, b)
+        );
+      default:
+        return factor * byUnit(a, b);
+    }
+  };
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
@@ -64,10 +118,7 @@ export async function GET(
         (areaMin === null || unit.area_sqft >= areaMin) &&
         (areaMax === null || unit.area_sqft <= areaMax),
     )
-    .sort(
-      (a, b) =>
-        a.floor - b.floor || a.unit_number.localeCompare(b.unit_number),
-    );
+    .sort(sortComparator(search.get("sort"), search.get("dir")));
   if (units.length === 0) {
     return new NextResponse("No available residences for that selection", {
       status: 404,

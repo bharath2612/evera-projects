@@ -199,8 +199,9 @@ export function PublicInventory({
     setAreaMax("");
   };
 
-  // The download carries the same filters, so the PDF is the selection
-  // on screen — never a different, wider sheet.
+  // The download carries the same filters AND the same sort, so the PDF
+  // is the sheet on screen — never a different or differently ordered
+  // one. (It stays available-only: it is the marketing document.)
   const exportHref = (() => {
     const params = new URLSearchParams();
     if (typeFilters.size > 0) params.set("types", [...typeFilters].join(","));
@@ -208,6 +209,10 @@ export function PublicInventory({
     if (priceHi !== null) params.set("priceMax", String(priceHi));
     if (areaLo !== null) params.set("areaMin", String(areaLo));
     if (areaHi !== null) params.set("areaMax", String(areaHi));
+    if (sort) {
+      params.set("sort", sort.key);
+      params.set("dir", sort.dir === 1 ? "asc" : "desc");
+    }
     const query = params.toString();
     return `/projects/${slug}/inventory/export${query ? `?${query}` : ""}`;
   })();
