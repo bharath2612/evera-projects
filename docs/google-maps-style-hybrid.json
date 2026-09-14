@@ -1,0 +1,16 @@
+{
+  "styles": [
+    {
+      "id": "pointOfInterest",
+      "label": { "visible": false }
+    },
+    {
+      "id": "infrastructure.roadNetwork.roadSign",
+      "label": { "visible": false }
+    },
+    {
+      "id": "infrastructure.transitStation.busStation",
+      "label": { "visible": false }
+    }
+  ]
+}

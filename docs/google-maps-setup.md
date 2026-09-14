@@ -225,6 +225,36 @@ the frame on the home map, so at park strength the page would read as a
 green map rather than a calm one with green in it. Parks are small and can
 carry the colour; the Gulf cannot.
 
+## The satellite view is a separate style
+
+Cloud styling is **per map type**. `docs/google-maps-style.json` is the
+**roadmap** style; switching the toggle to Satellite lands on the
+**hybrid** type, which falls back to Google's own styling unless hybrid
+is styled too.
+
+Google's hybrid defaults are tuned for dark imagery — dark label text
+with a dark halo. Over Dubai's desert, which is nearly white, the POI
+labels ("Town Square Main Park", "Oasis Park Dubai") turn to mush. The
+community names do not: `DUBAI MARINA`, `ARJAN`, `DAMAC HILLS` render
+white-on-halo and read cleanly at every zoom.
+
+So the fix is **not** to drop to plain `satellite` and lose every label.
+It is to suppress the same POI labels on hybrid that the roadmap style
+already suppresses, and leave the rest of Google's imagery-tuned
+treatment alone.
+
+`docs/google-maps-style-hybrid.json` is that style — deliberately three
+rules, not thirty. Everything it does not name keeps Google's defaults,
+because those defaults are correct over imagery and our light palette is
+not: `#fbfaf9` roads on sand would be invisible.
+
+To apply it: open the style in the console, switch the **map type**
+selector from Roadmap to Satellite/Hybrid, and import this file against
+that type. If the editor offers no per-type selector on your plan, the
+fallback is to change `map-explorer.tsx` and `location-map.tsx` to use
+`"satellite"` instead of `"hybrid"` — clean imagery, no labels at all,
+and the Map toggle is right there for names.
+
 ## What we must not restyle
 
 The Google logo and the data attribution on the map are required by the
