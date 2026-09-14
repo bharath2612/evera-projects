@@ -62,8 +62,8 @@ costs $2 per 1,000 with its own 10,000 free.
    map ID. Map type **JavaScript**, rendering type **Vector** (raster has
    no advanced markers). Copy the ID into
    `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`.
-5. **Attach the style** below to that Map ID (Map styles → Create style →
-   import JSON → associate the Map ID).
+5. **Attach the style** — Map styles → Create style → Import JSON, paste
+   `docs/google-maps-style.json`, then associate the Map ID with it.
 
 The Map ID is required even with the default style: advanced markers — the
 photo cards on the home map and the bronze dot on the project card — only
@@ -71,64 +71,61 @@ work on a map that has one.
 
 ## The style
 
-Minimal and light, so the bronze markers stay the only saturated thing on
-screen. It keeps every place label (that is the entire point of the move)
-and drops business POIs, transit clutter and road shields we don't need.
+`docs/google-maps-style.json` — paste that file into Map styles → Create
+style → Import JSON, then associate the Map ID with it.
 
-```json
-[
-  { "elementType": "geometry", "stylers": [{ "color": "#f5f4f1" }] },
-  { "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] },
-  { "elementType": "labels.text.fill", "stylers": [{ "color": "#5d6661" }] },
-  { "elementType": "labels.text.stroke", "stylers": [{ "color": "#ffffff" }] },
-  {
-    "featureType": "administrative",
-    "elementType": "geometry.stroke",
-    "stylers": [{ "color": "#dcd8d2" }]
-  },
-  {
-    "featureType": "landscape.man_made",
-    "elementType": "geometry.fill",
-    "stylers": [{ "color": "#f0eeea" }]
-  },
-  {
-    "featureType": "poi.business",
-    "stylers": [{ "visibility": "off" }]
-  },
-  {
-    "featureType": "poi.park",
-    "elementType": "geometry.fill",
-    "stylers": [{ "color": "#e6eae3" }]
-  },
-  {
-    "featureType": "road",
-    "elementType": "geometry.fill",
-    "stylers": [{ "color": "#ffffff" }]
-  },
-  {
-    "featureType": "road",
-    "elementType": "geometry.stroke",
-    "stylers": [{ "color": "#e8e4de" }]
-  },
-  {
-    "featureType": "road.highway",
-    "elementType": "geometry.fill",
-    "stylers": [{ "color": "#f7f2ec" }]
-  },
-  {
-    "featureType": "transit",
-    "stylers": [{ "visibility": "off" }]
-  },
-  {
-    "featureType": "water",
-    "elementType": "geometry.fill",
-    "stylers": [{ "color": "#dce6e8" }]
-  }
-]
-```
+Every colour in it is **computed**, not picked. The house rule is that
+nothing is hardcoded outside the two master variables, but the Cloud
+console only accepts literal hex, so each value is the sRGB result of the
+same `color-mix(in oklab, …)` that `globals.css` would have produced:
 
-The palette is deliberately a desaturated neighbour of `--brand-evergreen`
-rather than a second accent — see the design language note in `AGENTS.md`.
+| Map role | Derivation | Hex |
+|---|---|---|
+| Land base | bronze 4% → white | `#fbfaf9` |
+| Built-up landscape | bronze 8% (= `--muted`) | `#f7f4f2` |
+| Road casing | bronze 18% | `#ece7e3` |
+| Highway fill | bronze 10% | `#f4f2ef` |
+| Arterial fill | bronze 5% | `#faf8f7` |
+| Admin boundary | bronze 30% | `#dfd7d0` |
+| Park fill | evergreen 10% | `#e8e9e8` |
+| Water fill | evergreen 16% | `#dadcdb` |
+| Place label | evergreen 78% | `#555e5a` |
+| Secondary label | evergreen 62% (= `--muted-foreground`) | `#757d79` |
+| Minor label | evergreen 52% | `#8a918d` |
+
+Regenerate them by mixing `--brand-bronze` / `--brand-evergreen` toward
+white in oklab at those percentages; do not eyedrop new ones.
+
+Roads stay pure white against the tinted land — the same figure/ground
+inversion positron used, which is what made the old map feel calm. The
+bronze markers are then the only saturated thing on screen.
+
+### The rules that carry the point of the migration
+
+Two entries are load-bearing and should survive any restyle:
+
+- **`administrative.neighborhood` → `labels.text` → `visibility: on`.**
+  Community names are the entire reason we left OpenStreetMap. Google
+  thins these labels aggressively by default, and turning them off — or
+  letting a "clean" restyle drop them — puts us back where we started,
+  with Dubai South as blank space.
+- **`poi` labels off, but `poi.park` and `poi.attraction` back on.** The
+  blanket `poi` rule kills the shop-and-restaurant noise; the two
+  exceptions keep the landmarks a buyer actually orients by. `poi.business`
+  is switched off wholesale rather than relying on the blanket rule, so a
+  later edit to the blanket rule cannot quietly bring storefronts back.
+
+`transit` is off entirely, and `administrative.land_parcel` with it — plot
+outlines at high zoom read as noise on a presentation map.
+
+### Water is grey-green, not blue
+
+`#dadcdb` is evergreen mixed to 16%, so the Gulf reads as a cool neutral
+rather than the usual map blue. That is a deliberate consequence of the
+derive-from-two-masters rule; it separates from the land by lightness
+instead of hue. If it reads as wrong against the real coastline once the
+key is in, the smallest honest fix is to raise the mix to about 24%
+(`#cbcfcd`) rather than to introduce a blue that isn't in the palette.
 
 ## What we must not restyle
 
