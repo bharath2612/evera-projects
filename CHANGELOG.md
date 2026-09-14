@@ -4,7 +4,10 @@ Entry before every push: what was added, what is left. Newest first.
 
 ## 2026-09-14 — Satellite view on the projects map
 
-**Added** — a Map / Satellite toggle, top right of the home map.
+**Added** — a Map / Satellite toggle on **both** maps: top right of the
+home explorer, and top left of the location card on a project page
+(Google puts its zoom pair on the right, and that card is only 256px
+tall, so the control there is smaller and sits on the other side).
 
 It switches to Google's **hybrid** type rather than plain `satellite`:
 imagery with the road network and place names kept on top. Plain

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BASE_MAP_OPTIONS,
   loadMaps,
@@ -21,6 +21,10 @@ export function LocationMap({
   longitude: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+  // "hybrid" rather than "satellite" — see map-explorer: plain satellite
+  // drops every label, and the surrounding community is the point.
+  const [aerial, setAerial] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -42,6 +46,7 @@ export function LocationMap({
         zoom: 13,
         gestureHandling: "cooperative",
       });
+      mapRef.current = map;
 
       const element = document.createElement("span");
       element.className =
@@ -64,16 +69,49 @@ export function LocationMap({
       cancelled = true;
       observer.disconnect();
       map = null;
+      mapRef.current = null;
     };
   }, [latitude, longitude]);
+
+  // Only ever a type switch on the map already built above — never a
+  // re-init, so no second map load is billed and the marker stays put.
+  useEffect(() => {
+    mapRef.current?.setMapTypeId(aerial ? "hybrid" : "roadmap");
+  }, [aerial]);
 
   if (!mapsConfigured) return null;
 
   return (
-    <div
-      ref={containerRef}
-      data-location-map
-      className="h-64 w-full overflow-hidden rounded-lg border sm:h-72"
-    />
+    <div className="relative">
+      <div
+        ref={containerRef}
+        data-location-map
+        className="h-64 w-full overflow-hidden rounded-lg border sm:h-72"
+      />
+      {/* Smaller than the home map's: this card is 256px tall, so the
+          control has to sit light on it. Left, because Google puts the
+          zoom pair on the right. */}
+      <div
+        role="group"
+        aria-label="Map style"
+        className="absolute top-2 left-2 flex gap-0.5 rounded-lg border bg-card/90 p-0.5 shadow-[0_1px_6px_rgba(44,55,50,0.1)] backdrop-blur"
+      >
+        {([false, true] as const).map((wantsAerial) => (
+          <button
+            key={String(wantsAerial)}
+            type="button"
+            onClick={() => setAerial(wantsAerial)}
+            aria-pressed={aerial === wantsAerial}
+            className={`cursor-pointer rounded-md px-2 py-1 text-[11px] font-medium tracking-tight transition-colors ${
+              aerial === wantsAerial
+                ? "bg-brand text-brand-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {wantsAerial ? "Satellite" : "Map"}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
