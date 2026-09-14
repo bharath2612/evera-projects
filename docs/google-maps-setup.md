@@ -138,6 +138,14 @@ metro stations and the airports.
 Evergreen for the metro, bronze for the roads: the two networks are
 legible apart without introducing a third colour.
 
+### Every rule states `featureType` explicitly
+
+The Style Reference lets `featureType` be omitted — it defaults to `all` —
+but the Cloud console's JSON editor rejects an object carrying `stylers`
+without one, with `Property stylers is not allowed`. The four global rules
+therefore say `"featureType": "all"` in full. Keep it that way; dropping it
+back to the documented shorthand makes the file fail to upload.
+
 ### The rules that carry the point of the migration
 
 Two entries are load-bearing and should survive any restyle:

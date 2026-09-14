@@ -1,17 +1,21 @@
 [
   {
+    "featureType": "all",
     "elementType": "geometry",
     "stylers": [{ "color": "#fbfaf9" }]
   },
   {
+    "featureType": "all",
     "elementType": "labels.icon",
     "stylers": [{ "visibility": "off" }]
   },
   {
+    "featureType": "all",
     "elementType": "labels.text.fill",
     "stylers": [{ "color": "#757d79" }]
   },
   {
+    "featureType": "all",
     "elementType": "labels.text.stroke",
     "stylers": [{ "color": "#ffffff" }, { "weight": 3 }]
   },
