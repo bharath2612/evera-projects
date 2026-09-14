@@ -32,9 +32,11 @@ export function MapExplorer({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
-  // "hybrid", not "satellite": imagery with the road network and place
-  // names kept on top. On a property map the community name is half the
-  // information — Dubai South, Damac Hills — and plain satellite drops it.
+  // Plain "satellite", not "hybrid". Hybrid keeps Google's labels, but
+  // cloud styling is per map type and ours covers roadmap only, so those
+  // labels arrive with Google's imagery defaults: dark text on a dark
+  // halo. Over Dubai's near-white desert the POI names were unreadable.
+  // Clean imagery instead — the Map toggle is right there for names.
   const [aerial, setAerial] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -203,7 +205,7 @@ export function MapExplorer({
   // The map is built once in the effect above; the toggle only ever
   // switches its type, so this never re-runs the whole init.
   useEffect(() => {
-    mapRef.current?.setMapTypeId(aerial ? "hybrid" : "roadmap");
+    mapRef.current?.setMapTypeId(aerial ? "satellite" : "roadmap");
   }, [aerial]);
 
   const active = projects.find((p) => p.id === activeId) ?? null;

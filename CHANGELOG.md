@@ -9,11 +9,12 @@ home explorer, and top left of the location card on a project page
 (Google puts its zoom pair on the right, and that card is only 256px
 tall, so the control there is smaller and sits on the other side).
 
-It switches to Google's **hybrid** type rather than plain `satellite`:
-imagery with the road network and place names kept on top. Plain
-satellite drops every label, and on a property map the community name is
-half the information — "Dubai South", "Damac Hills 2" — which is the
-whole reason we left OpenStreetMap in the first place.
+It uses plain `satellite`. Hybrid was tried first, to keep the place
+names over the imagery, and rejected on sight: cloud styling is **per map
+type** and ours covers roadmap, so hybrid's labels arrived with Google's
+defaults — dark text on a dark halo, tuned for dark imagery. Over Dubai's
+near-white desert the POI names were unreadable. Names stay on the Map
+view, one tap away.
 
 The control is ours, not Google's `mapTypeControl`: `disableDefaultUI`
 removes that one, and it would not match the page. The toggle only calls
