@@ -145,6 +145,24 @@ name. Bus stations are off — noise at every zoom this site uses.
 Evergreen for the rail, bronze for the roads: the two networks are legible
 apart without introducing a third colour.
 
+### Two ids that are not where they look like they should be
+
+`roadShield`, `roadSign` and `roadDetail` are children of
+**`infrastructure.roadNetwork`**, not of `…roadNetwork.road`. Written under
+`.road` they name nothing, and a rule at a non-existent id is simply
+ignored — no error, no warning. That is how the yellow junction badges
+survived a rule that was supposed to hide them.
+
+The other trap is that `label` and `geometry` are independent. Setting
+`label: { visible: false }` on the `pointOfInterest` parent hid POI *text*
+but left every POI **polygon** unstyled, so retail and lodging areas — most
+of JBR — kept Google's cream. The parent needed a `geometry` fill too;
+`pointOfInterest.recreation` still overrides it with the green.
+
+The general rule, learned three times on this file: **style the parent, and
+check the id exists.** An unstyled child does not fall back to a styled
+sibling, it falls back to Google's own palette.
+
 ### Three things the first cloud-format draft got wrong
 
 All three were found by rendering the published style and counting pixels,

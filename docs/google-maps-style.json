@@ -97,6 +97,9 @@
       "id": "pointOfInterest",
       "label": {
         "visible": false
+      },
+      "geometry": {
+        "fillColor": "#f7f4f2"
       }
     },
     {
@@ -233,20 +236,20 @@
       }
     },
     {
-      "id": "infrastructure.roadNetwork.road.roadDetail",
+      "id": "infrastructure.roadNetwork.roadDetail",
       "geometry": {
         "fillColor": "#f7f4f2",
         "strokeColor": "#f0ece9"
       }
     },
     {
-      "id": "infrastructure.roadNetwork.road.roadShield",
+      "id": "infrastructure.roadNetwork.roadShield",
       "label": {
         "visible": true
       }
     },
     {
-      "id": "infrastructure.roadNetwork.road.roadSign",
+      "id": "infrastructure.roadNetwork.roadSign",
       "label": {
         "visible": false
       }
