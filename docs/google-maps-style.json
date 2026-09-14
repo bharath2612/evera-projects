@@ -33,6 +33,12 @@
       }
     },
     {
+      "id": "natural.land.landCover.sand",
+      "geometry": {
+        "fillColor": "#f7f4f2"
+      }
+    },
+    {
       "id": "natural.water",
       "geometry": {
         "fillColor": "#dadcdb"
@@ -138,6 +144,13 @@
       }
     },
     {
+      "id": "infrastructure.building",
+      "geometry": {
+        "fillColor": "#f7f4f2",
+        "strokeColor": "#ece7e3"
+      }
+    },
+    {
       "id": "infrastructure.building.commercial",
       "geometry": {
         "fillColor": "#f7f4f2",
@@ -150,6 +163,26 @@
         "visible": true,
         "fillColor": "#6d7571",
         "strokeColor": "#ffffff"
+      }
+    },
+    {
+      "id": "infrastructure.roadNetwork",
+      "geometry": {
+        "fillColor": "#ffffff",
+        "strokeColor": "#f0ece9"
+      },
+      "label": {
+        "textFillColor": "#8a918d"
+      }
+    },
+    {
+      "id": "infrastructure.roadNetwork.road",
+      "geometry": {
+        "fillColor": "#ffffff",
+        "strokeColor": "#f0ece9"
+      },
+      "label": {
+        "textFillColor": "#8a918d"
       }
     },
     {
@@ -187,9 +220,29 @@
       }
     },
     {
+      "id": "infrastructure.roadNetwork.road.noOutlet",
+      "geometry": {
+        "fillColor": "#ffffff",
+        "strokeColor": "#f0ece9"
+      }
+    },
+    {
+      "id": "infrastructure.roadNetwork.road.roadDetail",
+      "geometry": {
+        "fillColor": "#f7f4f2",
+        "strokeColor": "#f0ece9"
+      }
+    },
+    {
       "id": "infrastructure.roadNetwork.road.roadShield",
       "label": {
         "visible": true
+      }
+    },
+    {
+      "id": "infrastructure.roadNetwork.road.roadSign",
+      "label": {
+        "visible": false
       }
     },
     {
