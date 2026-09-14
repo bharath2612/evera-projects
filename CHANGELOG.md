@@ -2,6 +2,23 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-14 — The unit page gets the project page's top bar
+
+**Changed** — the unit page had a plain inline "← Arché Residence" link
+where the project page has a sticky bar. Same bar on both now: back on
+the left, project name, Inventory and Enquire on the right, and it stays
+put while the floor plan scrolls.
+
+`ProjectTopBar` grew three optional props rather than a second
+component, because the unit page sits one level deeper and two of its
+destinations differ. **Back** returns to the project at the floor the
+unit is on — the inventory grid people came from — not to the map. And
+**Inventory**, an anchor on the project page, has to be a real link from
+a unit. Defaults keep the project page byte-identical.
+
+Enquire is now reachable from the unit page, which is the page someone
+is on when they decide to ask.
+
 ## 2026-09-14 — Satellite view on the projects map
 
 **Added** — a Map / Satellite toggle on **both** maps: top right of the

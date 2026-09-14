@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FileDown } from "lucide-react";
 import {
@@ -16,6 +15,7 @@ import {
   type PublicUnitStatus,
 } from "@/lib/data";
 import { Reveal } from "@/components/reveal";
+import { ProjectTopBar } from "@/components/sticky-cta";
 import { UnitActions } from "@/components/unit-actions";
 import { ExpandableImage, MediaGrid } from "@/components/unit-media";
 
@@ -137,16 +137,20 @@ export default async function UnitPage({
 
   return (
     <main className="bg-grain min-h-dvh">
+      {/* Same bar as the project page. Back returns to the floor this
+          unit sits on, not to the map — the inventory grid is where
+          someone came from. */}
+      <ProjectTopBar
+        projectName={project.name}
+        projectSlug={project.slug}
+        hasInventory
+        backHref={`/projects/${project.slug}?floor=${unit.floor}#inventory`}
+        backLabel={`Back to ${project.name}`}
+        inventoryHref={`/projects/${project.slug}#inventory`}
+      />
       <div className="mx-auto w-full max-w-6xl px-6 py-8 lg:px-8 lg:py-10">
-        <Link
-          href={`/projects/${project.slug}?floor=${unit.floor}#inventory`}
-          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          ← {project.name}
-        </Link>
-
         {/* ——— Header + full-width slideshow ——— */}
-        <header className="mt-6">
+        <header>
               <p className="text-[11px] font-medium tracking-[0.22em] text-brand uppercase">
                 {project.name}
                 {project.location ? ` · ${project.location}` : ""}

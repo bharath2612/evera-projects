@@ -6,18 +6,30 @@ import { ArrowLeft, LayoutGrid } from "lucide-react";
 import { EnquireDialog } from "./enquire-dialog";
 
 /**
- * Sticky top bar on the project page: back-to-map on the left, project
- * name, and the conversion actions on the right. Replaces both the old
- * "← Back to map" link and the bottom slide-in bar.
+ * Sticky top bar for the project page and the unit page: back on the
+ * left, project name, and the conversion actions on the right. Replaces
+ * both the old "← Back to map" link and the bottom slide-in bar.
+ *
+ * The unit page is one level deeper, so where "back" goes and where
+ * "Inventory" points are props rather than constants — on a project,
+ * back is the map and Inventory is an anchor on the same page; on a
+ * unit, back is the project at the right floor and Inventory has to be
+ * a full link to it.
  */
 export function ProjectTopBar({
   projectName,
   projectSlug,
   hasInventory,
+  backHref = "/",
+  backLabel = "Back to map",
+  inventoryHref = "#inventory",
 }: {
   projectName: string;
   projectSlug: string;
   hasInventory: boolean;
+  backHref?: string;
+  backLabel?: string;
+  inventoryHref?: string;
 }) {
   const [enquiring, setEnquiring] = useState(false);
 
@@ -29,8 +41,8 @@ export function ProjectTopBar({
       >
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-6 lg:px-8">
           <Link
-            href="/"
-            aria-label="Back to map"
+            href={backHref}
+            aria-label={backLabel}
             className="flex size-8 shrink-0 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ArrowLeft className="size-4" strokeWidth={1.75} />
@@ -40,13 +52,13 @@ export function ProjectTopBar({
           </p>
           <div className="flex shrink-0 items-center gap-2">
             {hasInventory && (
-              <a
-                href="#inventory"
+              <Link
+                href={inventoryHref}
                 className="hidden h-9 items-center gap-1.5 rounded-lg border px-3.5 text-[13px] font-medium transition-colors hover:border-brand/50 hover:bg-brand/5 sm:inline-flex"
               >
                 <LayoutGrid className="size-3.5" strokeWidth={1.75} />
                 Inventory
-              </a>
+              </Link>
             )}
             <button
               type="button"
