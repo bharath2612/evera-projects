@@ -387,6 +387,42 @@ export function keyPlanFor(slug: string, floor: number): KeyPlanPlate | null {
   return PLATES[slug]?.(floor) ?? null;
 }
 
+/**
+ * Which of this project's floors share the plate shown for `floor`.
+ *
+ * A plate is a module-level constant reused across a band of floors —
+ * Merdan's podium plate covers 2–6, its tower plate 8–14 — so identity
+ * comparison is the whole test: two floors on the same layout return the
+ * same object. Deriving it by probing beats hand-listing the bands,
+ * which would be a second source of truth to keep in step with PLATES.
+ *
+ * Returns floors ascending, and always includes `floor` itself. A single
+ * entry means the layout is unique to that floor and the UI says nothing.
+ */
+export function floorsSharingPlan(
+  slug: string,
+  floor: number,
+  floors: number[],
+): number[] {
+  const plate = keyPlanFor(slug, floor);
+  if (!plate) return [floor];
+  return floors
+    .filter((candidate) => keyPlanFor(slug, candidate) === plate)
+    .sort((a, b) => a - b);
+}
+
+/** "2–6" for a contiguous run, "2, 3, 5" otherwise — the headline a
+ *  buyer reads before the chips. */
+export function floorRangeLabel(floors: number[]): string {
+  if (floors.length === 0) return "";
+  const contiguous = floors.every(
+    (value, index) => index === 0 || value === floors[index - 1] + 1,
+  );
+  return contiguous && floors.length > 2
+    ? `${floors[0]}–${floors[floors.length - 1]}`
+    : floors.join(", ");
+}
+
 /** 1 → "1st", 12 → "12th", 23 → "23rd" — for the floor headline. */
 export function ordinal(n: number): string {
   const tens = n % 100;

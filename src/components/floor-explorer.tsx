@@ -8,7 +8,13 @@ import { ChevronDown, ChevronUp, Sparkles, X } from "lucide-react";
 import type { FacadeConfig, PublicUnit, PublicUnitStatus } from "@/lib/data";
 import { formatAed, unitHref } from "@/lib/data";
 import { summarizeFloors } from "@/lib/facade";
-import { brandFor, keyPlanFor, ordinal } from "@/lib/keyplan";
+import {
+  brandFor,
+  floorRangeLabel,
+  floorsSharingPlan,
+  keyPlanFor,
+  ordinal,
+} from "@/lib/keyplan";
 import { amenitiesFor } from "@/lib/amenities";
 import { AmenitiesDialog } from "./amenities-dialog";
 import { FacadePicker } from "./facade-picker";
@@ -265,6 +271,14 @@ export function FloorExplorer({
   );
 
   const plate = floor === null ? null : keyPlanFor(slug, floor);
+  // Which other floors are drawn by this same plate. A buyer looking at
+  // a plan should know whether it is this floor's alone or the stack's —
+  // it changes what they are choosing between, and sends them comparing
+  // price and availability rather than layout.
+  const sharedFloors = useMemo(
+    () => (floor === null ? [] : floorsSharingPlan(slug, floor, floors)),
+    [slug, floor, floors],
+  );
   const floorAvailable = floorUnits.filter(
     (u) => u.status === "available",
   ).length;
@@ -437,6 +451,35 @@ export function FloorExplorer({
               >
                 {plate ? (
                   <div className="mx-auto w-full shrink-0 rounded-xl border bg-background p-3">
+                    {/* Sits ON the plan card, not with the floor headline:
+                        it describes the drawing below it, not the floor.
+                        The numbers are the navigation — tap one to compare
+                        what is left on an identical floor. */}
+                    {sharedFloors.length > 1 && (
+                      <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1.5 border-b pb-2.5">
+                        <span className="text-[10px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                          Same layout · floors {floorRangeLabel(sharedFloors)}
+                        </span>
+                        <span className="flex flex-wrap gap-1">
+                          {sharedFloors.map((sibling) => (
+                            <button
+                              key={sibling}
+                              type="button"
+                              onClick={() => openFloor(sibling)}
+                              aria-current={sibling === floor ? "true" : undefined}
+                              aria-label={`${ordinal(sibling)} floor — same layout`}
+                              className={`flex h-5 min-w-5 items-center justify-center rounded px-1 text-[11px] font-medium tabular-nums transition-colors ${
+                                sibling === floor
+                                  ? "bg-brand text-white"
+                                  : "border text-muted-foreground hover:border-brand/50 hover:bg-brand/5 hover:text-brand"
+                              }`}
+                            >
+                              {sibling}
+                            </button>
+                          ))}
+                        </span>
+                      </div>
+                    )}
                     <KeyPlan
                       plate={plate}
                       units={unitsByPos}

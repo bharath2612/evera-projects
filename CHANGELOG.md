@@ -2,6 +2,33 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-14 — A floor plan now says which floors it belongs to
+
+**Added** — a strip across the top of the key plan in the floor sheet:
+**SAME LAYOUT · FLOORS 2–6**, followed by those floor numbers as chips,
+the open one filled.
+
+**Why it sits on the plan and not with the floor headline.** It describes
+the drawing, not the floor. Reading "4th Floor · 8 residences" and then a
+plan, a buyer had no way to know whether that layout was this floor's
+alone or the whole podium's — which changes what they are choosing
+between. Once they know floors 2–6 are identical, the decision stops
+being about layout and becomes about price, view and what is left.
+
+So the numbers are the navigation: tapping one opens that floor, and the
+residence list underneath swaps while the plan stays put. Comparing
+availability across identical floors is now two taps instead of a
+back-and-forth through the facade.
+
+**Floors with a layout of their own say nothing** — Merdan's 7th, which
+has its own plate, shows no strip. Silence is the correct output when
+there is nothing to compare.
+
+The range is **derived, not listed**: `floorsSharingPlan()` probes
+`keyPlanFor()` across the project's floors and groups by plate identity,
+since every plate is a module constant. Hand-listing the bands would
+have been a second source of truth to drift out of step with `PLATES`.
+
 ## 2026-09-14 — The unit page gets the project page's top bar
 
 **Changed** — the unit page had a plain inline "← Arché Residence" link
