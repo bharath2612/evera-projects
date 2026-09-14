@@ -83,9 +83,12 @@ same `color-mix(in oklab, …)` that `globals.css` would have produced:
 |---|---|---|
 | Land base | bronze 4% → white | `#fbfaf9` |
 | Built-up landscape | bronze 8% (= `--muted`) | `#f7f4f2` |
-| Road casing | bronze 18% | `#ece7e3` |
-| Highway fill | bronze 10% | `#f4f2ef` |
-| Arterial fill | bronze 5% | `#faf8f7` |
+| Local road casing | bronze 14% | `#f0ece9` |
+| Arterial fill / casing | bronze 13% / 28% | `#f1eeeb` / `#e2dad3` |
+| Highway fill / casing | bronze 26% / 46% | `#e4dcd6` / `#cfc2b8` |
+| Highway label | evergreen 88% | `#424c47` |
+| Metro line | evergreen 58% | `#7d8581` |
+| Metro station label | evergreen 74% | `#5d6662` |
 | Admin boundary | bronze 30% | `#dfd7d0` |
 | Park fill | evergreen 10% | `#e8e9e8` |
 | Water fill | evergreen 16% | `#dadcdb` |
@@ -96,9 +99,44 @@ same `color-mix(in oklab, …)` that `globals.css` would have produced:
 Regenerate them by mixing `--brand-bronze` / `--brand-evergreen` toward
 white in oklab at those percentages; do not eyedrop new ones.
 
-Roads stay pure white against the tinted land — the same figure/ground
-inversion positron used, which is what made the old map feel calm. The
-bronze markers are then the only saturated thing on screen.
+### The road hierarchy is the point, not decoration
+
+Local roads stay pure white against tinted land — the figure/ground
+inversion positron used, which is what made the old map feel calm. On top
+of that the three road classes step apart deliberately, so the skeleton of
+the city reads at a glance:
+
+| | Fill | Casing | Labels |
+|---|---|---|---|
+| Local | white | bronze 14% | simplified |
+| Arterial | bronze 13% | bronze 28% | on |
+| Highway | bronze 26% | bronze 46% | on, **with shields** |
+
+`road.highway.controlled_access` gets the same fill but a heavier casing
+(weight 1.5), so **E311, E611 and Sheikh Zayed Road separate from the
+ordinary highways** rather than merging into one band.
+
+Highways run around a quarter-strength bronze — dark enough to trace
+across the whole emirate, light enough that the full-strength bronze
+markers still win the page.
+
+### Route shields and the metro
+
+The global rule turns `labels.icon` off, which would take the **E311 /
+E611 route shields** with it. They are switched back on explicitly for
+`road.highway` and `road.highway.controlled_access`; without those two
+entries the numbered network is unlabelled, which for Dubai is most of how
+people describe a location.
+
+The Dubai Metro is on: `transit.line` draws in evergreen 58% with a white
+casing so it reads as a line rather than another road, and
+`transit.station.rail` keeps its geometry, its icon and its name. Bus
+stops are off — they are noise at every zoom this site uses — and so are
+all other transit icons, so the only markers on the transit layer are
+metro stations and the airports.
+
+Evergreen for the metro, bronze for the roads: the two networks are
+legible apart without introducing a third colour.
 
 ### The rules that carry the point of the migration
 
@@ -114,9 +152,13 @@ Two entries are load-bearing and should survive any restyle:
   exceptions keep the landmarks a buyer actually orients by. `poi.business`
   is switched off wholesale rather than relying on the blanket rule, so a
   later edit to the blanket rule cannot quietly bring storefronts back.
+- **`road.highway` → `labels.icon` → `visibility: on`.** This one undoes
+  the global icon rule on purpose. Delete it and the route shields go with
+  it, and a Dubai address described as "off the E311" stops being findable
+  on our own map.
 
-`transit` is off entirely, and `administrative.land_parcel` with it — plot
-outlines at high zoom read as noise on a presentation map.
+`administrative.land_parcel` is off — plot outlines at high zoom read as
+noise on a presentation map.
 
 ### Water is grey-green, not blue
 
