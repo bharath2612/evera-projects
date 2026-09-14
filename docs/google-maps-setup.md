@@ -145,6 +145,26 @@ name. Bus stations are off — noise at every zoom this site uses.
 Evergreen for the rail, bronze for the roads: the two networks are legible
 apart without introducing a third colour.
 
+### Three things the first cloud-format draft got wrong
+
+All three were found by rendering the published style and counting pixels,
+not by reading it. Worth knowing, because the schema fails quietly:
+
+- **Parks came back in Google's default mint (`#c3f1d5`).** Styling the
+  two leaf ids `pointOfInterest.recreation.park` and `.golfCourse` missed
+  every other recreation polygon. Children inherit from a parent id, so
+  the fill belongs on `pointOfInterest.recreation`.
+- **Coloured map pins reappeared** on landmarks and tourist attractions.
+  The legacy file could show a label's text while suppressing its icon
+  globally; here `label` bundles text and pin together, so those two rules
+  were buying Google's purple pins along with the names. They are off now
+  and inherit from `pointOfInterest`. The airport keeps its label, with
+  `pinFillColor` / `pinGlyphColor` / `pinOutlineColor` set to the palette
+  instead of Google's blue — DWC and DXB are worth orienting by.
+- **The metro drew in default blue.** `infrastructure.railwayTrack.commuter`
+  did not match Dubai Metro; the parent `infrastructure.railwayTrack` does.
+  `…railStation.subwayStation` was added for the station names.
+
 ### What the new schema cannot express
 
 Three rules from the legacy file have no equivalent and are simply gone:

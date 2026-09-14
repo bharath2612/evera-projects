@@ -3,29 +3,76 @@
   "variant": "light",
   "styles": [
     {
+      "id": "natural.archipelago",
+      "label": {
+        "textFillColor": "#8a918d"
+      }
+    },
+    {
+      "id": "natural.continent",
+      "label": {
+        "textFillColor": "#8a918d"
+      }
+    },
+    {
+      "id": "natural.island",
+      "label": {
+        "textFillColor": "#8a918d"
+      }
+    },
+    {
       "id": "natural.land",
-      "geometry": { "fillColor": "#fbfaf9" }
+      "geometry": {
+        "fillColor": "#fbfaf9"
+      }
     },
     {
       "id": "natural.land.landCover",
-      "geometry": { "fillColor": "#f7f7f6" }
+      "geometry": {
+        "fillColor": "#f7f7f6"
+      }
     },
     {
       "id": "natural.water",
-      "geometry": { "fillColor": "#dadcdb" },
-      "label": { "textFillColor": "#8a918d" }
+      "geometry": {
+        "fillColor": "#dadcdb"
+      },
+      "label": {
+        "textFillColor": "#8a918d"
+      }
     },
-
     {
       "id": "political.border",
-      "geometry": { "strokeColor": "#dfd7d0", "strokeWeight": 1 }
-    },
-    {
-      "id": "political.countryOrRegion",
-      "label": { "textFillColor": "#8a918d" }
+      "geometry": {
+        "strokeColor": "#dfd7d0",
+        "strokeWeight": 1
+      }
     },
     {
       "id": "political.city",
+      "label": {
+        "visible": true,
+        "textFillColor": "#555e5a",
+        "textStrokeColor": "#ffffff"
+      }
+    },
+    {
+      "id": "political.countryOrRegion",
+      "label": {
+        "textFillColor": "#8a918d"
+      }
+    },
+    {
+      "id": "political.landParcel",
+      "geometry": {
+        "visible": false
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "political.neighborhood",
       "label": {
         "visible": true,
         "textFillColor": "#555e5a",
@@ -41,68 +88,80 @@
       }
     },
     {
-      "id": "political.neighborhood",
+      "id": "pointOfInterest",
       "label": {
-        "visible": true,
-        "textFillColor": "#555e5a",
-        "textStrokeColor": "#ffffff"
+        "visible": false
       }
     },
     {
-      "id": "political.landParcel",
-      "geometry": { "visible": false },
-      "label": { "visible": false }
-    },
-
-    {
-      "id": "pointOfInterest",
-      "label": { "visible": false }
-    },
-    {
-      "id": "pointOfInterest.recreation.park",
-      "geometry": { "fillColor": "#e8e9e8" },
-      "label": { "visible": true, "textFillColor": "#757d79" }
-    },
-    {
-      "id": "pointOfInterest.recreation.golfCourse",
-      "geometry": { "fillColor": "#e8e9e8" }
-    },
-    {
-      "id": "pointOfInterest.landmark",
-      "label": { "visible": true, "textFillColor": "#757d79" }
-    },
-    {
-      "id": "pointOfInterest.entertainment.touristAttraction",
-      "label": { "visible": true, "textFillColor": "#757d79" }
+      "id": "pointOfInterest.emergency.hospital",
+      "geometry": {
+        "fillColor": "#f7f4f2"
+      }
     },
     {
       "id": "pointOfInterest.other.school",
-      "geometry": { "fillColor": "#f7f4f2" }
+      "geometry": {
+        "fillColor": "#f7f4f2"
+      }
     },
     {
-      "id": "pointOfInterest.emergency.hospital",
-      "geometry": { "fillColor": "#f7f4f2" }
+      "id": "pointOfInterest.recreation",
+      "geometry": {
+        "fillColor": "#e8e9e8"
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "pointOfInterest.recreation.park",
+      "geometry": {
+        "fillColor": "#e8e9e8"
+      },
+      "label": {
+        "visible": true,
+        "textFillColor": "#757d79"
+      }
     },
     {
       "id": "pointOfInterest.transit.airport",
-      "geometry": { "fillColor": "#f2efec" },
-      "label": { "visible": true, "textFillColor": "#5d6662" }
+      "geometry": {
+        "fillColor": "#f2efec"
+      },
+      "label": {
+        "visible": true,
+        "textFillColor": "#5d6662",
+        "pinFillColor": "#f7f4f2",
+        "pinGlyphColor": "#5d6662",
+        "pinOutlineColor": "#dfd7d0"
+      }
     },
-
     {
       "id": "infrastructure.building.commercial",
-      "geometry": { "fillColor": "#f7f4f2", "strokeColor": "#ece7e3" }
+      "geometry": {
+        "fillColor": "#f7f4f2",
+        "strokeColor": "#ece7e3"
+      }
     },
-
     {
-      "id": "infrastructure.roadNetwork.road.local",
-      "geometry": { "fillColor": "#ffffff", "strokeColor": "#f0ece9" },
-      "label": { "textFillColor": "#8a918d" }
+      "id": "infrastructure.railwayTrack",
+      "geometry": {
+        "visible": true,
+        "fillColor": "#6d7571",
+        "strokeColor": "#ffffff"
+      }
     },
     {
       "id": "infrastructure.roadNetwork.road.arterial",
-      "geometry": { "fillColor": "#eeeae6", "strokeColor": "#e2dad3" },
-      "label": { "visible": true, "textFillColor": "#5d6662" }
+      "geometry": {
+        "fillColor": "#eeeae6",
+        "strokeColor": "#e2dad3"
+      },
+      "label": {
+        "visible": true,
+        "textFillColor": "#5d6662"
+      }
     },
     {
       "id": "infrastructure.roadNetwork.road.highway",
@@ -118,30 +177,43 @@
       }
     },
     {
-      "id": "infrastructure.roadNetwork.road.roadShield",
-      "label": { "visible": true }
-    },
-
-    {
-      "id": "infrastructure.railwayTrack.commuter",
+      "id": "infrastructure.roadNetwork.road.local",
       "geometry": {
-        "visible": true,
-        "fillColor": "#6d7571",
-        "strokeColor": "#ffffff"
+        "fillColor": "#ffffff",
+        "strokeColor": "#f0ece9"
+      },
+      "label": {
+        "textFillColor": "#8a918d"
       }
     },
     {
-      "id": "infrastructure.railwayTrack.commercial",
-      "geometry": { "visible": true, "fillColor": "#8a918d" }
-    },
-    {
-      "id": "infrastructure.transitStation.railStation",
-      "label": { "visible": true, "textFillColor": "#5d6662" }
+      "id": "infrastructure.roadNetwork.road.roadShield",
+      "label": {
+        "visible": true
+      }
     },
     {
       "id": "infrastructure.transitStation.busStation",
-      "geometry": { "visible": false },
-      "label": { "visible": false }
+      "geometry": {
+        "visible": false
+      },
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "infrastructure.transitStation.railStation",
+      "label": {
+        "visible": true,
+        "textFillColor": "#5d6662"
+      }
+    },
+    {
+      "id": "infrastructure.transitStation.railStation.subwayStation",
+      "label": {
+        "visible": true,
+        "textFillColor": "#5d6662"
+      }
     }
   ]
 }
