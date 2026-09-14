@@ -31,6 +31,11 @@ export function MapExplorer({
   covers?: Record<string, string>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+  // "hybrid", not "satellite": imagery with the road network and place
+  // names kept on top. On a property map the community name is half the
+  // information — Dubai South, Damac Hills — and plain satellite drops it.
+  const [aerial, setAerial] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const located = projects.filter(
@@ -58,6 +63,7 @@ export function MapExplorer({
         minZoom: 8.5,
         maxZoom: 16,
       });
+      mapRef.current = map;
 
       if (located.length > 0) {
         const bounds = new google.maps.LatLngBounds();
@@ -189,9 +195,16 @@ export function MapExplorer({
       cancelled = true;
       for (const listener of listeners) listener.remove();
       listeners = [];
+      mapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The map is built once in the effect above; the toggle only ever
+  // switches its type, so this never re-runs the whole init.
+  useEffect(() => {
+    mapRef.current?.setMapTypeId(aerial ? "hybrid" : "roadmap");
+  }, [aerial]);
 
   const active = projects.find((p) => p.id === activeId) ?? null;
 
@@ -204,6 +217,33 @@ export function MapExplorer({
           The map needs NEXT_PUBLIC_GOOGLE_MAPS_API_KEY and
           NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID — see docs/google-maps-setup.md.
         </p>
+      )}
+
+      {/* Map / Satellite. Our own control rather than Google's
+          mapTypeControl, which disableDefaultUI removes and which would
+          not match the rest of the page. */}
+      {mapsConfigured && (
+        <div
+          role="group"
+          aria-label="Map style"
+          className="absolute top-5 right-5 z-10 flex gap-0.5 rounded-xl border bg-card/90 p-0.5 shadow-[0_2px_14px_rgba(44,55,50,0.08)] backdrop-blur lg:top-7 lg:right-7"
+        >
+          {([false, true] as const).map((wantsAerial) => (
+            <button
+              key={String(wantsAerial)}
+              type="button"
+              onClick={() => setAerial(wantsAerial)}
+              aria-pressed={aerial === wantsAerial}
+              className={`cursor-pointer rounded-[10px] px-3 py-1.5 text-[12px] font-medium tracking-tight transition-colors ${
+                aerial === wantsAerial
+                  ? "bg-brand text-brand-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {wantsAerial ? "Satellite" : "Map"}
+            </button>
+          ))}
+        </div>
       )}
 
       {/* Header overlay */}

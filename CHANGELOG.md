@@ -2,6 +2,25 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-14 — Satellite view on the projects map
+
+**Added** — a Map / Satellite toggle, top right of the home map.
+
+It switches to Google's **hybrid** type rather than plain `satellite`:
+imagery with the road network and place names kept on top. Plain
+satellite drops every label, and on a property map the community name is
+half the information — "Dubai South", "Damac Hills 2" — which is the
+whole reason we left OpenStreetMap in the first place.
+
+The control is ours, not Google's `mapTypeControl`: `disableDefaultUI`
+removes that one, and it would not match the page. The toggle only calls
+`setMapTypeId` on the existing map, so switching never re-runs the init
+or re-creates the markers — and a map load is billed per `Map`
+construction, so it costs nothing extra either.
+
+The cloud style applies to the roadmap type only; satellite ignores it,
+which is expected.
+
 ## 2026-09-14 — A shared link showed the Vercel triangle and no preview
 
 **Fixed** — favicon and link previews. Pasting the site into WhatsApp
