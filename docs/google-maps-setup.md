@@ -248,8 +248,16 @@ It is deliberately short. Everything it does not name keeps Google's
 imagery defaults, because those are right over satellite and our light
 roadmap palette is not — `#fbfaf9` roads on sand would be invisible.
 
-To apply it: open the style in the console, switch the **map type**
-selector from Roadmap to Satellite, import this file, Publish.
+To apply it: open the style in the console and switch the **Map type**
+selector (right-hand panel) from Roadmap to **Hybrid** — that is the type
+name; our button just says Satellite. Confirm the JSON tab is now showing
+the hybrid document and not the roadmap rules, then paste this file,
+Apply → Save → **Publish**.
+
+If the JSON tab still lists the roadmap rules after switching type, stop:
+pasting there would overwrite the roadmap style. Use the **Map features**
+tree instead — Point of interest / Political / Infrastructure / Natural —
+and set the label text fill to `#ffffff` with a `#1b211f` stroke on each.
 
 ## What we must not restyle
 
