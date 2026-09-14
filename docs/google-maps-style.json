@@ -9,6 +9,12 @@
       }
     },
     {
+      "id": "natural.base",
+      "geometry": {
+        "fillColor": "#fbfaf9"
+      }
+    },
+    {
       "id": "natural.continent",
       "label": {
         "textFillColor": "#8a918d"
@@ -150,6 +156,13 @@
         "pinFillColor": "#f7f4f2",
         "pinGlyphColor": "#5d6662",
         "pinOutlineColor": "#dfd7d0"
+      }
+    },
+    {
+      "id": "infrastructure",
+      "geometry": {
+        "fillColor": "#f7f4f2",
+        "strokeColor": "#f0ece9"
       }
     },
     {
