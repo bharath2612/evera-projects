@@ -31,10 +31,14 @@ have been a second source of truth to drift out of step with `PLATES`.
 
 ## 2026-09-14 — The unit page gets the project page's top bar
 
-**Changed** — the unit page had a plain inline "← Arché Residence" link
-where the project page has a sticky bar. Same bar on both now: back on
-the left, project name, Inventory and Enquire on the right, and it stays
-put while the floor plan scrolls.
+**Changed** — the unit page and the full-inventory page each had a plain
+inline "← Arché Residence" link where the project page has a sticky bar.
+Same bar on all three now: home and back on the left, project name,
+Inventory and Enquire on the right, staying put while the page scrolls.
+
+The inventory page passes `hasInventory={false}` — that page *is* the
+inventory, so the button would point at the section the reader just left.
+Home, back and Enquire remain.
 
 `ProjectTopBar` grew three optional props rather than a second
 component, because the unit page sits one level deeper and two of its

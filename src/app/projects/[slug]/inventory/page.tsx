@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchProjects, fetchUnits } from "@/lib/data";
 import { PublicInventory } from "@/components/public-inventory";
+import { ProjectTopBar } from "@/components/sticky-cta";
 
 export const revalidate = 60;
 
@@ -38,15 +38,18 @@ export default async function InventoryPage({
 
   return (
     <main className="bg-grain min-h-dvh">
+      {/* hasInventory is false here on purpose: this page IS the
+          inventory, so an "Inventory" button would point at the section
+          the reader just came from. Home, back and Enquire remain. */}
+      <ProjectTopBar
+        projectName={project.name}
+        projectSlug={project.slug}
+        hasInventory={false}
+        backHref={`/projects/${project.slug}#inventory`}
+        backLabel={`Back to ${project.name}`}
+      />
       <div className="mx-auto w-full max-w-6xl px-6 py-8 lg:px-8 lg:py-10">
-        <Link
-          href={`/projects/${project.slug}#inventory`}
-          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          ← {project.name}
-        </Link>
-
-        <header className="mt-6">
+        <header>
           <p className="text-[11px] font-medium tracking-[0.22em] text-brand uppercase">
             {project.location ?? "Dubai"} · Evera Developments
           </p>
