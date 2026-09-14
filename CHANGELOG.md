@@ -34,15 +34,63 @@ delta scaled by 2^zoom (`pixelDelta`), and `flyTo`'s padding became a
 computed centre offset (`centerLeftOfPanel`), since `panTo` takes none.
 `maplibre-gl` is out of the dependencies.
 
+**Shipped and verified.** The key and Map ID are set in Vercel across all
+three environments, the site is live, and both maps were checked against
+production rather than against the build: area names render (Dubai South
+Residential District, South Bay, The Pulse Beachfront on the very card
+that used to be blank white), the E-road shields are back, and the metro
+line and its stations draw.
+
+**The style took six rounds, and every failure was silent.** It is worth
+recording why, because the schema gives no errors:
+
+- The console's JSON editor is on the **cloud-based styling format** — an
+  object with `backgroundColor` / `variant` / `styles`, each rule a single
+  `id` with `geometry` and/or `label`. Fed the legacy
+  `featureType`/`elementType`/`stylers` array it reported `Property
+  stylers is not allowed`, then `Incorrect type. Expected "object"`, and
+  **Apply produced the default map instead of failing**.
+- `roadShield`, `roadSign` and `roadDetail` are children of
+  `infrastructure.roadNetwork`, not of `…roadNetwork.road`. Written under
+  `.road` they name nothing, and **a rule at a non-existent id is
+  ignored without warning**.
+- `label` and `geometry` are independent: hiding POI *labels* left every
+  POI **polygon** unstyled.
+- Above all: **an unstyled child falls back to Google's palette, not to a
+  styled sibling.** That single fact produced Google's mint parks, the
+  steel-blue residential streets through Emirates Hills and JLT, the
+  yellow junction badges and the cream at JBR. The fix in the end was to
+  style the roots — `infrastructure`, `natural.base`, `pointOfInterest`,
+  `infrastructure.roadNetwork` — so anything not enumerated lands
+  on-palette by default.
+
+Each round was checked by rendering production and counting pixels, not
+by reading the file; nothing here was visible by inspection.
+
+**The greens break the derivation rule, deliberately.**
+`--brand-evergreen` is a desaturated slate (oklab chroma 0.017), so
+`color-mix` toward white produces grey at every percentage — a 40% mix
+lands at a green bias of +3/255. The greens therefore hold evergreen's
+**hue angle (166°)** and raise chroma instead: parks `#d5ede2`, golf
+`#c9e6d9`, metro `#597e6e`. A narrow, documented exception in the spirit
+of the one already sanctioned for `LEAD_STATUS_META`. Water takes the
+smallest lift of the set (`#c7d4ce`) because it is a fifth of the home
+map, and at park strength the page would read as a green map rather than
+a calm one with green in it.
+
 **What is left.**
-- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`
-  must be set in `.env.local` and in Vercel (Preview **and** Production)
-  before this ships — **both maps render nothing without them**, and the
-  home page is the map. `docs/google-maps-setup.md` has the console
-  steps, the referrer restrictions that keep the key from being spent by
-  others, and the brand map style to attach to the Map ID.
 - The style lives in the Google Cloud console against the Map ID, not in
-  this repo, so it is the one piece of the look that is not under review.
+  this repo. `docs/google-maps-style.json` is the source of truth, but
+  **editing it changes nothing until someone re-publishes in the
+  console** — no deploy involved, and equally no deploy needed.
+- `docs/google-maps-style-legacy.json` keeps the original array. Unused
+  by the console; it stays because the legacy format is what the `styles`
+  map option takes, and because it documents three rules the new schema
+  cannot express — `road.highway.controlled_access` (E311 can no longer
+  be toned apart from an ordinary highway), global element rules, and
+  `landscape.man_made` as an area wash.
+- Quotas are the real cost guard, not the referrer restriction: the key
+  is `NEXT_PUBLIC_` and visible in the page by design.
 
 ## 2026-09-11 — Offer floor-plan page kept its signature block
 
