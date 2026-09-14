@@ -32,11 +32,13 @@ export function MapExplorer({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
-  // Plain "satellite", not "hybrid". Hybrid keeps Google's labels, but
-  // cloud styling is per map type and ours covers roadmap only, so those
-  // labels arrive with Google's imagery defaults: dark text on a dark
-  // halo. Over Dubai's near-white desert the POI names were unreadable.
-  // Clean imagery instead — the Map toggle is right there for names.
+  // "hybrid", not "satellite": imagery WITH the place names, because the
+  // community name is half the information on a property map. Google's
+  // own hybrid labels are dark-on-dark-halo, tuned for dark imagery and
+  // unreadable over Dubai's near-white desert — so the hybrid map type
+  // carries its own cloud style (docs/google-maps-style-hybrid.json)
+  // that repaints them white on a dark halo. The label colour was the
+  // problem, not the labels.
   const [aerial, setAerial] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -205,7 +207,7 @@ export function MapExplorer({
   // The map is built once in the effect above; the toggle only ever
   // switches its type, so this never re-runs the whole init.
   useEffect(() => {
-    mapRef.current?.setMapTypeId(aerial ? "satellite" : "roadmap");
+    mapRef.current?.setMapTypeId(aerial ? "hybrid" : "roadmap");
   }, [aerial]);
 
   const active = projects.find((p) => p.id === activeId) ?? null;

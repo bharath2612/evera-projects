@@ -22,8 +22,8 @@ export function LocationMap({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
-  // Plain "satellite" — see map-explorer for why hybrid's labels were
-  // unreadable over desert.
+  // "hybrid" — imagery with place names, repainted for contrast by the
+  // hybrid map type's own style. See map-explorer.
   const [aerial, setAerial] = useState(false);
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export function LocationMap({
   // Only ever a type switch on the map already built above — never a
   // re-init, so no second map load is billed and the marker stays put.
   useEffect(() => {
-    mapRef.current?.setMapTypeId(aerial ? "satellite" : "roadmap");
+    mapRef.current?.setMapTypeId(aerial ? "hybrid" : "roadmap");
   }, [aerial]);
 
   if (!mapsConfigured) return null;

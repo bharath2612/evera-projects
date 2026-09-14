@@ -1,0 +1,55 @@
+{
+  "styles": [
+    {
+      "id": "natural",
+      "label": {
+        "visible": true,
+        "textFillColor": "#ffffff",
+        "textStrokeColor": "#1b211f",
+        "textStrokeWeight": 4
+      }
+    },
+    {
+      "id": "political",
+      "label": {
+        "visible": true,
+        "textFillColor": "#ffffff",
+        "textStrokeColor": "#1b211f",
+        "textStrokeWeight": 4
+      }
+    },
+    {
+      "id": "pointOfInterest",
+      "label": {
+        "visible": true,
+        "textFillColor": "#ffffff",
+        "textStrokeColor": "#1b211f",
+        "textStrokeWeight": 4,
+        "pinFillColor": "#2c3732",
+        "pinGlyphColor": "#ffffff",
+        "pinOutlineColor": "#ffffff"
+      }
+    },
+    {
+      "id": "pointOfInterest.business",
+      "label": { "visible": false }
+    },
+    {
+      "id": "infrastructure",
+      "label": {
+        "visible": true,
+        "textFillColor": "#ffffff",
+        "textStrokeColor": "#1b211f",
+        "textStrokeWeight": 4
+      }
+    },
+    {
+      "id": "infrastructure.roadNetwork.roadSign",
+      "label": { "visible": false }
+    },
+    {
+      "id": "infrastructure.transitStation.busStation",
+      "label": { "visible": false }
+    }
+  ]
+}

@@ -9,12 +9,17 @@ home explorer, and top left of the location card on a project page
 (Google puts its zoom pair on the right, and that card is only 256px
 tall, so the control there is smaller and sits on the other side).
 
-It uses plain `satellite`. Hybrid was tried first, to keep the place
-names over the imagery, and rejected on sight: cloud styling is **per map
-type** and ours covers roadmap, so hybrid's labels arrived with Google's
-defaults — dark text on a dark halo, tuned for dark imagery. Over Dubai's
-near-white desert the POI names were unreadable. Names stay on the Map
-view, one tap away.
+It uses **hybrid** — imagery with the place names kept over it, because
+the community name is half the information on a property map.
+
+Those names arrived unreadable at first: cloud styling is **per map
+type**, ours covered roadmap only, so hybrid fell back to Google's
+defaults — dark text on a dark halo, tuned for dark imagery. Over
+Dubai's near-white desert the POI names vanished into the sand. The
+colour was the problem, not the labels, so hybrid now has its own style
+(`docs/google-maps-style-hybrid.json`) repainting every label white on a
+dark halo, with evergreen POI pins so they do not compete with the
+bronze project markers.
 
 The control is ours, not Google's `mapTypeControl`: `disableDefaultUI`
 removes that one, and it would not match the page. The toggle only calls

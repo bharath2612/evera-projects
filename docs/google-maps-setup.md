@@ -225,22 +225,31 @@ the frame on the home map, so at park strength the page would read as a
 green map rather than a calm one with green in it. Parks are small and can
 carry the colour; the Gulf cannot.
 
-## The satellite view carries no style
+## The satellite view is a second style
 
-Cloud styling is **per map type**, and `docs/google-maps-style.json` is
-the **roadmap** style. The Satellite toggle therefore uses plain
-`satellite`: imagery only, no labels, nothing for a style to affect.
+Cloud styling is **per map type**. `docs/google-maps-style.json` is the
+**roadmap** style; the Satellite toggle lands on **hybrid**, which needs
+`docs/google-maps-style-hybrid.json` published against that map type.
 
-The obvious alternative, `hybrid`, was tried and rejected. It keeps
-Google's labels, but with Google's imagery defaults — dark text on a dark
-halo — and over Dubai's near-white desert the POI names ("Town Square
-Main Park", "Oasis Park Dubai") were unreadable. Styling hybrid
-separately would have fixed it, but it is a second style to author,
-publish and keep in step, for a view people switch to precisely because
-they want to see the ground rather than read about it.
+Hybrid is the right type here — imagery *with* the place names, because
+the community name is half the information on a property map. What was
+wrong was the colour: Google's hybrid defaults are dark text on a dark
+halo, tuned for dark imagery, and over Dubai's near-white desert the POI
+names ("Town Square Main Park", "Oasis Park Dubai") disappeared into the
+sand.
 
-Names live on the Map view, one tap away. Do not "improve" this to
-hybrid without looking at it over desert first.
+The hybrid style repaints every label **white on a dark halo**
+(`#ffffff` on `#1b211f`, stroke weight 4), which holds on both the pale
+desert and the dark built-up areas, and gives POI pins an evergreen fill
+so they read as map furniture rather than competing with the bronze
+project markers.
+
+It is deliberately short. Everything it does not name keeps Google's
+imagery defaults, because those are right over satellite and our light
+roadmap palette is not — `#fbfaf9` roads on sand would be invisible.
+
+To apply it: open the style in the console, switch the **map type**
+selector from Roadmap to Satellite, import this file, Publish.
 
 ## What we must not restyle
 
