@@ -9,13 +9,44 @@ const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
 });
 
+/**
+ * metadataBase is what makes og:image absolute. WhatsApp, iMessage and
+ * Slack all refuse a relative one — which is why a shared link used to
+ * arrive as a bare URL with no card.
+ */
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://project.evera.dev",
+  ),
   title: {
     default: "Evera Developments — Properties",
     template: "%s · Evera Developments",
   },
   description:
     "Explore Evera's developments across Dubai — live availability, floor plans and handover timelines.",
+  openGraph: {
+    type: "website",
+    siteName: "Evera Developments",
+    title: "Evera Developments — Properties",
+    description:
+      "Live availability, floor plans and handover dates across Dubai.",
+    url: "/",
+    images: [
+      {
+        url: "/og-projects.png",
+        width: 1200,
+        height: 630,
+        alt: "Evera Developments",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Evera Developments — Properties",
+    description:
+      "Live availability, floor plans and handover dates across Dubai.",
+    images: ["/og-projects.png"],
+  },
 };
 
 export default function RootLayout({

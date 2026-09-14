@@ -2,6 +2,27 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-14 — A shared link showed the Vercel triangle and no preview
+
+**Fixed** — favicon and link previews. Pasting the site into WhatsApp
+produced a bare URL with no card, and the browser tab carried the **Vercel
+triangle**: `src/app/favicon.ico` was still the Next.js scaffold default,
+never replaced.
+
+The Evera mark now serves as `icon.png` and `apple-icon.png`, and the
+scaffold's unused `next.svg` / `vercel.svg` / `file.svg` / `globe.svg` /
+`window.svg` are gone with it.
+
+**Open Graph.** `metadataBase` is the piece that was missing: without it
+Next emits a relative `og:image`, and WhatsApp, iMessage and Slack all
+refuse those — which is why there was no card rather than a broken one.
+It reads `NEXT_PUBLIC_SITE_URL` and falls back to
+`https://project.evera.dev`.
+
+`public/og-projects.png` is a 1200×630 card built in the brand's own
+typeface (Plus Jakarta Sans) on the brand ground, with the bronze mark
+and a rule in `--brand-bronze` — 26 KB, well inside WhatsApp's appetite.
+
 ## 2026-09-14 — The map called Dubai South "Airport City"
 
 **Changed** — both maps (the home explorer and the project location card)
