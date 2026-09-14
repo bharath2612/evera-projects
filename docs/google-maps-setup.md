@@ -62,8 +62,9 @@ costs $2 per 1,000 with its own 10,000 free.
    map ID. Map type **JavaScript**, rendering type **Vector** (raster has
    no advanced markers). Copy the ID into
    `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`.
-5. **Attach the style** — Map styles → Create style → Import JSON, paste
-   `docs/google-maps-style.json`, then associate the Map ID with it.
+5. **Attach the style** — Map styles → the style → JSON tab, paste
+   `docs/google-maps-style.json`, Apply → Save → **Publish**, and
+   associate the Map ID with it. Publish is what reaches the live site.
 
 The Map ID is required even with the default style: advanced markers — the
 photo cards on the home map and the bronze dot on the project card — only
@@ -71,27 +72,41 @@ work on a map that has one.
 
 ## The style
 
-`docs/google-maps-style.json` — paste that file into Map styles → Create
-style → Import JSON, then associate the Map ID with it.
+`docs/google-maps-style.json` — paste it into the **JSON** tab of the map
+style, Apply, Save, then **Publish**.
 
-Every colour in it is **computed**, not picked. The house rule is that
-nothing is hardcoded outside the two master variables, but the Cloud
-console only accepts literal hex, so each value is the sRGB result of the
-same `color-mix(in oklab, …)` that `globals.css` would have produced:
+It is written in the **cloud-based styling format**, not the legacy one:
+the root is an object with `backgroundColor`, `variant` and a `styles`
+array, and each rule is a single `id` with `geometry` and/or `label`
+blocks. That matters because the console's JSON tab validates against this
+schema only. Feed it the legacy `featureType` / `elementType` / `stylers`
+array and it reports `Property stylers is not allowed`, then
+`Incorrect type. Expected "object"`, and **Apply silently produces the
+default map** rather than failing loudly.
+
+`docs/google-maps-style-legacy.json` keeps the original array. It is not
+used by the console; it stays because the legacy format is what the
+`styles` map option takes, which is the only way to preview a style
+without a Map ID — and because it documents the rules that have no
+equivalent in the new schema (see below).
+
+Every colour is **computed**, not picked. The house rule is that nothing
+is hardcoded outside the two master variables, but the console only
+accepts literal hex, so each value is the sRGB result of the same
+`color-mix(in oklab, …)` that `globals.css` would have produced:
 
 | Map role | Derivation | Hex |
 |---|---|---|
-| Land base | bronze 4% → white | `#fbfaf9` |
-| Built-up landscape | bronze 8% (= `--muted`) | `#f7f4f2` |
+| Land base / page background | bronze 4% | `#fbfaf9` |
+| Land cover | bronze ~3% neutral | `#f7f7f6` |
+| Buildings | bronze 8% (= `--muted`) | `#f7f4f2` |
 | Local road casing | bronze 14% | `#f0ece9` |
-| Arterial fill / casing | bronze 13% / 28% | `#f1eeeb` / `#e2dad3` |
-| Highway fill / casing | bronze 26% / 46% | `#e4dcd6` / `#cfc2b8` |
+| Arterial fill / casing | bronze 16% / 28% | `#eeeae6` / `#e2dad3` |
+| Highway fill / casing | bronze 38% / 52% | `#d7cdc4` / `#c9bbaf` |
 | Highway label | evergreen 88% | `#424c47` |
-| Metro line | evergreen 58% | `#7d8581` |
-| Metro station label | evergreen 74% | `#5d6662` |
-| Admin boundary | bronze 30% | `#dfd7d0` |
-| Park fill | evergreen 10% | `#e8e9e8` |
-| Water fill | evergreen 16% | `#dadcdb` |
+| Metro line | evergreen 66% | `#6d7571` |
+| Park / golf | evergreen 10% | `#e8e9e8` |
+| Water | evergreen 16% | `#dadcdb` |
 | Place label | evergreen 78% | `#555e5a` |
 | Secondary label | evergreen 62% (= `--muted-foreground`) | `#757d79` |
 | Minor label | evergreen 52% | `#8a918d` |
@@ -102,80 +117,56 @@ white in oklab at those percentages; do not eyedrop new ones.
 ### The road hierarchy is the point, not decoration
 
 Local roads stay pure white against tinted land — the figure/ground
-inversion positron used, which is what made the old map feel calm. On top
-of that the three road classes step apart deliberately, so the skeleton of
-the city reads at a glance:
+inversion positron used, which is what made the old map feel calm. The
+three classes then step apart so the skeleton of the city reads at a
+glance: local white, arterial bronze 16%, highway bronze 38%.
 
-| | Fill | Casing | Labels |
-|---|---|---|---|
-| Local | white | bronze 14% | simplified |
-| Arterial | bronze 13% | bronze 28% | on |
-| Highway | bronze 26% | bronze 46% | on, **with shields** |
+Highways run around a third-strength bronze — dark enough to trace across
+the whole emirate, light enough that the full-strength bronze markers
+still win the page.
 
-`road.highway.controlled_access` gets the same fill but a heavier casing
-(weight 1.5), so **E311, E611 and Sheikh Zayed Road separate from the
-ordinary highways** rather than merging into one band.
-
-Highways run around a quarter-strength bronze — dark enough to trace
-across the whole emirate, light enough that the full-strength bronze
-markers still win the page.
+Note `strokeWeight` is honoured in this schema but was **not** applied on
+the vector map under the legacy format: a render against the real key
+returned zero pixels of the casing colour. That is why the contrast lives
+in the fill. If the new format does honour the casing, the fills can come
+back down a step.
 
 ### Route shields and the metro
 
-The global rule turns `labels.icon` off, which would take the **E311 /
-E611 route shields** with it. They are switched back on explicitly for
-`road.highway` and `road.highway.controlled_access`; without those two
-entries the numbered network is unlabelled, which for Dubai is most of how
-people describe a location.
+`infrastructure.roadNetwork.road.roadShield` is set visible on purpose.
+The **E311 / E611 shields** are how Dubai locations get described, and a
+blanket icon suppression is exactly what removed them in the first draft.
 
-The Dubai Metro is on: `transit.line` draws in evergreen 58% with a white
-casing so it reads as a line rather than another road, and
-`transit.station.rail` keeps its geometry, its icon and its name. Bus
-stops are off — they are noise at every zoom this site uses — and so are
-all other transit icons, so the only markers on the transit layer are
-metro stations and the airports.
+The Dubai Metro is `infrastructure.railwayTrack.commuter`, drawn in
+evergreen 66% with a white casing so it reads as a line rather than
+another road, and `infrastructure.transitStation.railStation` keeps its
+name. Bus stations are off — noise at every zoom this site uses.
 
-Evergreen for the metro, bronze for the roads: the two networks are
-legible apart without introducing a third colour.
+Evergreen for the rail, bronze for the roads: the two networks are legible
+apart without introducing a third colour.
 
-### Every rule states `featureType` explicitly
+### What the new schema cannot express
 
-The Style Reference lets `featureType` be omitted — it defaults to `all` —
-but the Cloud console's JSON editor rejects an object carrying `stylers`
-without one, with `Property stylers is not allowed`. The four global rules
-therefore say `"featureType": "all"` in full. Keep it that way; dropping it
-back to the documented shorthand makes the file fail to upload.
+Three rules from the legacy file have no equivalent and are simply gone:
 
-### The rules that carry the point of the migration
-
-Two entries are load-bearing and should survive any restyle:
-
-- **`administrative.neighborhood` → `labels.text` → `visibility: on`.**
-  Community names are the entire reason we left OpenStreetMap. Google
-  thins these labels aggressively by default, and turning them off — or
-  letting a "clean" restyle drop them — puts us back where we started,
-  with Dubai South as blank space.
-- **`poi` labels off, but `poi.park` and `poi.attraction` back on.** The
-  blanket `poi` rule kills the shop-and-restaurant noise; the two
-  exceptions keep the landmarks a buyer actually orients by. `poi.business`
-  is switched off wholesale rather than relying on the blanket rule, so a
-  later edit to the blanket rule cannot quietly bring storefronts back.
-- **`road.highway` → `labels.icon` → `visibility: on`.** This one undoes
-  the global icon rule on purpose. Delete it and the route shields go with
-  it, and a Dubai address described as "off the E311" stops being findable
-  on our own map.
-
-`administrative.land_parcel` is off — plot outlines at high zoom read as
-noise on a presentation map.
+- **`road.highway.controlled_access`** — the new schema has one `highway`
+  id, so E311 and E611 can no longer be given a deeper tone than an
+  ordinary highway. They still separate by their shields.
+- **Global element rules.** The legacy file set one label colour and one
+  label halo for every feature at once. Here each feature carries its own,
+  which is why the label colours repeat across rules.
+- **`landscape.man_made`** as an area wash. The closest id is
+  `infrastructure.building.commercial`, which is buildings only, so
+  built-up land now takes the base land colour.
 
 ### Water is grey-green, not blue
 
 `#dadcdb` is evergreen mixed to 16%, so the Gulf reads as a cool neutral
 rather than the usual map blue. That is a deliberate consequence of the
 derive-from-two-masters rule; it separates from the land by lightness
-instead of hue. If it reads as wrong against the real coastline once the
-key is in, the smallest honest fix is to raise the mix to about 24%
-(`#cbcfcd`) rather than to introduce a blue that isn't in the palette.
+instead of hue. If it reads wrong against the real coastline, the smallest
+honest fix is raising the mix to about 24% (`#cbcfcd`) rather than
+introducing a blue that is not in the palette.
 
 ## What we must not restyle
 
