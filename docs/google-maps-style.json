@@ -41,7 +41,7 @@
     {
       "id": "natural.water",
       "geometry": {
-        "fillColor": "#dadcdb"
+        "fillColor": "#c7d4ce"
       },
       "label": {
         "textFillColor": "#8a918d"
@@ -114,16 +114,22 @@
     {
       "id": "pointOfInterest.recreation",
       "geometry": {
-        "fillColor": "#e8e9e8"
+        "fillColor": "#d5ede2"
       },
       "label": {
         "visible": false
       }
     },
     {
+      "id": "pointOfInterest.recreation.golfCourse",
+      "geometry": {
+        "fillColor": "#c9e6d9"
+      }
+    },
+    {
       "id": "pointOfInterest.recreation.park",
       "geometry": {
-        "fillColor": "#e8e9e8"
+        "fillColor": "#d5ede2"
       },
       "label": {
         "visible": true,
@@ -161,7 +167,7 @@
       "id": "infrastructure.railwayTrack",
       "geometry": {
         "visible": true,
-        "fillColor": "#6d7571",
+        "fillColor": "#597e6e",
         "strokeColor": "#ffffff"
       }
     },
@@ -258,14 +264,14 @@
       "id": "infrastructure.transitStation.railStation",
       "label": {
         "visible": true,
-        "textFillColor": "#5d6662"
+        "textFillColor": "#4b6057"
       }
     },
     {
       "id": "infrastructure.transitStation.railStation.subwayStation",
       "label": {
         "visible": true,
-        "textFillColor": "#5d6662"
+        "textFillColor": "#4b6057"
       }
     }
   ]

@@ -179,14 +179,33 @@ Three rules from the legacy file have no equivalent and are simply gone:
   `infrastructure.building.commercial`, which is buildings only, so
   built-up land now takes the base land colour.
 
-### Water is grey-green, not blue
+### The green is evergreen's hue, not an evergreen–white mix
 
-`#dadcdb` is evergreen mixed to 16%, so the Gulf reads as a cool neutral
-rather than the usual map blue. That is a deliberate consequence of the
-derive-from-two-masters rule; it separates from the land by lightness
-instead of hue. If it reads wrong against the real coastline, the smallest
-honest fix is raising the mix to about 24% (`#cbcfcd`) rather than
-introducing a blue that is not in the palette.
+Everything else in this file is `color-mix(in oklab, <master> N%, white)`.
+The greens are not, and the reason is measurable: `--brand-evergreen`
+(`#2c3732`) is a very desaturated slate — oklab chroma **0.017** — so
+mixing it toward white produces grey. At 40% the green bias is about +3
+out of 255. Invisible. There is no percentage that yields green.
+
+So the greens keep evergreen's **hue angle (166°)** and raise the chroma:
+
+| Role | oklab L / C | Hex | Green bias |
+|---|---|---|---|
+| Park, recreation | 0.925 / 0.030 | `#d5ede2` | +17.5 |
+| Golf course | 0.900 / 0.036 | `#c9e6d9` | +21 |
+| Water | 0.858 / 0.016 | `#c7d4ce` | +7 |
+| Metro line | 0.560 / 0.048 | `#597e6e` | +26.5 |
+| Rail station label | 0.470 / 0.030 | `#4b6057` | +15 |
+
+This is a deliberate, narrow exception to the derive-by-mixing rule — the
+same kind already sanctioned for the status colours in
+`LEAD_STATUS_META` / `UNIT_STATUS_META`. The hue is still the brand's; only
+the chroma is lifted, and only for greenery and rail.
+
+Water gets the smallest lift of the set on purpose. It is about a fifth of
+the frame on the home map, so at park strength the page would read as a
+green map rather than a calm one with green in it. Parks are small and can
+carry the colour; the Gulf cannot.
 
 ## What we must not restyle
 
