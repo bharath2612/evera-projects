@@ -137,16 +137,13 @@
   }
 }
 
-/* MapLibre chrome, toned to the brand */
-.maplibregl-ctrl-attrib {
-  font-size: 10px !important;
-  background: color-mix(in oklab, white 72%, transparent) !important;
-}
-.maplibregl-ctrl-group {
+/* Google Maps chrome, toned to the brand. Only the zoom pair is ours to
+   style — the Google logo and the data attribution are required to stay
+   as they ship, so nothing here touches them. */
+.gm-bundled-control .gmnoprint > div {
   border-radius: 10px !important;
   box-shadow: 0 1px 3px rgba(44, 55, 50, 0.12) !important;
 }
-/* Hovered project marker rises above a decluttered neighbour's card. */
-.maplibregl-marker:hover {
-  z-index: 30;
-}
+/* Marker stacking is set from JS (AdvancedMarkerElement.zIndex on hover),
+   not here — the wrapper Google renders around our content has no stable
+   class to hang a :hover rule on. */

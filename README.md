@@ -8,7 +8,7 @@ facade widget, arriving per the spec in
 ## Stack
 
 - Next.js (App Router, Turbopack) · TypeScript · Tailwind v4
-- MapLibre GL + OpenFreeMap vector tiles (no API key)
+- Google Maps JavaScript API (needs a key and a Map ID — see `docs/google-maps-setup.md`)
 - Supabase **anon key** reading two whitelisted views (`public_projects`,
   `public_units`) owned by the sibling repo `evera-one` — buyer data,
   internal notes and marketing statuses never reach this app.
@@ -29,6 +29,6 @@ team manages in Evera One.
 
 ```bash
 npm install
-cp .env.example .env.local   # fill the two public Supabase vars
+cp .env.example .env.local   # Supabase pair + the two Google Maps vars
 PORT=3002 npm run dev        # 3000/3001 are taken by sibling projects
 ```

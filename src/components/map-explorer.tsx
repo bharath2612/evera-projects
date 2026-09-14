@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
 import type { ProjectStats, PublicProject } from "@/lib/data";
+import {
+  BASE_MAP_OPTIONS,
+  centerLeftOfPanel,
+  loadMaps,
+  mapsConfigured,
+  pixelDelta,
+} from "@/lib/google-maps";
 import { ProjectSidebar } from "./project-sidebar";
 
-const MAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
+/** Zoom the board settles at when a marker is opened. */
+const FOCUS_ZOOM = 13;
+/** Widest the opening fit is allowed to go — four projects in one corner
+ *  of Dubai would otherwise fill the screen with one junction. */
+const OVERVIEW_MAX_ZOOM = 11.5;
 
 /**
  * Full-viewport Dubai map with one labeled marker per published project.
@@ -22,10 +31,7 @@ export function MapExplorer({
   covers?: Record<string, string>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const activeIdRef = useRef(activeId);
-  activeIdRef.current = activeId;
 
   const located = projects.filter(
     (p): p is PublicProject & { latitude: number; longitude: number } =>
@@ -33,106 +39,156 @@ export function MapExplorer({
   );
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    const container = containerRef.current;
+    if (!container || !mapsConfigured) return;
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: MAP_STYLE,
-      center: [55.18, 24.98],
-      zoom: 9.8,
-      minZoom: 8.5,
-      maxZoom: 16,
-    });
-    mapRef.current = map;
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
+    // The effect can be torn down mid-import; nothing should touch the
+    // DOM or the map after that.
+    let cancelled = false;
+    let listeners: google.maps.MapsEventListener[] = [];
 
-    if (located.length > 0) {
-      const bounds = new maplibregl.LngLatBounds();
-      for (const p of located) bounds.extend([p.longitude, p.latitude]);
-      map.fitBounds(bounds, { padding: 110, maxZoom: 11.5, duration: 0 });
-    }
+    const init = async () => {
+      const { maps, marker } = await loadMaps();
+      if (cancelled) return;
 
-    const markers: Array<{ marker: maplibregl.Marker; body: HTMLElement }> = [];
-    for (const project of located) {
-      const el = document.createElement("button");
-      el.type = "button";
-      el.setAttribute("aria-label", `Open ${project.name}`);
-      el.className = "group flex flex-col items-center cursor-pointer";
-      // Photo marker when the project has a published render; label-only
-      // pill otherwise.
-      const cover = covers[project.id];
-      const photo = cover
-        ? `<span class="block overflow-hidden rounded-xl border-2 border-white shadow-[0_4px_16px_rgba(44,55,50,0.3)] transition-transform group-hover:-translate-y-1 group-hover:scale-[1.04]">
-             <img src="${cover}" alt="" class="block h-16 w-24 object-cover" draggable="false" />
-           </span>`
-        : "";
-      el.innerHTML = `
-        <span class="mk-body flex flex-col items-center transition-transform duration-300">
-          ${photo}
-          <span class="${cover ? "-mt-2.5 relative" : ""} rounded-full border border-brand/40 bg-card px-3 py-1 font-display text-[13px] font-medium tracking-tight text-foreground shadow-[0_2px_10px_rgba(44,55,50,0.14)] transition-transform group-hover:-translate-y-0.5">
-            ${project.name}
-          </span>
-        </span>
-        <span class="mt-1 block size-3 rounded-full border-2 border-white bg-brand shadow-[0_1px_4px_rgba(44,55,50,0.35)]"></span>
-      `;
-      el.addEventListener("click", (event) => {
-        event.stopPropagation();
-        setActiveId(project.id);
-        map.flyTo({
-          center: [project.longitude, project.latitude],
-          zoom: 13,
-          duration: 1100,
-          // Keep the pin visible left of the sidebar on desktop.
-          padding: { right: window.innerWidth >= 768 ? 380 : 0 },
-        });
+      const map = new maps.Map(container, {
+        ...BASE_MAP_OPTIONS,
+        center: { lat: 24.98, lng: 55.18 },
+        zoom: 9.8,
+        minZoom: 8.5,
+        maxZoom: 16,
       });
-      const marker = new maplibregl.Marker({ element: el, anchor: "bottom" })
-        .setLngLat([project.longitude, project.latitude])
-        .addTo(map);
-      markers.push({ marker, body: el.querySelector(".mk-body") as HTMLElement });
-    }
 
-    // Neighbouring projects (Arché sits ~230 m from Galleria) stack their
-    // photo cards at any sane zoom. Keep every dot on its true coordinate
-    // but slide colliding card bodies apart horizontally in screen space;
-    // the shift shrinks to zero once zoom separates them for real.
-    const CARD_W = 150;
-    const CARD_H = 115;
-    const declutter = () => {
-      const pts = markers.map(({ marker }) => map.project(marker.getLngLat()));
-      const shift = markers.map(() => 0);
-      for (let i = 0; i < markers.length; i++) {
-        for (let j = i + 1; j < markers.length; j++) {
-          const dx = pts[j].x - pts[i].x;
-          const dy = pts[j].y - pts[i].y;
-          if (Math.abs(dx) >= CARD_W || Math.abs(dy) >= CARD_H) continue;
-          const need = (CARD_W - Math.abs(dx)) / 2 + 8;
-          const dir = dx >= 0 ? 1 : -1;
-          shift[i] -= dir * need;
-          shift[j] += dir * need;
+      if (located.length > 0) {
+        const bounds = new google.maps.LatLngBounds();
+        for (const p of located) {
+          bounds.extend({ lat: p.latitude, lng: p.longitude });
         }
+        map.fitBounds(bounds, 110);
+        // fitBounds takes no maxZoom of its own, so clamp once it lands.
+        // A single project fits to a zero-size box and would otherwise
+        // open at street level.
+        const clamp = google.maps.event.addListenerOnce(map, "idle", () => {
+          if ((map.getZoom() ?? 0) > OVERVIEW_MAX_ZOOM) {
+            map.setZoom(OVERVIEW_MAX_ZOOM);
+          }
+        });
+        listeners.push(clamp);
       }
-      markers.forEach(({ body }, index) => {
-        body.style.transform = shift[index]
-          ? `translateX(${Math.round(shift[index])}px)`
+
+      const markers: Array<{
+        position: google.maps.LatLngLiteral;
+        body: HTMLElement;
+      }> = [];
+
+      for (const project of located) {
+        const position = { lat: project.latitude, lng: project.longitude };
+        const el = document.createElement("button");
+        el.type = "button";
+        el.setAttribute("aria-label", `Open ${project.name}`);
+        el.className = "group flex flex-col items-center cursor-pointer";
+        // Photo marker when the project has a published render; label-only
+        // pill otherwise.
+        const cover = covers[project.id];
+        const photo = cover
+          ? `<span class="block overflow-hidden rounded-xl border-2 border-white shadow-[0_4px_16px_rgba(44,55,50,0.3)] transition-transform group-hover:-translate-y-1 group-hover:scale-[1.04]">
+               <img src="${cover}" alt="" class="block h-16 w-24 object-cover" draggable="false" />
+             </span>`
           : "";
-      });
+        el.innerHTML = `
+          <span class="mk-body flex flex-col items-center transition-transform duration-300">
+            ${photo}
+            <span class="${cover ? "-mt-2.5 relative" : ""} rounded-full border border-brand/40 bg-card px-3 py-1 font-display text-[13px] font-medium tracking-tight text-foreground shadow-[0_2px_10px_rgba(44,55,50,0.14)] transition-transform group-hover:-translate-y-0.5">
+              ${project.name}
+            </span>
+          </span>
+          <span class="mt-1 block size-3 rounded-full border-2 border-white bg-brand shadow-[0_1px_4px_rgba(44,55,50,0.35)]"></span>
+        `;
+        el.addEventListener("click", (event) => {
+          event.stopPropagation();
+          setActiveId(project.id);
+          map.setZoom(FOCUS_ZOOM);
+          // Keep the pin visible left of the sidebar on desktop.
+          map.panTo(
+            centerLeftOfPanel(
+              map,
+              position,
+              FOCUS_ZOOM,
+              window.innerWidth >= 768 ? 380 : 0,
+            ),
+          );
+        });
+
+        // Advanced markers anchor their content bottom-centre, which is
+        // where the dot sits — same as MapLibre's anchor:"bottom".
+        const pin = new marker.AdvancedMarkerElement({
+          map,
+          position,
+          content: el,
+        });
+        // A hovered card has to rise above a decluttered neighbour's.
+        // Google renders its own wrapper around `content`, so the lift
+        // goes through the marker's zIndex rather than a CSS :hover on an
+        // element we don't own.
+        el.addEventListener("mouseenter", () => {
+          pin.zIndex = 30;
+        });
+        el.addEventListener("mouseleave", () => {
+          pin.zIndex = null;
+        });
+        markers.push({
+          position,
+          body: el.querySelector(".mk-body") as HTMLElement,
+        });
+      }
+
+      // Neighbouring projects (Arché sits ~230 m from Galleria) stack their
+      // photo cards at any sane zoom. Keep every dot on its true coordinate
+      // but slide colliding card bodies apart horizontally in screen space;
+      // the shift shrinks to zero once zoom separates them for real.
+      const CARD_W = 150;
+      const CARD_H = 115;
+      const declutter = () => {
+        const shift = markers.map(() => 0);
+        for (let i = 0; i < markers.length; i++) {
+          for (let j = i + 1; j < markers.length; j++) {
+            const delta = pixelDelta(map, markers[i].position, markers[j].position);
+            if (!delta) return;
+            if (Math.abs(delta.dx) >= CARD_W || Math.abs(delta.dy) >= CARD_H) {
+              continue;
+            }
+            const need = (CARD_W - Math.abs(delta.dx)) / 2 + 8;
+            const dir = delta.dx >= 0 ? 1 : -1;
+            shift[i] -= dir * need;
+            shift[j] += dir * need;
+          }
+        }
+        markers.forEach(({ body }, index) => {
+          body.style.transform = shift[index]
+            ? `translateX(${Math.round(shift[index])}px)`
+            : "";
+        });
+      };
+      // The Mercator projection pixelDelta needs isn't ready until the
+      // map's first idle, so the opening pass runs from there.
+      listeners.push(
+        google.maps.event.addListenerOnce(map, "idle", declutter),
+        map.addListener("zoom_changed", declutter),
+        // Read the open project through the updater rather than a ref:
+        // the listener is registered once, and a ref mirrored during
+        // render is exactly what react-hooks/refs forbids.
+        map.addListener("click", () => {
+          setActiveId((current) => (current === null ? current : null));
+        }),
+      );
     };
-    declutter();
-    map.on("zoom", declutter);
 
-    map.on("click", () => {
-      if (activeIdRef.current) setActiveId(null);
-    });
-
-    // Track container size (iframe embeds resize; maplibre needs a nudge).
-    const observer = new ResizeObserver(() => map.resize());
-    observer.observe(containerRef.current);
+    void init();
 
     return () => {
-      observer.disconnect();
-      map.remove();
-      mapRef.current = null;
+      cancelled = true;
+      for (const listener of listeners) listener.remove();
+      listeners = [];
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -141,9 +197,14 @@ export function MapExplorer({
 
   return (
     <div className="relative h-dvh w-full overflow-hidden">
-      {/* Sized directly (h-full, not inset-0): maplibre's own .maplibregl-map
-          class forces position:relative, which would void absolute inset. */}
-      <div ref={containerRef} className="h-full w-full" />
+      <div ref={containerRef} className="h-full w-full bg-secondary/30" />
+
+      {!mapsConfigured && (
+        <p className="absolute inset-x-0 top-1/2 px-6 text-center text-sm text-muted-foreground">
+          The map needs NEXT_PUBLIC_GOOGLE_MAPS_API_KEY and
+          NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID — see docs/google-maps-setup.md.
+        </p>
+      )}
 
       {/* Header overlay */}
       <header className="pointer-events-none absolute top-0 right-0 left-0 z-10 flex items-start justify-between p-5 lg:p-7">

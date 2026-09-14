@@ -2,6 +2,48 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-14 — The map called Dubai South "Airport City"
+
+**Changed** — both maps (the home explorer and the project location card)
+moved from MapLibre + OpenFreeMap to the Google Maps JavaScript API.
+
+**Why.** The old basemap was drawing our own communities as blank white
+space, and the cause was the data, not the styling. Reverse-geocoding
+Arché Residence against OpenStreetMap returns the suburb
+`مدينة المطار` — "Airport City", the area's *former* name; it has been
+**Dubai South** for years. Neither that feature nor its neighbours carry
+a `name:en` tag at all, and a basemap renders the Latin name field, so
+there was nothing to draw. Switching to another free provider would not
+have helped: OpenFreeMap, MapTiler and Protomaps all read the same OSM
+records. Google's UAE naming is current, in English, and is the map Dubai
+buyers already use.
+
+**Cost: none at our volume.** Dynamic Maps is free for the first 10,000
+map loads a month and $7/1,000 after. One load is one map construction,
+so a visitor who opens the home page and two projects costs three — the
+allowance covers roughly 3,300 visits a month. Google has withdrawn the
+old universal $200 credit, so that allowance is the entire free tier.
+
+**What carried over unchanged**: the photo-card markers and their
+horizontal declutter (Arché sits ~230 m from Galleria), the bronze dot,
+the fly-to that keeps a pin clear of the sidebar, the zoom-only chrome,
+and the lazy init that holds the SDK back until the location card scrolls
+into view. Two things had to be rebuilt rather than ported, because
+Google has no equivalent: `map.project()` became a Mercator world-point
+delta scaled by 2^zoom (`pixelDelta`), and `flyTo`'s padding became a
+computed centre offset (`centerLeftOfPanel`), since `panTo` takes none.
+`maplibre-gl` is out of the dependencies.
+
+**What is left.**
+- `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` and `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`
+  must be set in `.env.local` and in Vercel (Preview **and** Production)
+  before this ships — **both maps render nothing without them**, and the
+  home page is the map. `docs/google-maps-setup.md` has the console
+  steps, the referrer restrictions that keep the key from being spent by
+  others, and the brand map style to attach to the Map ID.
+- The style lives in the Google Cloud console against the Map ID, not in
+  this repo, so it is the one piece of the look that is not under review.
+
 ## 2026-09-11 — Offer floor-plan page kept its signature block
 
 **Fixed** (mirrors evera-one)

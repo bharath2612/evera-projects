@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
-
-// Same style as the home page's map-explorer — one provider, one look.
-const MAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
+import {
+  BASE_MAP_OPTIONS,
+  loadMaps,
+  mapsConfigured,
+} from "@/lib/google-maps";
 
 /**
  * The project-page location map: bronze dot at the project, +/− controls,
- * scroll-zoom off (it's inside a scrolling page). MapLibre only initialises
- * once the card actually scrolls into view — it's the heaviest thing here.
+ * and cooperative gestures so a scroll over the card scrolls the page
+ * rather than the map. The Google SDK only loads once the card actually
+ * scrolls into view — it's the heaviest thing on the page.
  */
 export function LocationMap({
   latitude,
@@ -20,45 +21,53 @@ export function LocationMap({
   longitude: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || !mapsConfigured) return;
 
-    const init = () => {
-      if (mapRef.current) return;
-      const map = new maplibregl.Map({
-        container,
-        style: MAP_STYLE,
-        center: [longitude, latitude],
+    let map: google.maps.Map | null = null;
+    // The effect can be torn down mid-import; nothing should touch the
+    // DOM after that.
+    let cancelled = false;
+
+    const init = async () => {
+      const position = { lat: latitude, lng: longitude };
+      const { maps, marker } = await loadMaps();
+      if (cancelled) return;
+
+      map = new maps.Map(container, {
+        ...BASE_MAP_OPTIONS,
+        center: position,
         zoom: 13,
-        scrollZoom: false,
-        attributionControl: { compact: true },
+        gestureHandling: "cooperative",
       });
-      mapRef.current = map;
-      map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
-      const el = document.createElement("span");
-      el.className = "block size-3.5 rounded-full bg-brand ring-4 ring-brand/25";
-      new maplibregl.Marker({ element: el }).setLngLat([longitude, latitude]).addTo(map);
+
+      const element = document.createElement("span");
+      element.className =
+        "block size-3.5 rounded-full bg-brand ring-4 ring-brand/25";
+      new marker.AdvancedMarkerElement({ map, position, content: element });
     };
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          init();
           observer.disconnect();
+          void init();
         }
       },
       { rootMargin: "200px" },
     );
     observer.observe(container);
+
     return () => {
+      cancelled = true;
       observer.disconnect();
-      mapRef.current?.remove();
-      mapRef.current = null;
+      map = null;
     };
   }, [latitude, longitude]);
+
+  if (!mapsConfigured) return null;
 
   return (
     <div
