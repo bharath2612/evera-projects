@@ -5,7 +5,9 @@
     {
       "id": "natural.archipelago",
       "label": {
-        "textFillColor": "#8a918d"
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -17,13 +19,17 @@
     {
       "id": "natural.continent",
       "label": {
-        "textFillColor": "#8a918d"
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
       "id": "natural.island",
       "label": {
-        "textFillColor": "#8a918d"
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -50,7 +56,9 @@
         "fillColor": "#c7d4ce"
       },
       "label": {
-        "textFillColor": "#8a918d"
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -64,14 +72,17 @@
       "id": "political.city",
       "label": {
         "visible": true,
-        "textFillColor": "#555e5a",
-        "textStrokeColor": "#ffffff"
+        "textFillColor": "#2c3732",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
       "id": "political.countryOrRegion",
       "label": {
-        "textFillColor": "#8a918d"
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -87,22 +98,30 @@
       "id": "political.neighborhood",
       "label": {
         "visible": true,
-        "textFillColor": "#555e5a",
-        "textStrokeColor": "#ffffff"
+        "textFillColor": "#2c3732",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
       "id": "political.sublocality",
       "label": {
         "visible": true,
-        "textFillColor": "#555e5a",
-        "textStrokeColor": "#ffffff"
+        "textFillColor": "#2c3732",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
       "id": "pointOfInterest",
       "label": {
-        "visible": false
+        "visible": true,
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4,
+        "pinFillColor": "#2c3732",
+        "pinGlyphColor": "#ffffff",
+        "pinOutlineColor": "#ffffff"
       },
       "geometry": {
         "fillColor": "#f7f4f2"
@@ -112,6 +131,18 @@
       "id": "pointOfInterest.emergency.hospital",
       "geometry": {
         "fillColor": "#f7f4f2"
+      }
+    },
+    {
+      "id": "pointOfInterest.foodAndDrink",
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "pointOfInterest.lodging",
+      "label": {
+        "visible": false
       }
     },
     {
@@ -142,7 +173,21 @@
       },
       "label": {
         "visible": true,
-        "textFillColor": "#757d79"
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
+      }
+    },
+    {
+      "id": "pointOfInterest.retail",
+      "label": {
+        "visible": false
+      }
+    },
+    {
+      "id": "pointOfInterest.service",
+      "label": {
+        "visible": false
       }
     },
     {
@@ -152,10 +197,12 @@
       },
       "label": {
         "visible": true,
-        "textFillColor": "#5d6662",
+        "textFillColor": "#424c47",
         "pinFillColor": "#f7f4f2",
         "pinGlyphColor": "#5d6662",
-        "pinOutlineColor": "#dfd7d0"
+        "pinOutlineColor": "#dfd7d0",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -194,7 +241,9 @@
         "strokeColor": "#f0ece9"
       },
       "label": {
-        "textFillColor": "#8a918d"
+        "textFillColor": "#59625e",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -204,7 +253,9 @@
         "strokeColor": "#f0ece9"
       },
       "label": {
-        "textFillColor": "#8a918d"
+        "textFillColor": "#59625e",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -215,7 +266,9 @@
       },
       "label": {
         "visible": true,
-        "textFillColor": "#5d6662"
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -227,8 +280,9 @@
       },
       "label": {
         "visible": true,
-        "textFillColor": "#424c47",
-        "textStrokeColor": "#ffffff"
+        "textFillColor": "#2c3732",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -238,7 +292,9 @@
         "strokeColor": "#f0ece9"
       },
       "label": {
-        "textFillColor": "#8a918d"
+        "textFillColor": "#59625e",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
@@ -280,14 +336,18 @@
       "id": "infrastructure.transitStation.railStation",
       "label": {
         "visible": true,
-        "textFillColor": "#4b6057"
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     },
     {
       "id": "infrastructure.transitStation.railStation.subwayStation",
       "label": {
         "visible": true,
-        "textFillColor": "#4b6057"
+        "textFillColor": "#424c47",
+        "textStrokeColor": "#ffffff",
+        "textStrokeWeight": 4
       }
     }
   ]

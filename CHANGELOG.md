@@ -12,14 +12,23 @@ tall, so the control there is smaller and sits on the other side).
 It uses **hybrid** — imagery with the place names kept over it, because
 the community name is half the information on a property map.
 
-Those names arrived unreadable at first: cloud styling is **per map
-type**, ours covered roadmap only, so hybrid fell back to Google's
-defaults — dark text on a dark halo, tuned for dark imagery. Over
-Dubai's near-white desert the POI names vanished into the sand. The
-colour was the problem, not the labels, so hybrid now has its own style
-(`docs/google-maps-style-hybrid.json`) repainting every label white on a
-dark halo, with evergreen POI pins so they do not compete with the
-bronze project markers.
+Those names arrived unreadable, and fixing it took a wrong turn worth
+recording: there is **one** style and it applies to both map types. The
+console's Map type selector previews a type, it does not give that type
+its own document — pasting a hybrid style into the JSON tab overwrote
+the roadmap one outright.
+
+So the labels now use **dark text on a thick white halo** — the one
+treatment that survives both backgrounds. `#ffffff` stroke at weight 4,
+fills stepping through evergreen (`#2c3732` places and highways,
+`#424c47` secondary, `#59625e` road names). White-on-dark would read on
+imagery and look wrong on the paper-white roadmap; Google's dark-on-dark
+default vanishes over pale sand.
+
+POI labels are visible rather than hidden: the park names over desert
+were the complaint, and the answer to an unreadable label is to make it
+readable. The roadmap stays calm because only retail, food and drink,
+lodging and services are silenced.
 
 The control is ours, not Google's `mapTypeControl`: `disableDefaultUI`
 removes that one, and it would not match the page. The toggle only calls

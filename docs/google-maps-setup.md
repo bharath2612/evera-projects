@@ -225,39 +225,39 @@ the frame on the home map, so at park strength the page would read as a
 green map rather than a calm one with green in it. Parks are small and can
 carry the colour; the Gulf cannot.
 
-## The satellite view is a second style
+## One style, two map types
 
-Cloud styling is **per map type**. `docs/google-maps-style.json` is the
-**roadmap** style; the Satellite toggle lands on **hybrid**, which needs
-`docs/google-maps-style-hybrid.json` published against that map type.
+There is **one** style and it applies to both Roadmap and Hybrid. The
+console's Map type selector previews a type; it does not give that type
+its own document. Pasting into the JSON tab while Hybrid was selected
+**overwrote the roadmap style** — that is not a per-type edit, it is the
+only edit.
 
-Hybrid is the right type here — imagery *with* the place names, because
-the community name is half the information on a property map. What was
-wrong was the colour: Google's hybrid defaults are dark text on a dark
-halo, tuned for dark imagery, and over Dubai's near-white desert the POI
-names ("Town Square Main Park", "Oasis Park Dubai") disappeared into the
+So do not try to style the satellite view separately. If a genuinely
+separate look is ever needed, the only real route is a **second Map ID**
+with its own style, and the toggle tearing the map down and rebuilding
+it, because `mapId` cannot change after construction. That costs an
+extra map load per switch and a second style to keep in step. It was
+considered and rejected.
+
+### Which is why labels are dark text on a white halo
+
+Every label has to survive **both** backgrounds from one set of values.
+White-on-dark reads on imagery and looks wrong on the paper-white
+roadmap; dark-on-dark is Google's default and vanishes over Dubai's pale
 sand.
 
-The hybrid style repaints every label **white on a dark halo**
-(`#ffffff` on `#1b211f`, stroke weight 4), which holds on both the pale
-desert and the dark built-up areas, and gives POI pins an evergreen fill
-so they read as map furniture rather than competing with the bronze
-project markers.
+Dark text with a thick white halo survives both: conventional on the
+light roadmap, and the outline lifts it off pale desert and dark
+built-up ground alike. Every `label` in the style carries
+`textStrokeColor: "#ffffff"` at `textStrokeWeight: 4`, with the fill
+stepping through evergreen — `#2c3732` for places and highways,
+`#424c47` for secondary, `#59625e` for road names.
 
-It is deliberately short. Everything it does not name keeps Google's
-imagery defaults, because those are right over satellite and our light
-roadmap palette is not — `#fbfaf9` roads on sand would be invisible.
-
-To apply it: open the style in the console and switch the **Map type**
-selector (right-hand panel) from Roadmap to **Hybrid** — that is the type
-name; our button just says Satellite. Confirm the JSON tab is now showing
-the hybrid document and not the roadmap rules, then paste this file,
-Apply → Save → **Publish**.
-
-If the JSON tab still lists the roadmap rules after switching type, stop:
-pasting there would overwrite the roadmap style. Use the **Map features**
-tree instead — Point of interest / Political / Infrastructure / Natural —
-and set the label text fill to `#ffffff` with a `#1b211f` stroke on each.
+POI labels are **visible**, not hidden. The park names over desert were
+the original complaint, and the answer to an unreadable label is to make
+it readable. The roadmap stays calm because only the commercial noise is
+silenced — retail, food and drink, lodging, services.
 
 ## What we must not restyle
 
