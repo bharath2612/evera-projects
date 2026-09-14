@@ -16,6 +16,15 @@ unit is on — the inventory grid people came from — not to the map. And
 **Inventory**, an anchor on the project page, has to be a real link from
 a unit. Defaults keep the project page byte-identical.
 
+**A home button sits first in the bar**, on every page, always going to
+the map. Previously a unit page could only step back to its project — no
+one-click way out to the map from two levels deep.
+
+Back is "up one level", which on a project page *is* the map, so the
+arrow is dropped there rather than sitting beside a home button pointing
+at the same place. A project shows home alone; a unit shows home then
+back.
+
 Enquire is now reachable from the unit page, which is the page someone
 is on when they decide to ask.
 

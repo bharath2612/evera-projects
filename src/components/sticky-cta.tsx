@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, LayoutGrid } from "lucide-react";
+import { ArrowLeft, Home, LayoutGrid } from "lucide-react";
 import { EnquireDialog } from "./enquire-dialog";
 
 /**
@@ -15,6 +15,10 @@ import { EnquireDialog } from "./enquire-dialog";
  * back is the map and Inventory is an anchor on the same page; on a
  * unit, back is the project at the right floor and Inventory has to be
  * a full link to it.
+ *
+ * Home is always the map, from any depth. Back is "up one level", which
+ * on a project page IS the map — so the arrow is dropped there rather
+ * than sitting next to a home button that goes to the same place.
  */
 export function ProjectTopBar({
   projectName,
@@ -41,12 +45,22 @@ export function ProjectTopBar({
       >
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-6 lg:px-8">
           <Link
-            href={backHref}
-            aria-label={backLabel}
-            className="flex size-8 shrink-0 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            href="/"
+            aria-label="All projects on the map"
+            title="All projects"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:border-brand/50 hover:bg-brand/5 hover:text-brand"
           >
-            <ArrowLeft className="size-4" strokeWidth={1.75} />
+            <Home className="size-4" strokeWidth={1.75} />
           </Link>
+          {backHref !== "/" && (
+            <Link
+              href={backHref}
+              aria-label={backLabel}
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" strokeWidth={1.75} />
+            </Link>
+          )}
           <p className="font-display min-w-0 flex-1 truncate text-[15px] font-medium tracking-tight">
             {projectName}
           </p>
