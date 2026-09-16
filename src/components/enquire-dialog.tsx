@@ -4,19 +4,7 @@ import { useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 import type { PublicUnit } from "@/lib/data";
 import { submitEnquiry } from "@/lib/data";
-
-/** Dialling codes for the markets Evera sells into, UAE first. */
-const DIAL_CODES: Array<[string, string]> = [
-  ["+971", "UAE"], ["+91", "India"], ["+966", "Saudi Arabia"], ["+974", "Qatar"],
-  ["+965", "Kuwait"], ["+973", "Bahrain"], ["+968", "Oman"], ["+20", "Egypt"],
-  ["+962", "Jordan"], ["+961", "Lebanon"], ["+964", "Iraq"], ["+98", "Iran"],
-  ["+92", "Pakistan"], ["+880", "Bangladesh"], ["+94", "Sri Lanka"], ["+63", "Philippines"],
-  ["+86", "China"], ["+7", "Russia / Kazakhstan"], ["+90", "Türkiye"], ["+44", "United Kingdom"],
-  ["+1", "USA / Canada"], ["+49", "Germany"], ["+33", "France"], ["+39", "Italy"],
-  ["+34", "Spain"], ["+31", "Netherlands"], ["+41", "Switzerland"], ["+46", "Sweden"],
-  ["+48", "Poland"], ["+234", "Nigeria"], ["+254", "Kenya"], ["+27", "South Africa"],
-  ["+65", "Singapore"], ["+852", "Hong Kong"], ["+61", "Australia"],
-];
+import { DialCodePicker } from "@/components/dial-code-picker";
 
 /**
  * Website enquiry form: name, phone (dialling code + number), email —
@@ -179,18 +167,11 @@ export function EnquireDialog({
                   Phone <span aria-hidden className="text-red-700">*</span>
                 </label>
                 <div className="flex gap-2">
-                  <select
-                    aria-label="Country code"
+                  <DialCodePicker
                     value={dialCode}
-                    onChange={(event) => setDialCode(event.target.value)}
-                    className="h-11 w-32 shrink-0 rounded-lg border bg-background px-2 text-[13px] outline-none transition-colors focus:border-brand/60 focus:ring-2 focus:ring-brand/20"
-                  >
-                    {DIAL_CODES.map(([code, country]) => (
-                      <option key={`${code}-${country}`} value={code}>
-                        {code} {country}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setDialCode}
+                    className="w-32"
+                  />
                   <input
                     id="enq-phone"
                     value={phone}
