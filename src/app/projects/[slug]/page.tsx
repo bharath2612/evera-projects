@@ -196,6 +196,47 @@ export default async function ProjectPage({
           </Reveal>
         )}
 
+        {/* Documents */}
+        {documents.length > 0 && (
+          <Reveal>
+            <section className="mt-14">
+              <h2 className="font-display text-2xl font-medium tracking-tight">
+                Documents
+              </h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {documents.map(([label, path]) => (
+                  <a
+                    key={label}
+                    href={publicMediaUrl(path)}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-doc-card
+                    className="group flex items-center gap-3.5 rounded-xl border bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-[0_10px_30px_-14px_rgba(44,55,50,0.3)]"
+                  >
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
+                      <FileText className="size-4.5" strokeWidth={1.5} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[14px] font-medium">
+                        {label}
+                      </span>
+                      <span className="mt-0.5 flex items-center gap-1 text-[12px] text-muted-foreground">
+                        PDF
+                        <span className="text-muted-foreground/50">·</span>
+                        View
+                        <ExternalLink
+                          className="size-3 transition-transform duration-300 group-hover:translate-x-0.5"
+                          strokeWidth={1.75}
+                        />
+                      </span>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          </Reveal>
+        )}
+
         {/* About — full-width editorial block, justified */}
         <Reveal>
           <section className="mt-14">
@@ -291,47 +332,6 @@ export default async function ProjectPage({
             )}
           </section>
         </Reveal>
-
-        {/* Documents */}
-        {documents.length > 0 && (
-          <Reveal>
-            <section className="mt-14">
-              <h2 className="font-display text-2xl font-medium tracking-tight">
-                Documents
-              </h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {documents.map(([label, path]) => (
-                  <a
-                    key={label}
-                    href={publicMediaUrl(path)}
-                    target="_blank"
-                    rel="noreferrer"
-                    data-doc-card
-                    className="group flex items-center gap-3.5 rounded-xl border bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-[0_10px_30px_-14px_rgba(44,55,50,0.3)]"
-                  >
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
-                      <FileText className="size-4.5" strokeWidth={1.5} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[14px] font-medium">
-                        {label}
-                      </span>
-                      <span className="mt-0.5 flex items-center gap-1 text-[12px] text-muted-foreground">
-                        PDF
-                        <span className="text-muted-foreground/50">·</span>
-                        View
-                        <ExternalLink
-                          className="size-3 transition-transform duration-300 group-hover:translate-x-0.5"
-                          strokeWidth={1.75}
-                        />
-                      </span>
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </section>
-          </Reveal>
-        )}
 
         {/* Location / Nearby / Amenities — last stop before the footer */}
         {locationColumns > 0 && (

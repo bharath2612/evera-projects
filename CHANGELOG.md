@@ -2,6 +2,20 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-17 — Move project documents and reorder unit facts
+
+**Changed** — Project document cards (Brochure, Factsheet, Payment Plan and Floor
+Plans) now appear immediately above About. On unit pages, Handover occupies the
+former Area position in the key-facts strip; total Area moves to Handover's former
+position in Residence details. Suite area and Balcony remain separate. Missing
+handover dates use the existing dash treatment.
+
+**Validation** — Lint, TypeScript and production build passed. Browser checks at
+1366px and 390px verified document order and the swapped labels/values on Arché
+Residence and unit 204.
+
+**Left** — No data/schema changes. No outstanding work for these layout updates.
+
 ## 2026-09-16 — Every country in the enquiry form's dialling code
 
 **Fixed** — the enquiry dialog offered **35** dialling codes, hand-written as

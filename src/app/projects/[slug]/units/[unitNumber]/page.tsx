@@ -132,7 +132,7 @@ export default async function UnitPage({
         >)
       : []),
     ...(unit.finish ? ([["Finishing", unit.finish]] as Array<[string, string]>) : []),
-    ...(handover ? ([["Handover", handover]] as Array<[string, string]>) : []),
+    ["Area", `${AREA.format(unit.area_sqft)} ft²`],
   ];
 
   return (
@@ -221,7 +221,7 @@ export default async function UnitPage({
           </aside>
         </div>
 
-        {/* Price / area / floor band */}
+        {/* Price / handover / floor band */}
         <Reveal>
           <dl className="mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-4">
                 {(
@@ -232,7 +232,7 @@ export default async function UnitPage({
                         ? formatAed(unit.price_aed)
                         : "—",
                     ],
-                    ["Area", `${AREA.format(unit.area_sqft)} ft²`],
+                    ["Handover", handover ?? "—"],
                     [
                       "AED / ft²",
                       available && unit.price_per_sqft !== null
