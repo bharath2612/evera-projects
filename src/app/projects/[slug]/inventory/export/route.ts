@@ -17,7 +17,8 @@ export const revalidate = 0; // always current — the sheet carries a timestamp
  * CRM export.
  *
  * Every filter AND the sort on the page are query params — ?types=
- * <code>,<code>… (legacy single ?type= still accepted), ?priceMin/
+ * <code>,<code>… (legacy single ?type= still accepted), ?units=
+ * <unit>,<unit>… for an explicit available-unit selection, ?priceMin/
  * ?priceMax, ?areaMin/?areaMax and ?sort=<key>&?dir=asc|desc — so the
  * PDF is exactly what the person is looking at, in the order they put
  * it in. A param that isn't a finite number is IGNORED rather than
@@ -87,6 +88,13 @@ export async function GET(
       .map((code) => code.trim())
       .filter((code) => code && code !== "all"),
   );
+  const selectedUnits = new Set(
+    (search.get("units") ?? "")
+      .split(",")
+      .map((unit) => unit.trim())
+      .filter(Boolean)
+      .slice(0, 200),
+  );
   const bound = (key: string): number | null => {
     const raw = search.get(key);
     if (raw === null || raw.trim() === "") return null;
@@ -112,6 +120,7 @@ export async function GET(
       (unit) =>
         unit.status === "available" &&
         unit.price_aed !== null &&
+        (selectedUnits.size === 0 || selectedUnits.has(unit.unit_number)) &&
         (typeFilters.size === 0 || typeFilters.has(unit.type_code)) &&
         (priceMin === null || unit.price_aed >= priceMin) &&
         (priceMax === null || unit.price_aed <= priceMax) &&

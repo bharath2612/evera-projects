@@ -2,6 +2,20 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-21 — Selectable public inventory exports
+
+**Added** — The full presentation inventory now lets visitors select available
+units in both Stack and List views. Selection persists across view and filter
+changes, supports selecting or clearing the visible available set, and changes
+the download action to export only the selected units.
+
+**Boundary** — The PDF route accepts a bounded unit-number selection but still
+re-reads the live public view and exports only currently available, priced
+units. Reserved, sold, unreleased and crafted IDs cannot enter the PDF.
+
+**Validation** — ESLint, TypeScript and production build pass. The shared
+inventory PDF builder and existing filter/sort behavior remain unchanged.
+
 ## 2026-09-17 — Move project documents and reorder unit facts
 
 **Changed** — Project document cards (Brochure, Factsheet, Payment Plan and Floor
@@ -15,6 +29,16 @@ handover dates use the existing dash treatment.
 Residence and unit 204.
 
 **Left** — No data/schema changes. No outstanding work for these layout updates.
+
+## 2026-09-17 — Agent onboarding instructions refreshed
+
+**Changed** — `AGENTS.md` now documents the current six-view/two-RPC public
+contract, four public statuses, typography, Google Maps, shared assets,
+inventory/PDF behavior, validation commands and source-document links.
+Shared workspace rules live in `../AGENTS.md`.
+
+**Left** — foundation-era README/spec descriptions remain historical; the
+guide identifies later decisions. No application or database behavior changed.
 
 ## 2026-09-16 — Every country in the enquiry form's dialling code
 

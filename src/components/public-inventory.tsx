@@ -95,6 +95,9 @@ export function PublicInventory({
   const [areaMax, setAreaMax] = useState("");
   const [availableOnly, setAvailableOnly] = useState(false);
   const [sort, setSort] = useState<Sort | null>(null);
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(
+    new Set(),
+  );
 
   const priceLo = numeric(priceMin);
   const priceHi = numeric(priceMax);
@@ -202,6 +205,11 @@ export function PublicInventory({
   // The download carries the same filters AND the same sort, so the PDF
   // is the sheet on screen — never a different or differently ordered
   // one. (It stays available-only: it is the marketing document.)
+  const selectedUnitNumbers = units
+    .filter(
+      (unit) => unit.status === "available" && selectedIds.has(unit.unit_number),
+    )
+    .map((unit) => unit.unit_number);
   const exportHref = (() => {
     const params = new URLSearchParams();
     if (typeFilters.size > 0) params.set("types", [...typeFilters].join(","));
@@ -209,6 +217,9 @@ export function PublicInventory({
     if (priceHi !== null) params.set("priceMax", String(priceHi));
     if (areaLo !== null) params.set("areaMin", String(areaLo));
     if (areaHi !== null) params.set("areaMax", String(areaHi));
+    if (selectedUnitNumbers.length > 0) {
+      params.set("units", selectedUnitNumbers.join(","));
+    }
     if (sort) {
       params.set("sort", sort.key);
       params.set("dir", sort.dir === 1 ? "asc" : "desc");
@@ -220,6 +231,34 @@ export function PublicInventory({
   const availableInView = matches.filter(
     (unit) => unit.status === "available",
   ).length;
+  const availableMatches = matches.filter((unit) => unit.status === "available");
+  const selectedAvailableCount = units.filter(
+    (unit) => unit.status === "available" && selectedIds.has(unit.unit_number),
+  ).length;
+  const allVisibleAvailableSelected =
+    availableMatches.length > 0 &&
+    availableMatches.every((unit) => selectedIds.has(unit.unit_number));
+
+  const toggleUnit = (unitNumber: string) => {
+    setSelectedIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(unitNumber)) next.delete(unitNumber);
+      else next.add(unitNumber);
+      return next;
+    });
+  };
+
+  const toggleVisibleAvailable = () => {
+    setSelectedIds((previous) => {
+      const next = new Set(previous);
+      if (allVisibleAvailableSelected) {
+        for (const unit of availableMatches) next.delete(unit.unit_number);
+      } else {
+        for (const unit of availableMatches) next.add(unit.unit_number);
+      }
+      return next;
+    });
+  };
 
   const range = (
     label: string,
@@ -334,17 +373,39 @@ export function PublicInventory({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[12px] text-muted-foreground">
-        <span className="tabular-nums">
-          {activeFilters.length > 0
-            ? `${matches.length} of ${units.length} residences · filtered by ${activeFilters.join(", ")}`
-            : `${availableInView} of ${units.length} residences available`}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="tabular-nums">
+            {activeFilters.length > 0
+              ? `${matches.length} of ${units.length} residences · filtered by ${activeFilters.join(", ")}`
+              : `${availableInView} of ${units.length} residences available`}
+          </span>
+          {availableMatches.length > 0 && (
+            <button
+              type="button"
+              onClick={toggleVisibleAvailable}
+              className="rounded-full border bg-card px-3 py-1 text-[12px] text-foreground transition-colors hover:border-brand/50"
+            >
+              {allVisibleAvailableSelected ? "Clear visible" : "Select visible"}
+            </button>
+          )}
+          {selectedAvailableCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="rounded-full border border-brand/50 bg-brand/10 px-3 py-1 text-[12px] text-brand transition-colors hover:bg-brand/15"
+            >
+              {selectedAvailableCount} selected · Clear
+            </button>
+          )}
+        </div>
         <a
           href={exportHref}
           className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-[12px] text-foreground transition-colors hover:border-brand/50"
         >
           <Download className="size-3.5" />
-          Download inventory ({availableInView})
+          {selectedAvailableCount > 0
+            ? `Download selected (${selectedAvailableCount})`
+            : `Download inventory (${availableInView})`}
         </a>
       </div>
 
@@ -353,6 +414,8 @@ export function PublicInventory({
           <ChessBoard
             units={units}
             slug={slug}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleUnit}
             highlightIds={
               activeFilters.length > 0
                 ? new Set(matches.map((unit) => unit.unit_number))
@@ -368,6 +431,20 @@ export function PublicInventory({
             <table className="w-full min-w-[42rem] text-[13px]">
               <thead className="border-b text-[12px]">
                 <tr>
+                  <th className="w-10 px-3 py-2">
+                    <input
+                      type="checkbox"
+                      aria-label={
+                        allVisibleAvailableSelected
+                          ? "Clear visible available unit selection"
+                          : "Select visible available units"
+                      }
+                      checked={allVisibleAvailableSelected}
+                      onChange={toggleVisibleAvailable}
+                      disabled={availableMatches.length === 0}
+                      className="size-3.5 accent-brand"
+                    />
+                  </th>
                   <SortHead
                     label="Unit"
                     sortKey="unit"
@@ -466,6 +543,17 @@ export function PublicInventory({
                     key={`${unit.building ?? ""}-${unit.unit_number}`}
                     className="border-b last:border-0 hover:bg-brand/5"
                   >
+                    <td className="px-3 py-2">
+                      {unit.status === "available" && (
+                        <input
+                          type="checkbox"
+                          aria-label={`Select No.${unit.unit_number} for download`}
+                          checked={selectedIds.has(unit.unit_number)}
+                          onChange={() => toggleUnit(unit.unit_number)}
+                          className="size-3.5 accent-brand"
+                        />
+                      )}
+                    </td>
                     <td className="px-3 py-2">
                       <Link
                         href={unitHref(slug, unit.unit_number)}

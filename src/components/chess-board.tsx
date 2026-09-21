@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import type { PublicUnit, PublicUnitStatus } from "@/lib/data";
 import { formatAed, unitHref } from "@/lib/data";
 
@@ -46,11 +47,16 @@ export function ChessBoard({
   units,
   slug,
   highlightIds = null,
+  selectedIds = new Set(),
+  onToggleSelect,
 }: {
   units: PublicUnit[];
   slug: string;
   /** Unit numbers surviving the parent's filters; null = show all. */
   highlightIds?: ReadonlySet<string> | null;
+  /** Available units selected for the inventory PDF. */
+  selectedIds?: ReadonlySet<string>;
+  onToggleSelect?: (unitNumber: string) => void;
 }) {
   const floors = useMemo(() => {
     const map = new Map<number, PublicUnit[]>();
@@ -84,32 +90,57 @@ export function ChessBoard({
                   const dimmed =
                     highlightIds !== null &&
                     !highlightIds.has(unit.unit_number);
+                  const selected = selectedIds.has(unit.unit_number);
                   return (
-                    <Link
+                    <div
                       key={unit.unit_number}
-                      href={unitHref(slug, unit.unit_number)}
-                      data-chess-cell={unit.unit_number}
-                      title={[
-                        `No.${unit.unit_number} — ${meta.label}`,
-                        unit.type_label,
-                        `${AREA.format(unit.area_sqft)} ft²`,
-                        unit.status === "available" && unit.price_aed !== null
-                          ? formatAed(unit.price_aed)
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                      className={`flex h-13 w-21 shrink-0 flex-col items-center justify-center rounded-lg border text-center transition-all ${meta.cell} ${
-                        dimmed ? "opacity-25" : ""
-                      }`}
+                      className="relative h-13 w-21 shrink-0"
                     >
-                      <span className="text-[13px] leading-tight font-medium tabular-nums">
-                        {unit.unit_number}
-                      </span>
-                      <span className="text-[10px] leading-tight opacity-75">
-                        {unit.type_label.replace(" Bedroom", "BR")}
-                      </span>
-                    </Link>
+                      <Link
+                        href={unitHref(slug, unit.unit_number)}
+                        data-chess-cell={unit.unit_number}
+                        title={[
+                          `No.${unit.unit_number} — ${meta.label}`,
+                          unit.type_label,
+                          `${AREA.format(unit.area_sqft)} ft²`,
+                          unit.status === "available" && unit.price_aed !== null
+                            ? formatAed(unit.price_aed)
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                        className={`flex h-full w-full flex-col items-center justify-center rounded-lg border text-center transition-all ${meta.cell} ${
+                          dimmed ? "opacity-25" : ""
+                        } ${selected ? "ring-2 ring-brand ring-offset-1" : ""}`}
+                      >
+                        <span className="text-[13px] leading-tight font-medium tabular-nums">
+                          {unit.unit_number}
+                        </span>
+                        <span className="text-[10px] leading-tight opacity-75">
+                          {unit.type_label.replace(" Bedroom", "BR")}
+                        </span>
+                      </Link>
+                      {unit.status === "available" && onToggleSelect && (
+                        <button
+                          type="button"
+                          aria-label={`${selected ? "Remove" : "Select"} No.${unit.unit_number} for download`}
+                          aria-pressed={selected}
+                          title={selected ? "Remove from download" : "Select for download"}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            onToggleSelect(unit.unit_number);
+                          }}
+                          className={`absolute top-1 right-1 flex size-4 items-center justify-center rounded border shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
+                            selected
+                              ? "border-brand bg-brand text-brand-foreground"
+                              : "border-border/80 bg-card/90 text-transparent hover:border-brand/70"
+                          }`}
+                        >
+                          <Check className="size-3" strokeWidth={3} />
+                        </button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
