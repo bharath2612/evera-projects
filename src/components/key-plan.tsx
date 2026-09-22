@@ -5,10 +5,8 @@ import type { PublicUnit, PublicUnitStatus } from "@/lib/data";
 
 /**
  * Per-status plate treatment. Only `available` renders as an open white
- * shape (interactive, bronze on hover); everything else is a status
- * swatch: unreleased fully greyed out, reserved a soft orange tint (the
- * CRM Hold treatment — solid orange screamed against the plan), sold
- * solid muted evergreen. Dots mirror the card legend.
+ * shape (interactive, bronze on hover); every other unit is a greyed-out
+ * unavailable swatch. Dots mirror the card legend.
  */
 const STATUS_LOOK: Record<
   PublicUnitStatus,
@@ -29,28 +27,26 @@ const STATUS_LOOK: Record<
     weight: 300,
   },
   reserved: {
-    // Mirrors the CRM chess "Hold" cell: bg-orange-500/24 on white with
-    // a muted orange-600 border and deep-orange text.
-    fill: "color-mix(in oklab, var(--color-orange-500) 24%, white)",
-    stroke: "color-mix(in oklab, var(--color-orange-500) 50%, white)",
-    text: "color-mix(in oklab, var(--color-orange-500) 60%, black)",
-    dot: "var(--color-orange-500)",
-    weight: 500,
+    fill: "color-mix(in oklab, var(--color-slate-400) 14%, white)",
+    stroke: "color-mix(in oklab, var(--color-slate-400) 40%, white)",
+    text: "color-mix(in oklab, var(--color-slate-400) 55%, white)",
+    dot: "color-mix(in oklab, var(--color-slate-400) 45%, white)",
+    weight: 300,
   },
   sold: {
-    fill: "color-mix(in oklab, var(--brand-evergreen) 38%, white)",
-    stroke: "color-mix(in oklab, var(--brand-evergreen) 50%, white)",
-    text: "rgba(255,255,255,0.95)",
-    dot: "rgba(255,255,255,0.85)",
-    weight: 500,
+    fill: "color-mix(in oklab, var(--color-slate-400) 14%, white)",
+    stroke: "color-mix(in oklab, var(--color-slate-400) 40%, white)",
+    text: "color-mix(in oklab, var(--color-slate-400) 55%, white)",
+    dot: "color-mix(in oklab, var(--color-slate-400) 45%, white)",
+    weight: 300,
   },
 };
 
 const STATUS_WORD: Record<PublicUnitStatus, string> = {
   available: "available",
-  unreleased: "coming soon",
-  reserved: "reserved",
-  sold: "sold",
+  unreleased: "unavailable",
+  reserved: "unavailable",
+  sold: "unavailable",
 };
 
 /**
@@ -127,41 +123,35 @@ export function KeyPlan({
       {plate.units.map((shape) => {
         const unit = units.get(shape.pos);
         if (!unit) return null; // plate slot with no released residence
-        // Only for-sale residences are interactive; everything else reads
-        // as a solid status swatch (unreleased greyed out entirely).
-        const interactive = unit.status === "available";
-        const active = interactive && shape.pos === activePos;
+        // Every residence remains navigable so visitors can inspect its
+        // details. Only available units receive the active/hover treatment;
+        // unavailable units stay grey and have no sales CTA on their page.
+        const available = unit.status === "available";
+        const active = available && shape.pos === activePos;
         const dimmed = dimmedPos.has(shape.pos);
         const look = STATUS_LOOK[unit.status];
         return (
           <g
             key={shape.pos}
-            role={interactive ? "button" : "img"}
-            tabIndex={interactive ? 0 : -1}
+            role="button"
+            tabIndex={0}
             aria-label={`Residence ${unit.unit_number}${
-              interactive ? "" : ` — ${STATUS_WORD[unit.status]}`
+              available ? "" : ` — ${STATUS_WORD[unit.status]}`
             }`}
-            aria-disabled={interactive ? undefined : true}
             data-keyplan-unit={shape.pos}
             data-active={active || undefined}
-            {...(interactive
-              ? {
-                  onMouseEnter: () => onHover(shape.pos),
-                  onMouseLeave: () => onHover(null),
-                  onFocus: () => onHover(shape.pos),
-                  onBlur: () => onHover(null),
-                  onClick: () => onSelect(shape.pos),
-                  onKeyDown: (event: React.KeyboardEvent) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      onSelect(shape.pos);
-                    }
-                  },
-                }
-              : {})}
-            className={
-              interactive ? "cursor-pointer outline-none" : "cursor-default"
-            }
+            onMouseEnter={() => available && onHover(shape.pos)}
+            onMouseLeave={() => available && onHover(null)}
+            onFocus={() => available && onHover(shape.pos)}
+            onBlur={() => available && onHover(null)}
+            onClick={() => onSelect(shape.pos)}
+            onKeyDown={(event: React.KeyboardEvent) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(shape.pos);
+              }
+            }}
+            className="cursor-pointer outline-none"
             style={{ opacity: dimmed && !active ? 0.35 : 1 }}
           >
             <polygon

@@ -25,6 +25,10 @@ facade widget, arriving per the spec in
 Availability data revalidates every 60 s from the same tables the Evera
 team manages in Evera One.
 
+Public inventory shows units currently for sale as **Available**. All other
+units remain browsable as **Unavailable** with their details visible and sales
+CTAs hidden.
+
 ## Run
 
 ```bash

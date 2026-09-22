@@ -24,10 +24,10 @@ export const revalidate = 60;
 const AREA = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
 const STATUS_CHIP: Record<PublicUnitStatus, { label: string; chip: string }> = {
-  unreleased: { label: "Coming soon", chip: "bg-slate-500/12 text-slate-600" },
+  unreleased: { label: "Unavailable", chip: "bg-muted text-muted-foreground" },
   available: { label: "Available", chip: "bg-emerald-500/12 text-emerald-700" },
-  reserved: { label: "Reserved", chip: "bg-orange-500/12 text-orange-700" },
-  sold: { label: "Sold", chip: "bg-muted text-muted-foreground" },
+  reserved: { label: "Unavailable", chip: "bg-muted text-muted-foreground" },
+  sold: { label: "Unavailable", chip: "bg-muted text-muted-foreground" },
 };
 
 async function load(slug: string, unitNumber: string) {
@@ -211,9 +211,8 @@ export default async function UnitPage({
                   </>
                 ) : (
                   <div className="rounded-lg border border-dashed bg-background px-4 py-3 text-[13px] text-muted-foreground">
-                    {unit.status === "unreleased"
-                      ? "This residence isn’t released yet. Register your interest with the sales team."
-                      : `This residence is ${unit.status === "sold" ? "sold" : "reserved"}. Ask the sales team about similar availability.`}
+                    This residence is currently unavailable. You can still
+                    review its details and media above.
                   </div>
                 )}
               </div>

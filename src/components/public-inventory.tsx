@@ -18,10 +18,10 @@ import { ChessBoard } from "./chess-board";
 const AREA = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
 const STATUS_LABEL: Record<PublicUnitStatus, string> = {
-  unreleased: "Coming soon",
+  unreleased: "Unavailable",
   available: "Available",
-  reserved: "Reserved",
-  sold: "Sold",
+  reserved: "Unavailable",
+  sold: "Unavailable",
 };
 
 type SortKey = "unit" | "floor" | "type" | "area" | "price" | "ppsf";

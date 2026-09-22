@@ -13,9 +13,9 @@ const STATUS_META: Record<
   { label: string; card: string; dot: string }
 > = {
   unreleased: {
-    label: "Coming soon",
-    card: "border-dashed border-slate-400/40 bg-slate-500/8 opacity-80",
-    dot: "bg-slate-400/70",
+    label: "Unavailable",
+    card: "border-border bg-muted/55 text-muted-foreground",
+    dot: "bg-muted-foreground/50",
   },
   available: {
     label: "Available",
@@ -23,13 +23,13 @@ const STATUS_META: Record<
     dot: "bg-emerald-500",
   },
   reserved: {
-    label: "Reserved",
-    card: "border-orange-600/30 bg-orange-500/10",
-    dot: "bg-orange-500",
+    label: "Unavailable",
+    card: "border-border bg-muted/55 text-muted-foreground",
+    dot: "bg-muted-foreground/50",
   },
   sold: {
-    label: "Sold",
-    card: "border-border bg-muted opacity-70",
+    label: "Unavailable",
+    card: "border-border bg-muted/55 text-muted-foreground",
     dot: "bg-muted-foreground/50",
   },
 };
@@ -189,7 +189,7 @@ export function InventoryExplorer({
           )}
         </div>
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-          {(Object.keys(STATUS_META) as PublicUnitStatus[]).map((status) => (
+          {(["available", "unreleased"] as PublicUnitStatus[]).map((status) => (
             <span key={status} className="inline-flex items-center gap-1.5">
               <span
                 className={`size-2 rounded-full ${STATUS_META[status].dot}`}

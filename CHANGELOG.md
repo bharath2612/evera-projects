@@ -2,6 +2,17 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-22 — Unified public availability treatment (Unreleased)
+
+**Changed** — Public inventory now presents only two unit states: **Available**
+for units currently for sale, and **Unavailable** for every other public
+status. Unavailable units remain visible and open their detail pages from the
+stack, list, floor sheet and key plan, but their muted treatment and detail
+page contain no sales CTAs or offer actions.
+
+**Validation** — ESLint, TypeScript and production build pass. The build was
+rerun with network access so Next.js could fetch the configured Google font.
+
 ## 2026-09-21 — Selectable public inventory exports
 
 **Added** — The full presentation inventory now lets visitors select available

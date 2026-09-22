@@ -25,9 +25,9 @@ const STATUS_META: Record<
   { label: string; chip: string; dot: string }
 > = {
   unreleased: {
-    label: "Coming soon",
-    chip: "bg-slate-500/12 text-slate-600",
-    dot: "bg-slate-400/70",
+    label: "Unavailable",
+    chip: "bg-muted text-muted-foreground",
+    dot: "bg-muted-foreground/50",
   },
   available: {
     label: "Available",
@@ -35,12 +35,12 @@ const STATUS_META: Record<
     dot: "bg-emerald-500",
   },
   reserved: {
-    label: "Reserved",
-    chip: "bg-orange-500/15 text-orange-700",
-    dot: "bg-orange-500",
+    label: "Unavailable",
+    chip: "bg-muted text-muted-foreground",
+    dot: "bg-muted-foreground/50",
   },
   sold: {
-    label: "Sold",
+    label: "Unavailable",
     chip: "bg-muted text-muted-foreground",
     dot: "bg-muted-foreground/50",
   },
@@ -98,34 +98,24 @@ function UnitRow({
     </>
   );
 
-  // Only for-sale residences link out; the rest are inert rows —
-  // unreleased additionally reads fully greyed out.
-  if (!available) {
-    return (
-      <div
-        data-unit-row={unit.unit_number}
-        aria-disabled
-        className={`flex w-full shrink-0 cursor-default items-center gap-3 rounded-lg border border-transparent px-2.5 py-2 text-left ${
-          unit.status === "unreleased" ? "opacity-45" : ""
-        } ${dimmed ? "opacity-40" : ""}`}
-      >
-        {body}
-      </div>
-    );
-  }
-
   return (
     <Link
       href={href}
-      onMouseEnter={() => onHover(posOf(unit))}
-      onMouseLeave={() => onHover(null)}
-      onFocus={() => onHover(posOf(unit))}
-      onBlur={() => onHover(null)}
+      onMouseEnter={() => available && onHover(posOf(unit))}
+      onMouseLeave={() => available && onHover(null)}
+      onFocus={() => available && onHover(posOf(unit))}
+      onBlur={() => available && onHover(null)}
       data-unit-row={unit.unit_number}
-      className={`flex w-full shrink-0 cursor-pointer items-center gap-3 rounded-lg border px-2.5 py-2 text-left transition-all ${
-        highlighted
+      className={`flex w-full shrink-0 items-center gap-3 rounded-lg border px-2.5 py-2 text-left transition-all ${
+        !available
+          ? "cursor-pointer border-transparent opacity-75 hover:border-border hover:bg-muted/50"
+          : "cursor-pointer"
+      } ${
+        available && highlighted
           ? "border-brand/60 bg-brand/8"
-          : "border-transparent hover:border-brand/40 hover:bg-brand/5"
+          : available
+            ? "border-transparent hover:border-brand/40 hover:bg-brand/5"
+            : ""
       } ${dimmed && !highlighted ? "opacity-40" : ""}`}
     >
       {body}
@@ -540,7 +530,7 @@ export function FloorExplorer({
                   )}
                 </div>
                 <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
-                  {(Object.keys(STATUS_META) as PublicUnitStatus[]).map(
+                  {(["available", "unreleased"] as PublicUnitStatus[]).map(
                     (status) => (
                       <span
                         key={status}

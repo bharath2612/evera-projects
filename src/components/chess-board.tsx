@@ -11,9 +11,9 @@ const STATUS_META: Record<
   { label: string; cell: string; dot: string }
 > = {
   unreleased: {
-    label: "Coming soon",
-    cell: "border-dashed border-slate-400/40 bg-slate-500/8 opacity-80 hover:opacity-100",
-    dot: "bg-slate-400/70",
+    label: "Unavailable",
+    cell: "border-border bg-muted/55 text-muted-foreground",
+    dot: "bg-muted-foreground/50",
   },
   available: {
     label: "Available",
@@ -21,13 +21,13 @@ const STATUS_META: Record<
     dot: "bg-emerald-500",
   },
   reserved: {
-    label: "Reserved",
-    cell: "border-orange-600/30 bg-orange-500/10 hover:bg-orange-500/20",
-    dot: "bg-orange-500",
+    label: "Unavailable",
+    cell: "border-border bg-muted/55 text-muted-foreground",
+    dot: "bg-muted-foreground/50",
   },
   sold: {
-    label: "Sold",
-    cell: "border-border bg-muted opacity-70 hover:opacity-90",
+    label: "Unavailable",
+    cell: "border-border bg-muted/55 text-muted-foreground",
     dot: "bg-muted-foreground/50",
   },
 };
