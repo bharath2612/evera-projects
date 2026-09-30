@@ -2,6 +2,18 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-09-30 — Refresh repository working instructions
+
+**Changed** — Expand `AGENTS.md` with routes, public data boundaries, shared
+assets, design and validation rules. Reconcile availability and key-plan
+instructions with the shipped Available/Unavailable treatment.
+
+**Validation** — Checked documentation against the latest changelog and
+key-plan source; diff whitespace check passes. Documentation-only changes.
+
+**Left** — No application or database changes; historical foundation-era
+README/spec descriptions remain subject to the newer guide and changelog.
+
 ## 2026-09-22 — Unified public availability treatment (Unreleased)
 
 **Changed** — Public inventory now presents only two unit states: **Available**
