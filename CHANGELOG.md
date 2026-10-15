@@ -2,6 +2,40 @@
 
 Entry before every push: what was added, what is left. Newest first.
 
+## 2026-10-15 — Galleria traced SVG floor plan
+
+**Changed** — Replaced Galleria's floor-sheet placeholder with a traced
+16-residence SVG plate for floors 1–4, using the supplied screenshot's native
+geometry. Existing availability styling, hover, keyboard/unit navigation and
+shared-layout floor controls are reused. Preserved the source and a side-by-side
+comparison in `docs/assets/`; tracing and verification: `docs/galleria-keyplan.md`.
+
+**Validation** — Source-versus-rendered geometry comparison stays within 0.9
+source pixels for all sixteen boundaries. Visually reviewed the complete SVG
+against the source at 4× size and the mobile sheet. Browser checks passed for
+16 positions on every floor, keyboard 14 → unit 114, mobile 03 → unit 203 and
+no horizontal overflow. Existing Merdan/Arché plates compare unchanged to the
+baseline. ESLint, TypeScript and production build pass.
+
+**Left** — Production deployment verification after push.
+
+## 2026-10-15 — Galleria interactive building rendering
+
+**Changed** — Published the user-supplied Galleria image as a versioned public
+marketing asset and configured the existing facade explorer for residential
+floors 1–4. Measured slab guides keep the rooftop and ground floor outside the
+selectable inventory. The existing floor sheets and live unit availability
+are reused. Gallery/cover imagery and all unit records are unchanged.
+
+**Validation** — Live desktop/mobile browser checks passed: image loaded,
+four floor bands, correct 16-unit floor sheets, keyboard Enter/Escape, mobile
+tap/close and no horizontal overflow. Visually reviewed top/bottom overlays
+and mobile layout. Public view still returns all 64 units. Uploaded image hash
+matched its downloaded copy. No frontend source or schema changed, so no app
+build was needed. Geometry and asset reference: `docs/galleria-facade.md`.
+
+**Left** — None for this rendering; the existing deployed page already uses it.
+
 ## 2026-09-30 — Refresh repository working instructions
 
 **Changed** — Expand `AGENTS.md` with routes, public data boundaries, shared
